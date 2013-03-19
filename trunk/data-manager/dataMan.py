@@ -12,10 +12,6 @@
 #
 # revision history
 #
-# v 0.1.8 changes
-# main dialog polished
-# class initialForm renamed to mainForm
-#
 # v 0.1.7 fixed
 # unexpected error writes 0 byte configuration
 # unexpected behavior if lines in configuration are prefixed before <<
@@ -80,9 +76,8 @@ TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
-IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 
-VERSION = '0.1.8'
+VERSION = '0.1.7'
 
 sys.path.append(FOLDER)
 
@@ -339,33 +334,10 @@ def readDataFile(theFile):
 		tmp += line + System.Environment.NewLine
 	return tmp
 
-
-
-class aboutForm(Form):
-	
-	def __init__(self):
-		self.Width = 400
-		self.Height = 300
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.StartPosition = FormStartPosition.CenterParent
-		self.ShowIcon = True
-		
-		self.picturebox = PictureBox()
-		self.picturebox.Location = Point(10,10)
-		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
-		self.picturebox.Height = 70
-		self.picturebox.Width = 70
-		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
-		
-		self.buttonClose = Button()
-		
-		self.Controls.Add(self.picturebox)
-		self.Controls.Add(self.buttonClose)
-		
-class mainForm(Form):
+class initialForm(Form):
 
 	def __init__(self):
-		self.Width = 285
+		self.Width = 300
 		self.Height = 150
 		self.MaximizeBox = False
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
@@ -373,53 +345,28 @@ class mainForm(Form):
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
 		self.Text = 'CR Data Manager %s' % VERSION
-		
 		self.label = Label()
-		self.label.Location = Point(100,40)
-		self.label.Text = 'Welcome to the Data Manager.'
+		self.label.Location = Point(10,10)
+		self.label.Text = 'Welcome to the Data Manager.\nRun it or configure?'
 		self.label.Width = 300
 		self.label.Height = 50
 
-		self.picturebox = PictureBox()
-		self.picturebox.Location = Point(10,10)
-		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
-		self.picturebox.Height = 70
-		self.picturebox.Width = 70
-		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
-		self.picturebox.Cursor = Cursors.Hand
-		self.picturebox.Click += self.aboutDialog
-		
-		self.tooltip1 = ToolTip()
-		self.tooltip1.AutoPopDelay = 5000
-		self.tooltip1.InitialDelay = 1000
-		# self.tooltip1.ReshowDelay = 500
-		self.tooltip1.ShowAlways = True 
-		self.tooltip1.SetToolTip(self.picturebox, "click on the image for more information")
-		
 		self.buttonRun = Button()
-		self.buttonRun.Location = Point(10,90)
-		self.buttonRun.Width = 120
+		self.buttonRun.Location = Point(10,80)
+		self.buttonRun.Width = 100
 		self.buttonRun.Text = 'Run the DataMan'
 		self.buttonRun.DialogResult = DialogResult.OK
 		#self.buttonRun.Click += self.update
 
 		self.buttonConfig = Button()
-		self.buttonConfig.Location = Point(150,90)
-		self.buttonConfig.Width = 120
+		self.buttonConfig.Location = Point(120,80)
+		self.buttonConfig.Width = 100
 		self.buttonConfig.Text = 'Configure'
 		self.buttonConfig.DialogResult = DialogResult.No
 
 		self.Controls.Add(self.label)
 		self.Controls.Add(self.buttonRun)
 		self.Controls.Add(self.buttonConfig)
-		self.Controls.Add(self.picturebox)
-		
-	def aboutDialog(self, sender, event):
-		form = aboutForm()
-		form.ShowDialog()
-		form.Dispose()
-		
-
 
 class SimpleTextBoxForm(Form):
 	
@@ -516,7 +463,7 @@ def replaceData(books):
 	
 	ERROR_LEVEL = 0
 
-	form = mainForm()
+	form = initialForm()
 	form.ShowDialog()
 	form.Dispose()
 
