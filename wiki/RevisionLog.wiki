@@ -1,0 +1,89 @@
+= revision history =
+
+<pre>
+# v 0.1.7 fixed
+# unexpected error writes 0 byte configuration
+# unexpected behavior if lines in configuration are prefixed before <<
+# due to syntax error FilePath is not considered a valid field
+#
+# v 0.1.7 changes
+# syntax check before configuratin is written
+# empty lines are excluded from configuration
+# configurator and init window set to fixed size
+# Genre can be used in criteria and new value part
+# configurator allows use of tabs
+# configurator does not use word wrap
+# design of configurator updated
+#
+# v 0.1.7 issues
+# tags field not included
+# initial dialog needs "about" button
+#
+# v 0.1.6 fixes
+# range modifier does not work as expected
+
+# v 0.1.5 fixes:
+# range modifier is mis-interpreted
+# problems for the number field with > >= < <= 
+# minus entries in Number field are interpreted incorrectly
+# decimal value in number field throws exception
+
+# v 0.1.4 changes:
+# global use of configurator form (in progress)
+# added icons
+# added hook in toolbar
+# added initial form to run or configure
+# added LogFile viewer
+# 
+# v 0.1.4 fixes:
+# exception thrown when StarsWith modifier was used with a second criterion
+
+v 0.1.3 changes:
+Format field can be used
+new modifier StartsWith
+AlternateSeries can be used
+field Count can be used
+fields FilePath and FileName can be used
+configuration file can be edited from within ComicRack
+
+v 0.1.3 fixes:
+exception thrown if dataman.dat does not exist
+
+v 0.1.2 fixes:
+exception because of missing newline after criteria
+Range modifier was misinterpreted if the field is non-numerical (like Number)
+
+v.0.1.1 changes:
+generated code includes exception handling
+
+v 0.1.0 changes:
+read configuration from replacaData.dat - done 2013-03-13
+added 'Contains' as modifier (e.g. <<FileDirectory.Contains:TPB>> => <<Format:TPB>>)
+more modifiers: Greater, GreaterEq, Less, LessEq
+use of FileDirectory allowed in criteria
+use of SeriesGroup allowed in criteria and newVals
+use of MainCharacterOrTeam is allowed in criteria and newVals
+parser errors are written to replaceData.log
+added Calc as modifier in newValue (e.g. => <<Number:{Number} - 441>>)
+results are logged in file replaceData.log
+
+v 0.1.0 fixes:
+Exception thrown when you try to insert a string value in a numerical field
+
+
+issues:
+todo: save Guid to tags
+todo: case-insensitive comparison of field names
+todo: case-insensitive comparison of modifiers
+todo: modifier Before
+todo: modifier After
+todo: handling of ''-values
+		e.g. <<Format:>>
+todo: use In as modifier in keys
+     e.g. <<Number.In:1,3,8>>
+todo: add RegExp as modifier
+todo: simulation instead of actual replacing of data
+todo: GUI instead of editing replaceData.dat
+todo: rollback function (need GUID per book)
+
+</pre>
