@@ -1,9 +1,10 @@
-# invalid expression: # invalid expression: # this sample file will change nothing in your library 
-# invalid expression: # invalid expression: # but simply demonstrates the syntax 
-# invalid expression: # invalid expression: # 
-# invalid expression: # invalid expression: # for othe sample configurations see http://code.google.com/p/cr-replace-data/downloads/list 
-# invalid expression: # invalid expression: # 
-<<Series:Batman>> => <<Series:Batman>> 
-<<FilePath.Contains:Annual>> => <<Format:Annual>> 
+# this sample file will change nothing in your library
+# but simply demonstrates the syntax
+# 
+# for othe sample configurations see http://code.google.com/p/cr-replace-data/downloads/list
+#
+<<Series.StartsWith:Shadow>> => <<SeriesGroup:Golden Age>>
+<<Series.StartsWith:Green Hornet>> <<Publisher:Dynamite Entertainment>> => <<SeriesGroup:Green Hornet>>
+<<Series.StartsWith:The Green Hornet>> <<Publisher:Dynamite Entertainment>> => <<SeriesGroup:Green Hornet>>
+<<Series.StartsWith:Kato>> <<Publisher:Dynamite Entertainment>> => <<SeriesGroup:Green Hornet>>
 
-test
