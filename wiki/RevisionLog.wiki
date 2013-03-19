@@ -72,19 +72,4 @@ v 0.1.0 fixes:
 Exception thrown when you try to insert a string value in a numerical field
 
 
-issues:
-todo: save Guid to tags
-todo: case-insensitive comparison of field names
-todo: case-insensitive comparison of modifiers
-todo: modifier Before
-todo: modifier After
-todo: handling of ''-values
-		e.g. <<Format:>>
-todo: use In as modifier in keys
-     e.g. <<Number.In:1,3,8>>
-todo: add RegExp as modifier
-todo: simulation instead of actual replacing of data
-todo: GUI instead of editing replaceData.dat
-todo: rollback function (need GUID per book)
-
 </pre>
