@@ -15,7 +15,6 @@
 # v 0.1.8 changes
 # main dialog polished
 # class initialForm renamed to mainForm
-# just another test
 #
 # v 0.1.7 fixed
 # unexpected error writes 0 byte configuration
