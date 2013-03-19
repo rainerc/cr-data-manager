@@ -5,38 +5,34 @@
 # based on user-defined conditions
 # the rules are read from file replaceData.dat, located in the script directory
 #
-# v 0.1.8
-#
-#
+# v 0.1.5
 # by docdoom
 #
 # revision history
+# v 0.1.5 issues
+# range modifier is mis-interpreted
 #
-# v 0.1.7 fixed
-# unexpected error writes 0 byte configuration
-# unexpected behavior if lines in configuration are prefixed before <<
-# due to syntax error FilePath is not considered a valid field
+# v 0.1.4 changes:
+# global use of configurator form (in progress)
+# added icons
+# added hook in toolbar
+# added initial form to run or configure
+# added LogFile viewer
+# 
+# v 0.1.4 fixes:
+# exception thrown when StarsWith modifier was used with a second criterion
 #
-# v 0.1.7 changes
-# syntax check before configuratin is written
-# empty lines are excluded from configuration
-# configurator and init window set to fixed size
-# Genre can be used in criteria and new value part
-# configurator allows use of tabs
-# configurator does not use word wrap
-# design of configurator updated
+# v 0.1.3 changes:
+# Format field can be used
+# new modifier StartsWith
+# AlternateField can be used
+# field Count can be used
+# field FilePath can be used
+# field FileName can be used
+# configuration file can be edited from within ComicRack
 #
-# v 0.1.7 issues
-# tags field not included
-# initial dialog needs "about" button
-# exclude duplicate lines from parsing
-# marker in books if handled by the dataman (tags or notes?)
-#
-#
-#
-# v 0.1.6 fixes
-# range modifier does not work as expected
-#
+# v 0.1.3 fixes:
+# exception if dataman.dat not exists
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 #
@@ -46,11 +42,15 @@
 # todo: case-insensitive comparison of modifiers
 # todo: modifier Before
 # todo: modifier After
+# todo: handling of ''-values
+#		e.g. <<Format:>>
 # todo: use In as modifier in keys
 #      e.g. <<Number.In:1,3,8>>
 # todo: add RegExp as modifier
 # todo: simulation instead of actual replacing of data
 # todo: GUI instead of editing replaceData.dat
+# todo: rollback function (need GUID per book)
+#    NOTE: better use CR's undo feature? 
 # ------------------------------------------------------
 
 import clr
@@ -77,9 +77,10 @@ LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
 
-VERSION = '0.1.7'
+VERSION = '0.1.4'
 
 sys.path.append(FOLDER)
+#import dmEditorForm
 
 allowedKeys = [
 	'Series',
@@ -94,10 +95,9 @@ allowedKeys = [
 	'MainCharacterOrTeam',
 	'Format',
 	'AlternateSeries',
-	'Count',
+	'Count'
 	'FilePath',
-	'FileName',
-	'Genre'
+	'FileName'
 	]
 
 numericalKeys = [
@@ -117,8 +117,7 @@ allowedVals = [
 	'MainCharacterOrTeam',
 	'Format',
 	'AlternateSeries',
-	'Count',
-	'Genre'
+	'Count'
 	]
 
 
@@ -210,14 +209,12 @@ def parseString(s):
 			if myModifier == "Range":
 				tmp = String.Split(myVal,",")
 				#myVal = "%d, %d" % (int(tmp[0]), int(tmp[1]) + 1)
-				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
+				myVal = "%d, %d" % (dec(tmp[0]), dec(tmp[1]))
 				if myKey in numericalKeys:
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
-					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
+					myCrit = myCrit + ("dec(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
 				print myCrit
-			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
-				myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
 			elif myModifier == "Contains" and myKey not in numericalKeys:
 				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			elif myModifier == "StartsWith" and myKey not in numericalKeys:
@@ -271,49 +268,7 @@ def parseString(s):
 			
 
 	return -1
-	
-def validate(s):
-	s = str.Trim(s)
-	if not len(s) > 0:
-		return ''
-	p = re.compile('(<{2}|#)+.*')
-	m = p.search(s)
-	if m:
-		pos = m.start()
-	else:
-		pos= -1
-	if s [0] <> '#':
-		if str.count(s, '=>') <> 1:
-			return '# invalid expression: %s' % s
-		if str.count(s, '<<') <> str.count(s, '>>'):
-			return '# invalid expression: %s' % s
-		if pos > 0:
-			return s [pos:]
-	if s[0] == '#' or s[0:2] == '<<':
-		return s
-	else:
-		return '# invalid expression: %s' % s
-
-
-def writeDataFile(theFile, theText):
-	print theText
-	s = str.split(str(theText),'\n')
-	tmp = str('')
-	#print 'reached'
-	for line in s:
-		#print 'also reached'
-		s2 = validate(str(line))
-		if s2 <> '':
-			tmp += '%s \n' % validate(str(line))
-	#print tmp
-	if len(theText) > 0:
-		#return
-		File.WriteAllText(theFile, tmp)
-	else:
-		MessageBox.Show('File not written (0 Byte size)')
-
-	return
-
+		
 def readDataFile(theFile):
 	
 	s=[]
@@ -321,6 +276,7 @@ def readDataFile(theFile):
 		if File.Exists(DATFILE):
 			File.Copy(DATFILE, BAKFILE, True) # just in case something bad happens
 			s = File.ReadAllLines(DATFILE)
+			# MessageBox.Show ('hugo')
 		elif File.Exists(SAMPLEFILE):
 			s = File.ReadAllLines(SAMPLEFILE)
 	else:
@@ -340,11 +296,10 @@ class initialForm(Form):
 		self.Width = 300
 		self.Height = 150
 		self.MaximizeBox = False
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.StartPosition = FormStartPosition.CenterParent
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
-		self.Text = 'CR Data Manager %s' % VERSION
+		self.Text = 'CR Data Manager Version %s' % VERSION
 		self.label = Label()
 		self.label.Location = Point(10,10)
 		self.label.Text = 'Welcome to the Data Manager.\nRun it or configure?'
@@ -383,27 +338,24 @@ class SimpleTextBoxForm(Form):
 		#self.Icon = ICON_SMALL
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.textbox = TextBox()
 		#self.textbox.Text = readDataFile(DATFILE)
 		self.textbox.Location = Point(10, 10)
 		self.textbox.Width = 780
-		self.textbox.Height = 530
+		self.textbox.Height = 500
 		self.textbox.Multiline = True
 		self.textbox.ScrollBars = ScrollBars.Both
-		self.textbox.WordWrap = False
-		self.textbox.AcceptsTab = True
 				
 		self.button1 = Button()
 		self.button1.Text = 'Save and exit'
-		self.button1.Location = Point(10, 545)
+		self.button1.Location = Point(10, 520)
 		self.button1.Width = 200
 		self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
 		self.button2.Text = 'Cancel without saving'
-		self.button2.Location = Point(250, 545)
+		self.button2.Location = Point(250, 520)
 		self.button2.Width = 200
 		self.button2.DialogResult = DialogResult.Cancel
 		self.button2.Click += self.reset
@@ -437,11 +389,8 @@ class SimpleTextBoxForm(Form):
 		#self.addTitle()
 		
 	def update(self, sender, event):
-		writeDataFile(DATFILE,self.textbox.Text)
-		try:
-			self.Close
-		except Exception, err:
-			print str(s)
+		File.WriteAllText(DATFILE,self.textbox.Text)
+		self.Close
 
 	def reset(self, sender, event):
 		self.Close
