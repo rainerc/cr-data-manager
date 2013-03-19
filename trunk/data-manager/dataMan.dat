@@ -7,3 +7,4 @@
 # invalid statement: # invalid statement: # invalid statement: # invalid statement: <<Series.Contains:Animal Man>> <<Publisher:DC Comics>> 		=> <<MainCharacterOrTeam:Animal Man>><<Series.Contains:Animal Man>> <<Publisher:DC Comics>> 		=> <<MainCharacterOrTeam:Animal Man>>
 # invalid statement: # invalid statement: # invalid statement: # invalid statement: <<Series.Contains:Animal Man>> <<Publisher:DC Comics>> 		=> <<MainCharacterOrTeam:Animal Man>><<Series.Contains:Animal Man>> <<Publisher:DC Comics>> 		=> <<MainCharacterOrTeam:Animal Man>>
 <<Series.Contains:Animal Man>> <<Publisher:DC Comics>> 		=> <<MainCharacterOrTeam:Animal Man>>
+# only a test
