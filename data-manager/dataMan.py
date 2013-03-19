@@ -5,34 +5,37 @@
 # based on user-defined conditions
 # the rules are read from file replaceData.dat, located in the script directory
 #
-# v 0.1.5
+# v 0.1.8
+#
+#
 # by docdoom
 #
 # revision history
-# v 0.1.5 issues
-# range modifier is mis-interpreted
 #
-# v 0.1.4 changes:
-# global use of configurator form (in progress)
-# added icons
-# added hook in toolbar
-# added initial form to run or configure
-# added LogFile viewer
-# 
-# v 0.1.4 fixes:
-# exception thrown when StarsWith modifier was used with a second criterion
+# v 0.1.8 changes
+# main dialog polished
+# new "About" dialog
+# class initialForm renamed to mainForm
 #
-# v 0.1.3 changes:
-# Format field can be used
-# new modifier StartsWith
-# AlternateField can be used
-# field Count can be used
-# field FilePath can be used
-# field FileName can be used
-# configuration file can be edited from within ComicRack
+# v 0.1.7 fixed
+# unexpected error writes 0 byte configuration
+# unexpected behavior if lines in configuration are prefixed before <<
+# due to syntax error FilePath is not considered a valid field
 #
-# v 0.1.3 fixes:
-# exception if dataman.dat not exists
+# v 0.1.7 changes
+# syntax check before configuratin is written
+# empty lines are excluded from configuration
+# configurator and init window set to fixed size
+# Genre can be used in criteria and new value part
+# configurator allows use of tabs
+# configurator does not use word wrap
+# design of configurator updated
+#
+# v 0.1.7 issues
+# tags field not included
+# initial dialog needs "about" button
+# exclude duplicate lines from parsing
+# marker in books if handled by the dataman (tags or notes?)
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 #
@@ -42,15 +45,10 @@
 # todo: case-insensitive comparison of modifiers
 # todo: modifier Before
 # todo: modifier After
-# todo: handling of ''-values
-#		e.g. <<Format:>>
 # todo: use In as modifier in keys
 #      e.g. <<Number.In:1,3,8>>
 # todo: add RegExp as modifier
 # todo: simulation instead of actual replacing of data
-# todo: GUI instead of editing replaceData.dat
-# todo: rollback function (need GUID per book)
-#    NOTE: better use CR's undo feature? 
 # ------------------------------------------------------
 
 import clr
@@ -76,11 +74,14 @@ TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
+IMAGE = Path.Combine(FOLDER, 'dataMan.png')
+DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
+WIKI = 'http://code.google.com/p/cr-data-manager/'
+MANUAL = 'https://docs.google.com/document/d/1QpcIxwujHMlE6J75A9QHlOKzKj8OqHnWVJ5fpznBGQs/edit#heading=h.ffz5jnl2u3um'
 
-VERSION = '0.1.4'
+VERSION = '0.1.8'
 
 sys.path.append(FOLDER)
-#import dmEditorForm
 
 allowedKeys = [
 	'Series',
@@ -95,9 +96,10 @@ allowedKeys = [
 	'MainCharacterOrTeam',
 	'Format',
 	'AlternateSeries',
-	'Count'
+	'Count',
 	'FilePath',
-	'FileName'
+	'FileName',
+	'Genre'
 	]
 
 numericalKeys = [
@@ -117,7 +119,8 @@ allowedVals = [
 	'MainCharacterOrTeam',
 	'Format',
 	'AlternateSeries',
-	'Count'
+	'Count',
+	'Genre'
 	]
 
 
@@ -209,12 +212,14 @@ def parseString(s):
 			if myModifier == "Range":
 				tmp = String.Split(myVal,",")
 				#myVal = "%d, %d" % (int(tmp[0]), int(tmp[1]) + 1)
-				myVal = "%d, %d" % (dec(tmp[0]), dec(tmp[1]))
+				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
 				if myKey in numericalKeys:
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
-					myCrit = myCrit + ("dec(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
+					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
 				print myCrit
+			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
+				myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
 			elif myModifier == "Contains" and myKey not in numericalKeys:
 				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			elif myModifier == "StartsWith" and myKey not in numericalKeys:
@@ -268,7 +273,49 @@ def parseString(s):
 			
 
 	return -1
-		
+	
+def validate(s):
+	s = str.Trim(s)
+	if not len(s) > 0:
+		return ''
+	p = re.compile('(<{2}|#)+.*')
+	m = p.search(s)
+	if m:
+		pos = m.start()
+	else:
+		pos= -1
+	if s [0] <> '#':
+		if str.count(s, '=>') <> 1:
+			return '# invalid expression: %s' % s
+		if str.count(s, '<<') <> str.count(s, '>>'):
+			return '# invalid expression: %s' % s
+		if pos > 0:
+			return s [pos:]
+	if s[0] == '#' or s[0:2] == '<<':
+		return s
+	else:
+		return '# invalid expression: %s' % s
+
+
+def writeDataFile(theFile, theText):
+	print theText
+	s = str.split(str(theText),'\n')
+	tmp = str('')
+	#print 'reached'
+	for line in s:
+		#print 'also reached'
+		s2 = validate(str(line))
+		if s2 <> '':
+			tmp += '%s \n' % validate(str(line))
+	#print tmp
+	if len(theText) > 0:
+		#return
+		File.WriteAllText(theFile, tmp)
+	else:
+		MessageBox.Show('File not written (0 Byte size)')
+
+	return
+
 def readDataFile(theFile):
 	
 	s=[]
@@ -276,7 +323,6 @@ def readDataFile(theFile):
 		if File.Exists(DATFILE):
 			File.Copy(DATFILE, BAKFILE, True) # just in case something bad happens
 			s = File.ReadAllLines(DATFILE)
-			# MessageBox.Show ('hugo')
 		elif File.Exists(SAMPLEFILE):
 			s = File.ReadAllLines(SAMPLEFILE)
 	else:
@@ -290,38 +336,127 @@ def readDataFile(theFile):
 		tmp += line + System.Environment.NewLine
 	return tmp
 
-class initialForm(Form):
+
+
+class aboutForm(Form):
+	
+	def __init__(self):
+		self.Width = 380
+		self.Height = 250
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.StartPosition = FormStartPosition.CenterParent
+		self.ShowIcon = True
+		self.Text = 'CR Data Manager %s' % VERSION
+
+		self.label = Label()
+		self.label.Location = Point(90, 20)
+		self.label.Width = 280
+		self.label.Height = 110
+		self.label.Text = ('The CR Data Manager plugin is licensed under the Apache 2.0 software ' +
+			'license, available at:\nhttp://www.apache.org/licenses/LICENSE-2.0.html\n\n' +
+			'Big thanks go to WMPO600 and Casublett: without ' + 
+			'their help the plugin would not work as it does now.\n\nImportant links:')
+
+		self.linklabelManual = LinkLabel()
+		self.linklabelManual.Location = Point(90,135)
+		self.linklabelManual.Text = 'Manual'
+		self.linklabelManual.LinkClicked += self.manual
+
+		self.linklabelWiki = LinkLabel()
+		self.linklabelWiki.Location = Point(90,155)
+		self.linklabelWiki.Text = 'Wiki'
+		self.linklabelWiki.LinkClicked += self.wiki
+
+		self.linklabelDonation = LinkLabel()
+		self.linklabelDonation.Location = Point(90,175)
+		self.linklabelDonation.Text = 'Donations'
+		self.linklabelDonation.LinkClicked += self.donate	
+			
+		self.picturebox = PictureBox()
+		self.picturebox.Location = Point(10,10)
+		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
+		self.picturebox.Height = 70
+		self.picturebox.Width = 70
+		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
+		
+		self.buttonClose = Button()
+		self.buttonClose.Location = Point(290,200)
+		self.buttonClose.Text = 'Close'
+		self.buttonClose.DialogResult = DialogResult.Cancel
+		self.Controls.Add(self.picturebox)
+		self.Controls.Add(self.buttonClose)
+		self.Controls.Add(self.label)
+		self.Controls.Add(self.linklabelDonation)
+		self.Controls.Add(self.linklabelManual)
+		self.Controls.Add(self.linklabelWiki)
+
+	def donate(self, sender, event):
+		System.Diagnostics.Process.Start(DONATE)
+
+	def manual(self, sender, event):
+		System.Diagnostics.Process.Start(MANUAL)
+
+	def wiki(self, sender, event):
+		System.Diagnostics.Process.Start(WIKI)
+		pass
+		
+class mainForm(Form):
 
 	def __init__(self):
-		self.Width = 300
+		self.Width = 285
 		self.Height = 150
 		self.MaximizeBox = False
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.StartPosition = FormStartPosition.CenterParent
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
-		self.Text = 'CR Data Manager Version %s' % VERSION
+		self.Text = 'CR Data Manager %s' % VERSION
+		
 		self.label = Label()
-		self.label.Location = Point(10,10)
-		self.label.Text = 'Welcome to the Data Manager.\nRun it or configure?'
+		self.label.Location = Point(90,20)
+		self.label.Text = 'Welcome to the Data Manager\n\nClick on the icon for more information.'
 		self.label.Width = 300
 		self.label.Height = 50
 
+		self.picturebox = PictureBox()
+		self.picturebox.Location = Point(10,10)
+		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
+		self.picturebox.Height = 70
+		self.picturebox.Width = 70
+		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
+		self.picturebox.Cursor = Cursors.Hand
+		self.picturebox.Click += self.aboutDialog
+		
+		self.tooltip1 = ToolTip()
+		self.tooltip1.AutoPopDelay = 5000
+		self.tooltip1.InitialDelay = 1000
+		# self.tooltip1.ReshowDelay = 500
+		self.tooltip1.ShowAlways = True 
+		self.tooltip1.SetToolTip(self.picturebox, "click on the image for more information")
+		
 		self.buttonRun = Button()
-		self.buttonRun.Location = Point(10,80)
-		self.buttonRun.Width = 100
+		self.buttonRun.Location = Point(10,90)
+		self.buttonRun.Width = 120
 		self.buttonRun.Text = 'Run the DataMan'
 		self.buttonRun.DialogResult = DialogResult.OK
-		#self.buttonRun.Click += self.update
 
 		self.buttonConfig = Button()
-		self.buttonConfig.Location = Point(120,80)
-		self.buttonConfig.Width = 100
+		self.buttonConfig.Location = Point(150,90)
+		self.buttonConfig.Width = 120
 		self.buttonConfig.Text = 'Configure'
 		self.buttonConfig.DialogResult = DialogResult.No
 
 		self.Controls.Add(self.label)
 		self.Controls.Add(self.buttonRun)
 		self.Controls.Add(self.buttonConfig)
+		self.Controls.Add(self.picturebox)
+		
+	def aboutDialog(self, sender, event):
+		form = aboutForm()
+		form.ShowDialog()
+		form.Dispose()
+		
+
 
 class SimpleTextBoxForm(Form):
 	
@@ -329,33 +464,32 @@ class SimpleTextBoxForm(Form):
 
 		self.theFile = ''
 
-		#self.Text = "dataMan configurator Version " + VERSION
-
 		self.Width = 800
 		self.Height = 600
 		self.MaximizeBox = False
 
-		#self.Icon = ICON_SMALL
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.textbox = TextBox()
-		#self.textbox.Text = readDataFile(DATFILE)
 		self.textbox.Location = Point(10, 10)
 		self.textbox.Width = 780
-		self.textbox.Height = 500
+		self.textbox.Height = 530
 		self.textbox.Multiline = True
 		self.textbox.ScrollBars = ScrollBars.Both
+		self.textbox.WordWrap = False
+		self.textbox.AcceptsTab = True
 				
 		self.button1 = Button()
 		self.button1.Text = 'Save and exit'
-		self.button1.Location = Point(10, 520)
+		self.button1.Location = Point(10, 545)
 		self.button1.Width = 200
 		self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
 		self.button2.Text = 'Cancel without saving'
-		self.button2.Location = Point(250, 520)
+		self.button2.Location = Point(250, 545)
 		self.button2.Width = 200
 		self.button2.DialogResult = DialogResult.Cancel
 		self.button2.Click += self.reset
@@ -364,9 +498,6 @@ class SimpleTextBoxForm(Form):
 
 		self.addButtons()
 		self.showTheFile()
-		#if self.theFile == DATFILE:
-		#	self.Controls.Add(self.button1)
-		#	self.Controls.Add(self.button2)
 		self.StartPosition = FormStartPosition.CenterParent
 
 	def showTheFile(self):
@@ -379,18 +510,19 @@ class SimpleTextBoxForm(Form):
 			self.Controls.Add(self.button2)
 
 	def setFile(self, f):
-		#MessageBox.Show(f)
 		self.theFile = f
 		self.showTheFile()
 		self.addButtons()
 
 	def setTitle(self, s):
 		self.Text = '%s - Version %s' % (s, VERSION)
-		#self.addTitle()
 		
 	def update(self, sender, event):
-		File.WriteAllText(DATFILE,self.textbox.Text)
-		self.Close
+		writeDataFile(DATFILE,self.textbox.Text)
+		try:
+			self.Close
+		except Exception, err:
+			print str(s)
 
 	def reset(self, sender, event):
 		self.Close
@@ -412,7 +544,7 @@ def replaceData(books):
 	
 	ERROR_LEVEL = 0
 
-	form = initialForm()
+	form = mainForm()
 	form.ShowDialog()
 	form.Dispose()
 
