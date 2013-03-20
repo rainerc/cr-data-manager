@@ -5,7 +5,7 @@
 
 You may use these rules to prepare your library for the handling by Library Organizer.
 
-Thanks a lot to 600WMPO for sharing these! 
+Thanks a lot to 600WPMPO for sharing these! 
 
 = The Rules =
 
