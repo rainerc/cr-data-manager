@@ -5,7 +5,15 @@
 # based on user-defined conditions
 # the rules are read from file replaceData.dat, located in the script directory
 #
-# v 0.1.8
+# The CR Data Manager plugin is licensed under the Apache 2.0 software
+# license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
+#
+# v 0.1.9
+#
+# v 0.1.9 changes
+# typos in aboutForm.label and mainForm.label corrected
+# close button added to log viewer
+# licence information integrated in code
 #
 #
 # by docdoom
@@ -16,6 +24,8 @@
 # main dialog polished
 # new "About" dialog
 # class initialForm renamed to mainForm
+# info on log viewer if no book book was touched
+# text in configurator and log viewer is not pre-selected anymore
 #
 # v 0.1.7 fixed
 # unexpected error writes 0 byte configuration
@@ -334,6 +344,8 @@ def readDataFile(theFile):
 	tmp = str('')
 	for line in s:
 		tmp += line + System.Environment.NewLine
+	if len(s) == 0 and theFile == LOGFILE:
+		tmp = 'Your criteria matched no book. No data was touched by the Data Manager.'
 	return tmp
 
 
@@ -354,7 +366,7 @@ class aboutForm(Form):
 		self.label.Height = 110
 		self.label.Text = ('The CR Data Manager plugin is licensed under the Apache 2.0 software ' +
 			'license, available at:\nhttp://www.apache.org/licenses/LICENSE-2.0.html\n\n' +
-			'Big thanks go to WMPO600 and Casublett: without ' + 
+			'Big thanks go to 600WPMPO and Casublett: without ' + 
 			'their help the plugin would not work as it does now.\n\nImportant links:')
 
 		self.linklabelManual = LinkLabel()
@@ -414,7 +426,7 @@ class mainForm(Form):
 		
 		self.label = Label()
 		self.label.Location = Point(90,20)
-		self.label.Text = 'Welcome to the Data Manager\n\nClick on the icon for more information.'
+		self.label.Text = 'Welcome to the Data Manager.\n\nClick on the icon for more information.'
 		self.label.Width = 300
 		self.label.Height = 50
 
@@ -479,6 +491,7 @@ class SimpleTextBoxForm(Form):
 		self.textbox.ScrollBars = ScrollBars.Both
 		self.textbox.WordWrap = False
 		self.textbox.AcceptsTab = True
+		self.textbox.TabStop = False
 				
 		self.button1 = Button()
 		self.button1.Text = 'Save and exit'
@@ -488,9 +501,9 @@ class SimpleTextBoxForm(Form):
 		self.button1.Click += self.update
 
 		self.button2 = Button()
-		self.button2.Text = 'Cancel without saving'
-		self.button2.Location = Point(250, 545)
-		self.button2.Width = 200
+		
+		
+		
 		self.button2.DialogResult = DialogResult.Cancel
 		self.button2.Click += self.reset
 
@@ -507,7 +520,16 @@ class SimpleTextBoxForm(Form):
 	def addButtons(self):
 		if self.theFile == DATFILE:
 			self.Controls.Add(self.button1)
-			self.Controls.Add(self.button2)
+			self.button2.Location = Point(250, 545)
+			self.button2.Width = 200
+			self.button2.Text = 'Cancel without saving'
+			self.button2.TabStop = False
+		else:
+			self.button2.Location = Point(690, 545)
+			self.button2.Width = 100
+			self.button2.Text = 'Close'
+
+		self.Controls.Add(self.button2)
 
 	def setFile(self, f):
 		self.theFile = f
