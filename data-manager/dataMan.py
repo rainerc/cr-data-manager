@@ -289,15 +289,11 @@ def writeDataFile(theFile, theText):
 	print theText
 	s = str.split(str(theText),'\n')
 	tmp = str('')
-	#print 'reached'
 	for line in s:
-		#print 'also reached'
 		s2 = validate(str(line))
 		if s2 <> '':
 			tmp += '%s \n' % validate(str(line))
-	#print tmp
 	if len(theText) > 0:
-		#return
 		File.WriteAllText(theFile, tmp)
 	else:
 		MessageBox.Show('File not written (0 Byte size)')
@@ -452,15 +448,18 @@ class SimpleTextBoxForm(Form):
 	
 	def __init__(self):
 
+		self.isDirty = False
+
 		self.theFile = ''
 
 		self.Width = 800
 		self.Height = 600
 		self.MaximizeBox = False
-
 		self.ShowIcon = True
 		self.Icon = Icon(ICON_SMALL)
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.Closing += self.formClosing
+		
 		self.textbox = TextBox()
 		self.textbox.Location = Point(10, 10)
 		self.textbox.Width = 780
@@ -470,18 +469,20 @@ class SimpleTextBoxForm(Form):
 		self.textbox.WordWrap = False
 		self.textbox.AcceptsTab = True
 		self.textbox.TabStop = False
+
 				
 		self.button1 = Button()
-		self.button1.Text = 'Save and exit'
+		self.button1.Text = 'Save'
 		self.button1.Location = Point(10, 545)
-		self.button1.Width = 200
-		self.button1.DialogResult = DialogResult.OK
+		self.button1.Width = 100
+		#self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
-		
-		
-		
+		self.button2.Text = 'Close'
+		self.button2.Width = 100
+		self.button2.Location = Point(690, 545)
+
 		self.button2.DialogResult = DialogResult.Cancel
 		self.button2.Click += self.reset
 
@@ -491,39 +492,52 @@ class SimpleTextBoxForm(Form):
 		self.showTheFile()
 		self.StartPosition = FormStartPosition.CenterParent
 
+	def update(self, sender, event):
+		writeDataFile(DATFILE,self.textbox.Text)
+		self.isDirty = False
+		#try:
+		#	self.Close
+		#except Exception, err:
+		#	print str(s)
+
+	def formClosing(self, sender, event):
+		if self.isDirty:
+			result = (MessageBox.Show(
+                   'Would you like to save your changes before closing?'
+                   , 'CR Data Manager - %s' % VERSION
+                   , MessageBoxButtons.YesNoCancel
+                   , MessageBoxIcon.Question))
+			if result == DialogResult.Yes:
+				if self.theFile == DATFILE:
+					writeDataFile(DATFILE,self.textbox.Text)
+
+			elif result == DialogResult.No:
+				pass
+			elif result == DialogResult.Cancel:
+				event.Cancel = True
+	
+	def textChanged(self, sender, event):
+		self.isDirty = True
+		
 	def showTheFile(self):
-		print self.theFile
 		self.textbox.Text = readDataFile(self.theFile)
 
 	def addButtons(self):
 		if self.theFile == DATFILE:
 			self.Controls.Add(self.button1)
-			self.button2.Location = Point(250, 545)
-			self.button2.Width = 200
-			self.button2.Text = 'Cancel without saving'
 			self.button2.TabStop = False
-		else:
-			self.button2.Location = Point(690, 545)
-			self.button2.Width = 100
-			self.button2.Text = 'Close'
-
+			
 		self.Controls.Add(self.button2)
 
 	def setFile(self, f):
 		self.theFile = f
 		self.showTheFile()
+		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
 
 	def setTitle(self, s):
 		self.Text = '%s - Version %s' % (s, VERSION)
 		
-	def update(self, sender, event):
-		writeDataFile(DATFILE,self.textbox.Text)
-		try:
-			self.Close
-		except Exception, err:
-			print str(s)
-
 	def reset(self, sender, event):
 		self.Close
 
