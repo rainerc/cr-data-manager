@@ -23,6 +23,8 @@
 # typos in aboutForm.label and mainForm.label corrected
 # close button added to log viewer
 # licence information integrated in code
+# status label in configurator if data was changed or saved
+# progress bar while rules are running
 #
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -323,6 +325,31 @@ def readDataFile(theFile):
 	return tmp
 
 
+class progressForm(Form):
+
+	def __init__(self):
+		self.Width = 270
+		self.Height = 80
+		self.StartPosition = FormStartPosition.CenterScreen
+		self.Icon = Icon(ICON_SMALL)
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.Text = 'CR Data Manager Version %s' % VERSION
+
+		self.progressBar = System.Windows.Forms.ProgressBar()
+		self.progressBar.Location = Point(10,10)
+		self.progressBar.Width = 250
+		self.progressBar.Minimum = 0
+		self.progressBar.Step = 1
+		
+		self.Controls.Add(self.progressBar)
+
+	def setValue(self, s):
+		self.progressBar.Value = s
+
+	def setMax(self, s):
+		self.progressBar.Maximum = s
+
+
 
 class aboutForm(Form):
 	
@@ -470,10 +497,12 @@ class SimpleTextBoxForm(Form):
 		self.textbox.AcceptsTab = True
 		self.textbox.TabStop = False
 
-				
+		self.statusLabel = Label()
+		self.statusLabel.Location = Point(10,545)
+						
 		self.button1 = Button()
 		self.button1.Text = 'Save'
-		self.button1.Location = Point(10, 545)
+		self.button1.Location = Point(580, 545)
 		self.button1.Width = 100
 		#self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
@@ -487,14 +516,20 @@ class SimpleTextBoxForm(Form):
 		self.button2.Click += self.reset
 
 		self.Controls.Add(self.textbox)
+		self.Controls.Add(self.statusLabel)
 
 		self.addButtons()
 		self.showTheFile()
 		self.StartPosition = FormStartPosition.CenterParent
 
+	def statusText(self, s):
+		if self.theFile == DATFILE:
+			self.statusLabel.Text = s
+
 	def update(self, sender, event):
 		writeDataFile(DATFILE,self.textbox.Text)
 		self.isDirty = False
+		self.statusText('data saved')
 		#try:
 		#	self.Close
 		#except Exception, err:
@@ -510,6 +545,7 @@ class SimpleTextBoxForm(Form):
 			if result == DialogResult.Yes:
 				if self.theFile == DATFILE:
 					writeDataFile(DATFILE,self.textbox.Text)
+					self.statusText('')
 
 			elif result == DialogResult.No:
 				pass
@@ -518,6 +554,7 @@ class SimpleTextBoxForm(Form):
 	
 	def textChanged(self, sender, event):
 		self.isDirty = True
+		self.statusText('* data changed')
 		
 	def showTheFile(self):
 		self.textbox.Text = readDataFile(self.theFile)
@@ -599,22 +636,28 @@ def replaceData(books):
 		print 'getCode: ', str(err)
 
 	writeCode('except Exception,err:\n')
-	writeCode('\tMessageBox.Show(\"Error in code generation: %s\" % str(err))')
+	writeCode('\t(\"Error in code generation: %s\" % str(err))')
 	
 	if ERROR_LEVEL == 0:
 		theCode = parsedCode()	# read generated code from file
 		print "the code: \n%s" % theCode   # remove in first stable release!
 	
 	
+		progBar = progressForm()
+		progBar.Show()
+		progBar.setMax(books.Length)
 		touched = 0
 		f=open(LOGFILE, "w")	# open logfile
 		for book in books:
 			touched += 1
+			progBar.setValue(touched)
 			exec (theCode)
 		f.close()				# close logfile
-		msg = "Finished. I've inspected %d books. Do you want to take look at the log file?" % (touched)
+
+		msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (touched)
 		caption = 'CR Data Manager Version %s' % VERSION
 		ret = MessageBox.Show(msg, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+		progBar.Dispose()
 		if ret == DialogResult.Yes:
 			form = SimpleTextBoxForm()
 			form.setFile(LOGFILE)
