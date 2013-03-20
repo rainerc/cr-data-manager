@@ -8,13 +8,7 @@
 # The CR Data Manager plugin is licensed under the Apache 2.0 software
 # license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 #
-# v 0.1.9
-#
-# v 0.1.9 changes
-# typos in aboutForm.label and mainForm.label corrected
-# close button added to log viewer
-# licence information integrated in code
-#
+# v 0.1.8
 #
 # by docdoom
 #
@@ -26,33 +20,17 @@
 # class initialForm renamed to mainForm
 # info on log viewer if no book book was touched
 # text in configurator and log viewer is not pre-selected anymore
+# typos in aboutForm.label and mainForm.label corrected
+# close button added to log viewer
+# licence information integrated in code
 #
-# v 0.1.7 fixed
-# unexpected error writes 0 byte configuration
-# unexpected behavior if lines in configuration are prefixed before <<
-# due to syntax error FilePath is not considered a valid field
-#
-# v 0.1.7 changes
-# syntax check before configuratin is written
-# empty lines are excluded from configuration
-# configurator and init window set to fixed size
-# Genre can be used in criteria and new value part
-# configurator allows use of tabs
-# configurator does not use word wrap
-# design of configurator updated
-#
-# v 0.1.7 issues
-# tags field not included
-# initial dialog needs "about" button
-# exclude duplicate lines from parsing
-# marker in books if handled by the dataman (tags or notes?)
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 #
 # issues:
-# todo: save Guid to tags
-# todo: case-insensitive comparison of field names
-# todo: case-insensitive comparison of modifiers
+# tags field not included
+# exclude duplicate lines from parsing
+# marker in books if handled by the dataman (tags or notes?)
 # todo: modifier Before
 # todo: modifier After
 # todo: use In as modifier in keys
