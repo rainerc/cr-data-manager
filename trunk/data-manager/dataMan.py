@@ -34,7 +34,6 @@
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 #
 # issues:
-# tags field not included
 # exclude duplicate lines from parsing
 # marker in books if handled by the dataman (tags or notes?)
 # todo: modifier Before
