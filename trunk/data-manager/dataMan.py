@@ -68,8 +68,7 @@ ICON = Path.Combine(FOLDER, 'dataMan.ico')
 IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
-MANUAL = 'https://docs.google.com/document/d/1QpcIxwujHMlE6J75A9QHlOKzKj8OqHnWVJ5fpznBGQs/edit#heading=h.ffz5jnl2u3um'
-
+MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 VERSION = '0.1.8'
 
 sys.path.append(FOLDER)
