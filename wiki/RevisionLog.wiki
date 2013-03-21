@@ -3,6 +3,10 @@
 
 == Version 0.1.8==
 <pre>
+#
+# v 0.1.9 r43 fixed
+# fixed: unexpected results if Calc modifier is used in rules
+#
 # v 0.1.8 r32 changes
 #
 # main dialog polished
@@ -17,7 +21,6 @@
 # progress bar while rules are running
 # custom dialog instea of MessageBox to display result of running dataMan
 #
-
 # v 0.1.7 fixed
 # unexpected error writes 0 byte configuration
 # unexpected behavior if lines in configuration are prefixed before <<
