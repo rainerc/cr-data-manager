@@ -56,6 +56,9 @@ clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
 
+global FOLDER
+global DATFILE
+
 FOLDER = FileInfo(__file__).DirectoryName + "\\"
 DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
 SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
@@ -308,7 +311,6 @@ def writeDataFile(theFile, theText):
 def readDataFile(theFile):
 	
 	s=[]
-	MessageBox.Show(theFile)
 	if theFile == DATFILE:
 		if File.Exists(DATFILE):
 			File.Copy(DATFILE, BAKFILE, True) # just in case something bad happens
@@ -530,7 +532,7 @@ class SimpleTextBoxForm(Form):
 		self.textbox.WordWrap = False
 		self.textbox.AcceptsTab = True
 		self.textbox.TabStop = False
-		
+
 		self.statusLabel = Label()
 		self.statusLabel.Location = Point(10,545)
 						
@@ -538,6 +540,7 @@ class SimpleTextBoxForm(Form):
 		self.button1.Text = 'Save'
 		self.button1.Location = Point(580, 545)
 		self.button1.Width = 100
+		#self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
@@ -552,10 +555,8 @@ class SimpleTextBoxForm(Form):
 		self.Controls.Add(self.statusLabel)
 
 		self.addButtons()
-		#self.showTheFile()
+		self.showTheFile()
 		self.StartPosition = FormStartPosition.CenterParent
-
-		self.setFile()
 
 	def statusText(self, s):
 		if self.theFile == DATFILE:
@@ -565,6 +566,10 @@ class SimpleTextBoxForm(Form):
 		writeDataFile(DATFILE,self.textbox.Text)
 		self.isDirty = False
 		self.statusText('data saved')
+		#try:
+		#	self.Close
+		#except Exception, err:
+		#	print str(s)
 
 	def formClosing(self, sender, event):
 		if self.isDirty and self.theFile == DATFILE:
@@ -587,8 +592,8 @@ class SimpleTextBoxForm(Form):
 		self.isDirty = True
 		self.statusText('* data changed')
 		
-	#def showTheFile(self):
-	#	self.textbox.Text = readDataFile(self.theFile)
+	def showTheFile(self):
+		self.textbox.Text = readDataFile(self.theFile)
 
 	def addButtons(self):
 		if self.theFile == DATFILE:
@@ -597,10 +602,9 @@ class SimpleTextBoxForm(Form):
 			
 		self.Controls.Add(self.button2)
 
-	def setFile(self):
-		self.theFile = theFile
-		#self.showTheFile()
-		self.textbox.Text = readDataFile(self.theFile)
+	def setFile(self, f):
+		self.theFile = f
+		self.showTheFile()
 		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
 
@@ -613,7 +617,7 @@ class SimpleTextBoxForm(Form):
 def dmConfig():
 
 	form = SimpleTextBoxForm()
-	form.theFile = DATFILE
+	form.setFile(DATFILE)
 	form.setTitle('Data Manager Configurator')
 	form.ShowDialog()
 	form.Dispose()
