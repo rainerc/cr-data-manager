@@ -4,7 +4,7 @@
 == Version 0.1.8==
 <pre>
 #
-# v 0.1.9 r43 fixed
+# v 0.1.9 r43
 # fixed: unexpected results if Calc modifier is used in rules
 #
 # v 0.1.8 r32 changes
