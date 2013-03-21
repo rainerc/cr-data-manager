@@ -8,7 +8,7 @@
 # The CR Data Manager plugin is licensed under the Apache 2.0 software
 # license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 #
-# v 0.1.8
+# v 0.1.9
 #
 # by docdoom
 #
@@ -53,9 +53,6 @@ clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
 
-global FOLDER
-global DATFILE
-
 FOLDER = FileInfo(__file__).DirectoryName + "\\"
 DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
 SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
@@ -69,7 +66,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.8'
+VERSION = '0.1.9'
 
 sys.path.append(FOLDER)
 
@@ -305,6 +302,7 @@ def writeDataFile(theFile, theText):
 def readDataFile(theFile):
 	
 	s=[]
+	MessageBox.Show(theFile)
 	if theFile == DATFILE:
 		if File.Exists(DATFILE):
 			File.Copy(DATFILE, BAKFILE, True) # just in case something bad happens
@@ -526,7 +524,7 @@ class SimpleTextBoxForm(Form):
 		self.textbox.WordWrap = False
 		self.textbox.AcceptsTab = True
 		self.textbox.TabStop = False
-
+		
 		self.statusLabel = Label()
 		self.statusLabel.Location = Point(10,545)
 						
@@ -534,7 +532,6 @@ class SimpleTextBoxForm(Form):
 		self.button1.Text = 'Save'
 		self.button1.Location = Point(580, 545)
 		self.button1.Width = 100
-		#self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
@@ -549,8 +546,10 @@ class SimpleTextBoxForm(Form):
 		self.Controls.Add(self.statusLabel)
 
 		self.addButtons()
-		self.showTheFile()
+		#self.showTheFile()
 		self.StartPosition = FormStartPosition.CenterParent
+
+		self.setFile()
 
 	def statusText(self, s):
 		if self.theFile == DATFILE:
@@ -560,10 +559,6 @@ class SimpleTextBoxForm(Form):
 		writeDataFile(DATFILE,self.textbox.Text)
 		self.isDirty = False
 		self.statusText('data saved')
-		#try:
-		#	self.Close
-		#except Exception, err:
-		#	print str(s)
 
 	def formClosing(self, sender, event):
 		if self.isDirty and self.theFile == DATFILE:
@@ -586,8 +581,8 @@ class SimpleTextBoxForm(Form):
 		self.isDirty = True
 		self.statusText('* data changed')
 		
-	def showTheFile(self):
-		self.textbox.Text = readDataFile(self.theFile)
+	#def showTheFile(self):
+	#	self.textbox.Text = readDataFile(self.theFile)
 
 	def addButtons(self):
 		if self.theFile == DATFILE:
@@ -596,9 +591,10 @@ class SimpleTextBoxForm(Form):
 			
 		self.Controls.Add(self.button2)
 
-	def setFile(self, f):
-		self.theFile = f
-		self.showTheFile()
+	def setFile(self):
+		self.theFile = theFile
+		#self.showTheFile()
+		self.textbox.Text = readDataFile(self.theFile)
 		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
 
@@ -611,7 +607,7 @@ class SimpleTextBoxForm(Form):
 def dmConfig():
 
 	form = SimpleTextBoxForm()
-	form.setFile(DATFILE)
+	form.theFile = DATFILE
 	form.setTitle('Data Manager Configurator')
 	form.ShowDialog()
 	form.Dispose()
