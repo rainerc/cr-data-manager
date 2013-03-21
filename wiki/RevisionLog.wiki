@@ -2,6 +2,20 @@
 = revision history =
 
 <pre>
+# v 0.1.8 r32 changes
+#
+# main dialog polished
+# new "About" dialog
+# class initialForm renamed to mainForm
+# info on log viewer if no book book was touched
+# text in configurator and log viewer is not pre-selected anymore
+# typos in aboutForm.label and mainForm.label corrected
+# close button added to log viewer
+# licence information integrated in code
+# status label in configurator if data was changed or saved
+# progress bar while rules are running
+# custom dialog instea of MessageBox to display result of running dataMan
+#
 # v 0.1.7 fixed
 # unexpected error writes 0 byte configuration
 # unexpected behavior if lines in configuration are prefixed before <<
