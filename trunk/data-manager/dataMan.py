@@ -25,6 +25,7 @@
 # licence information integrated in code
 # status label in configurator if data was changed or saved
 # progress bar while rules are running
+# custom dialog instea of MessageBox to display result of running dataMan
 #
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -324,11 +325,41 @@ def readDataFile(theFile):
 		tmp = 'Your criteria matched no book. No data was touched by the Data Manager.'
 	return tmp
 
+class displayResults(Form):
 
+	def __init__(self):
+		self.Width = 230
+		self.Height = 140
+		self.StartPosition = FormStartPosition.CenterScreen
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.Text = 'CR Data Manager %s' % VERSION
+
+		self.label = Label()
+		self.label.Location = Point(10, 20)
+		self.label.Width = 250
+		self.label.Height = 30
+
+		self.buttonYes = Button()
+		self.buttonYes.Location = Point(10,70)
+		self.buttonYes.Text = 'Yes'
+		self.buttonYes.DialogResult = DialogResult.Yes
+
+		self.buttonNo = Button()
+		self.buttonNo.Location = Point(130,70)
+		self.buttonNo.Text = 'No'
+		self.buttonNo.DialogResult = DialogResult.No
+
+		self.Controls.Add(self.label)
+		self.Controls.Add(self.buttonYes)
+		self.Controls.Add(self.buttonNo)
+
+	def configure(self, label):
+		self.label.Text = label
+		
 class progressForm(Form):
 
 	def __init__(self):
-		self.Width = 270
+		self.Width = 350
 		self.Height = 80
 		self.StartPosition = FormStartPosition.CenterScreen
 		self.Icon = Icon(ICON_SMALL)
@@ -337,7 +368,7 @@ class progressForm(Form):
 
 		self.progressBar = System.Windows.Forms.ProgressBar()
 		self.progressBar.Location = Point(10,10)
-		self.progressBar.Width = 250
+		self.progressBar.Width = 330
 		self.progressBar.Minimum = 0
 		self.progressBar.Step = 1
 		
@@ -536,7 +567,7 @@ class SimpleTextBoxForm(Form):
 		#	print str(s)
 
 	def formClosing(self, sender, event):
-		if self.isDirty:
+		if self.isDirty and self.theFile == DATFILE:
 			result = (MessageBox.Show(
                    'Would you like to save your changes before closing?'
                    , 'CR Data Manager - %s' % VERSION
@@ -592,6 +623,8 @@ def dmConfig():
 #@Hook	Books
 
 def replaceData(books):
+
+
 	
 	ERROR_LEVEL = 0
 
@@ -655,10 +688,16 @@ def replaceData(books):
 		f.close()				# close logfile
 
 		msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (touched)
-		caption = 'CR Data Manager Version %s' % VERSION
-		ret = MessageBox.Show(msg, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+
+		form = displayResults()
+		form.configure(msg)
+		form.ShowDialog()
+		form.Dispose()
+
 		progBar.Dispose()
-		if ret == DialogResult.Yes:
+
+		if form.DialogResult == DialogResult.Yes:
+
 			form = SimpleTextBoxForm()
 			form.setFile(LOGFILE)
 			form.setTitle('Data Manager Logfile')
