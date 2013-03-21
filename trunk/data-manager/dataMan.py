@@ -14,6 +14,9 @@
 #
 # revision history
 #
+# v 0.1.9 fixes
+# unexpected result if Calc modifier is used
+#
 # v 0.1.8 changes
 # main dialog polished
 # new "About" dialog
@@ -243,12 +246,15 @@ def parseString(s):
 			writeCode("\t\tf.write('\\tbook.%s - old value: ' + str(book.%s) + '\\n')\n" % (myKey, myKey))
 			if myModifier <> "":
 				if myModifier == "Calc":
-					if myVal not in numericalKeys:
+					if myKey not in numericalKeys and myKey <> 'Number':
 						myVal = String.replace(myVal,'{','str(book.')
 					else:
 						myVal = String.replace(myVal,'{','int(book.')
 					myVal = String.replace(myVal,'}',')')
-					writeCode("\t\tbook.%s = %s\n" % (myKey, myVal))
+					if myKey == 'Number':
+						writeCode("\t\tbook.%s = str(%s)\n" % (myKey, myVal))
+					else:
+						writeCode("\t\tbook.%s = %s \n" % (myKey, myVal))
 			else:
 				if myKey in numericalKeys:
 					writeCode("\t\tbook.%s = %s\n" % (myKey, myVal))
