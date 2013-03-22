@@ -8,27 +8,15 @@
 # The CR Data Manager plugin is licensed under the Apache 2.0 software
 # license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 #
-# v 0.1.9
+# v 0.1.10
+# 
 #
 # by docdoom
 #
 # revision history
 #
-# v 0.1.9 fixes
-# unexpected result if Calc modifier is used
-#
-# v 0.1.8 changes
-# main dialog polished
-# new "About" dialog
-# class initialForm renamed to mainForm
-# info on log viewer if no book book was touched
-# text in configurator and log viewer is not pre-selected anymore
-# typos in aboutForm.label and mainForm.label corrected
-# close button added to log viewer
-# licence information integrated in code
-# status label in configurator if data was changed or saved
-# progress bar while rules are running
-# custom dialog instea of MessageBox to display result of running dataMan
+# v 0.1.10 changes
+# note written to log file if old value = new value (issue 18)
 #
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -71,7 +59,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.9'
+VERSION = '0.1.10'
 
 sys.path.append(FOLDER)
 
@@ -245,7 +233,9 @@ def parseString(s):
 				
 			myVal = tmp[1]
 			
-			writeCode("\t\tf.write('\\tbook.%s - old value: ' + str(book.%s) + '\\n')\n" % (myKey, myKey))
+			writeCode("\t\tmyOldVal = str(book.%s)\n" % myKey)
+
+
 			if myModifier <> "":
 				if myModifier == "Calc":
 					if myKey not in numericalKeys and myKey <> 'Number':
@@ -263,8 +253,13 @@ def parseString(s):
 				else:
 					writeCode("\t\tbook.%s = \"%s\"\n" % (myKey, myVal))
 				myNewVal = myNewVal + ("\t\tbook.%s = \"%s\"" % (myKey, myVal)) 
-				
-			writeCode("\t\tf.write('\\tbook.%s - new value: ' + str(book.%s) + '\\n')\n" % (myKey, myKey))
+
+			writeCode("\t\tmyNewVal = str(book.%s)\n" % myKey)
+			writeCode("\t\tif myNewVal <> myOldVal:\n")	
+			writeCode("\t\t\tf.write('\\tbook.%s - old value: ' + myOldVal + '\\n')\n" % (myKey))
+			writeCode("\t\t\tf.write('\\tbook.%s - new value: ' + myNewVal + '\\n')\n" % (myKey))
+			writeCode("\t\telse:\n")
+			writeCode("\t\t\tf.write('\\t%s - old value was same as new value\\n')\n" % (myKey))
 			
 
 	return -1
@@ -709,7 +704,7 @@ def replaceData(books):
 			form.Dispose()
 
 		try:
-			File.Delete(TMPFILE)
+			#File.Delete(TMPFILE)
 			File.Delete(ERRFILE)
 		except Exception, err:
 			pass
