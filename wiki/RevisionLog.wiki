@@ -1,8 +1,14 @@
 #labels Featured
 = revision history=
 
-== Version 0.1.8==
+== Version 0.1.10==
 <pre>
+
+v 0.1.10 changes r53
+note written to log file if old value = new value (issue 18)
+log viewer displays unicode correctly
+function writeCode rewritten
+
 #
 # v 0.1.9 r43
 # fixed: unexpected results if Calc modifier is used in rules
