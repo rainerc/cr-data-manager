@@ -8,16 +8,14 @@ the rules are read from file replaceData.dat, located in the script directory
 The CR Data Manager plugin is licensed under the Apache 2.0 software
 license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 
-v 0.1.10
+v 0.1.11
 
 by docdoom
 
 revision history
 
-v 0.1.10 changes
-note written to log file if old value = new value (issue 18)
-log viewer displays unicode correctly
-function writeCode rewritten
+v 0.1.11 changes
+function writeDataFile() rewritten to make it easier to read with Notepad etc.
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -65,7 +63,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.10'
+VERSION = '0.1.11'
 
 sys.path.append(FOLDER)
 
@@ -306,7 +304,9 @@ def writeDataFile(theFile, theText):
 	for line in s:
 		s2 = validate(str(line))
 		if s2 <> '':
-			tmp += '%s \n' % validate(str(line))
+			# using System.Environment.NewLine instead of '\n'
+			# to make the file easier to edit with external tool like Notepad
+			tmp += validate(str(line)) + System.Environment.NewLine
 	if len(theText) > 0:
 		File.WriteAllText(theFile, tmp)
 	else:
