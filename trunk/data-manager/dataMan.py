@@ -1,39 +1,37 @@
-﻿
+﻿'''
+replaceData
 
-# ------------------------------------------------------
-# replaceData
-#
-# plugin script for ComicRack to replace field content in the library
-# based on user-defined conditions
-# the rules are read from file replaceData.dat, located in the script directory
-#
-# The CR Data Manager plugin is licensed under the Apache 2.0 software
-# license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
-#
-# v 0.1.10
-# 
-#
-# by docdoom
-#
-# revision history
-#
-# v 0.1.10 changes
-# note written to log file if old value = new value (issue 18)
-# log viewer displays unicode correctly
-#
-#
-# revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
-#
-# issues:
-# exclude duplicate lines from parsing
-# marker in books if handled by the dataman (tags or notes?)
-# todo: modifier Before
-# todo: modifier After
-# todo: use In as modifier in keys
-#      e.g. <<Number.In:1,3,8>>
-# todo: add RegExp as modifier
-# todo: simulation instead of actual replacing of data
-# ------------------------------------------------------
+plugin script for ComicRack to replace field content in the library
+based on user-defined conditions
+the rules are read from file replaceData.dat, located in the script directory
+
+The CR Data Manager plugin is licensed under the Apache 2.0 software
+license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
+
+v 0.1.10
+
+by docdoom
+
+revision history
+
+v 0.1.10 changes
+note written to log file if old value = new value (issue 18)
+log viewer displays unicode correctly
+function writeCode rewritten
+
+>> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
+
+issues:
+exclude duplicate lines from parsing
+marker in books if handled by the dataman (tags or notes?)
+todo: modifier Before
+todo: modifier After
+todo: use In as modifier in keys
+     e.g. <<Number.In:1,3,8>>
+todo: add RegExp as modifier
+todo: simulation instead of actual replacing of data
+------------------------------------------------------
+'''
 
 import clr
 import sys
@@ -112,8 +110,19 @@ allowedVals = [
 	]
 
 
-def writeCode(s):
+def writeCode(s, level, linebreak):
+	''' 
+	writes code to dataMan.tmp
+	parameters: 
+	s - string to write (str)
+	level - indentation level (int)
+	linebreak - add linebreak? (bool)
+	'''
 	s = str(s)
+	prefix = '\t' * level
+	s = prefix + s
+	if linebreak == True:
+		s = s + '\n'
 	try:
 		File.AppendAllText(TMPFILE, s)
 		
@@ -128,8 +137,7 @@ def parsedCode():
 		
 def parseString(s):
 	
-	# read a line from replaceData.dat and generated python code from it
-	
+	# read a line from replaceData.dat and generate python code from it
 	
 	myCrit = ''				# this will later contain the left part of the rule
 	myNewVal = ''			# this will later contain the new value (right part of rule)
@@ -199,7 +207,6 @@ def parseString(s):
 			
 			if myModifier == "Range":
 				tmp = String.Split(myVal,",")
-				#myVal = "%d, %d" % (int(tmp[0]), int(tmp[1]) + 1)
 				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
 				if myKey in numericalKeys:
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
@@ -216,9 +223,9 @@ def parseString(s):
 			else:
 				myCrit = myCrit + ("str(book.%s) %s \"%s\" and " % (myKey, myOperator, myVal))
 			
-	myCrit = "if " + String.rstrip(myCrit, " and") + ":\n"
-	writeCode("\t%s\n" % myCrit)
-	writeCode("\t\tf.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched\\n')\n")
+	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
+	writeCode(myCrit,1,True)
+	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched\\n')", 2, True)
 	
 	# iterate through each of the newValues
 	for n in newValues:
@@ -241,8 +248,7 @@ def parseString(s):
 				
 			myVal = tmp[1]
 			
-			writeCode("\t\tmyOldVal = str(book.%s)\n" % myKey)
-
+			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
 			if myModifier <> "":
 				if myModifier == "Calc":
@@ -252,24 +258,22 @@ def parseString(s):
 						myVal = String.replace(myVal,'{','int(book.')
 					myVal = String.replace(myVal,'}',')')
 					if myKey == 'Number':
-						writeCode("\t\tbook.%s = str(%s)\n" % (myKey, myVal))
+						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:
-						writeCode("\t\tbook.%s = %s \n" % (myKey, myVal))
+						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
 			else:
 				if myKey in numericalKeys:
-					writeCode("\t\tbook.%s = %s\n" % (myKey, myVal))
+					writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
 				else:
-					writeCode("\t\tbook.%s = \"%s\"\n" % (myKey, myVal))
+					writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
 				myNewVal = myNewVal + ("\t\tbook.%s = \"%s\"" % (myKey, myVal)) 
 
-			writeCode("\t\tmyNewVal = str(book.%s)\n" % myKey)
-			writeCode("\t\tif myNewVal <> myOldVal:\n")	
-			writeCode("\t\t\tf.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')\n" % (myKey))
-			writeCode("\t\t\tf.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')\n" % (myKey))
-			writeCode("\t\telse:\n")
-			writeCode("\t\t\tf.write('\\t%s - old value was same as new value\\n')\n" % (myKey))
-			
-
+			writeCode("myNewVal = str(book.%s)" % myKey, 2, True)
+			writeCode("if myNewVal <> myOldVal:", 2, True)	
+			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode("else:", 2, True)
+			writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
 	return -1
 	
 def validate(s):
@@ -296,7 +300,6 @@ def validate(s):
 
 
 def writeDataFile(theFile, theText):
-	#theText = theText.encode('utf-8')
 	print theText
 	s = str.split(str(theText),'\n')
 	tmp = str('')
@@ -308,11 +311,9 @@ def writeDataFile(theFile, theText):
 		File.WriteAllText(theFile, tmp)
 	else:
 		MessageBox.Show('File not written (0 Byte size)')
-
 	return
 
 def readDataFile(theFile):
-	
 	s=[]
 	if theFile == DATFILE:
 		if File.Exists(DATFILE):
@@ -387,8 +388,6 @@ class progressForm(Form):
 
 	def setMax(self, s):
 		self.progressBar.Maximum = s
-
-
 
 class aboutForm(Form):
 	
@@ -482,7 +481,6 @@ class mainForm(Form):
 		self.tooltip1 = ToolTip()
 		self.tooltip1.AutoPopDelay = 5000
 		self.tooltip1.InitialDelay = 1000
-		# self.tooltip1.ReshowDelay = 500
 		self.tooltip1.ShowAlways = True 
 		self.tooltip1.SetToolTip(self.picturebox, "click on the image for more information")
 		
@@ -543,7 +541,6 @@ class SimpleTextBoxForm(Form):
 		self.button1.Text = 'Save'
 		self.button1.Location = Point(580, 545)
 		self.button1.Width = 100
-		#self.button1.DialogResult = DialogResult.OK
 		self.button1.Click += self.update
 
 		self.button2 = Button()
@@ -569,10 +566,6 @@ class SimpleTextBoxForm(Form):
 		writeDataFile(DATFILE,self.textbox.Text)
 		self.isDirty = False
 		self.statusText('data saved')
-		#try:
-		#	self.Close
-		#except Exception, err:
-		#	print str(s)
 
 	def formClosing(self, sender, event):
 		if self.isDirty and self.theFile == DATFILE:
@@ -632,8 +625,6 @@ def dmConfig():
 
 def replaceData(books):
 
-
-	
 	ERROR_LEVEL = 0
 
 	form = mainForm()
@@ -661,11 +652,7 @@ def replaceData(books):
 		return
 
 	
-	#writeCode('import sys\n')
-	#writeCode('import System.Text\n')
-	#writeCode('bodyname = System.Text.Encoding.Default.BodyName\n')
-	#writeCode('sys.setdefaultencoding(bodyname)\n')
-	writeCode('try:\n')
+	writeCode('try:', 0, True)
 	
 	try:
 		s = File.ReadAllLines(DATFILE)
@@ -681,13 +668,12 @@ def replaceData(books):
 	except Exception, err:
 		print 'getCode: ', str(err)
 
-	writeCode('except Exception,err:\n')
-	writeCode('\tprint (\"Error in code generation: %s\" % str(err))')
+	writeCode('except Exception,err:', 0, True)
+	writeCode('print (\"Error in code generation: %s\" % str(err))', 1, True)
 	
 	if ERROR_LEVEL == 0:
 		theCode = parsedCode()	# read generated code from file
-		print "the code: \n%s" % theCode   # remove in first stable release!
-	
+		print "code generated by CR Data Manager: \n%s" % theCode   # remove in first stable release!
 	
 		progBar = progressForm()
 		progBar.Show()
@@ -716,9 +702,8 @@ def replaceData(books):
 			form.setTitle('Data Manager Logfile')
 			form.ShowDialog()
 			form.Dispose()
-
 		try:
-			#File.Delete(TMPFILE)
+			File.Delete(TMPFILE)
 			File.Delete(ERRFILE)
 		except Exception, err:
 			pass
