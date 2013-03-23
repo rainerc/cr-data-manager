@@ -19,6 +19,7 @@
 #
 # v 0.1.10 changes
 # note written to log file if old value = new value (issue 18)
+# log viewer displays unicode correctly
 #
 #
 # revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -217,7 +218,7 @@ def parseString(s):
 			
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":\n"
 	writeCode("\t%s\n" % myCrit)
-	writeCode("\t\tf.write(book.Series + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched\\n')\n")
+	writeCode("\t\tf.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched\\n')\n")
 	
 	# iterate through each of the newValues
 	for n in newValues:
@@ -263,8 +264,8 @@ def parseString(s):
 
 			writeCode("\t\tmyNewVal = str(book.%s)\n" % myKey)
 			writeCode("\t\tif myNewVal <> myOldVal:\n")	
-			writeCode("\t\t\tf.write('\\tbook.%s - old value: ' + myOldVal + '\\n')\n" % (myKey))
-			writeCode("\t\t\tf.write('\\tbook.%s - new value: ' + myNewVal + '\\n')\n" % (myKey))
+			writeCode("\t\t\tf.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')\n" % (myKey))
+			writeCode("\t\t\tf.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')\n" % (myKey))
 			writeCode("\t\telse:\n")
 			writeCode("\t\t\tf.write('\\t%s - old value was same as new value\\n')\n" % (myKey))
 			
@@ -681,7 +682,7 @@ def replaceData(books):
 		print 'getCode: ', str(err)
 
 	writeCode('except Exception,err:\n')
-	writeCode('\t(\"Error in code generation: %s\" % str(err))')
+	writeCode('\tprint (\"Error in code generation: %s\" % str(err))')
 	
 	if ERROR_LEVEL == 0:
 		theCode = parsedCode()	# read generated code from file
