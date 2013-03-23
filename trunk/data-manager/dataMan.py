@@ -1,4 +1,6 @@
-﻿# ------------------------------------------------------
+﻿
+
+# ------------------------------------------------------
 # replaceData
 #
 # plugin script for ComicRack to replace field content in the library
@@ -36,12 +38,17 @@ import clr
 import sys
 import re
 import System
+import System.Text
 from System import String
 from System.IO import File,  Directory, Path, FileInfo, FileStream
 clr.AddReference('System.Windows.Forms')
 clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
+
+# this handles unicode encoding:
+bodyname = System.Text.Encoding.Default.BodyName
+sys.setdefaultencoding(bodyname)
 
 global FOLDER
 global DATFILE
@@ -288,6 +295,7 @@ def validate(s):
 
 
 def writeDataFile(theFile, theText):
+	#theText = theText.encode('utf-8')
 	print theText
 	s = str.split(str(theText),'\n')
 	tmp = str('')
@@ -651,6 +659,11 @@ def replaceData(books):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % VERSION)
 		return
 
+	
+	#writeCode('import sys\n')
+	#writeCode('import System.Text\n')
+	#writeCode('bodyname = System.Text.Encoding.Default.BodyName\n')
+	#writeCode('sys.setdefaultencoding(bodyname)\n')
 	writeCode('try:\n')
 	
 	try:
