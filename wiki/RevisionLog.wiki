@@ -5,6 +5,7 @@
 <pre>
 
 v 0.1.10 changes r53
+
 note written to log file if old value = new value (issue 18)
 log viewer displays unicode correctly
 function writeCode rewritten
