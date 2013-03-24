@@ -4,7 +4,7 @@
 == Version 0.1.11==
 <pre>
 
-v 0.1.11
+v 0.1.11 r62
 change - function writeDataFile() rewritten to make it easier to read (and edit) with Notepad etc.
 change - configurator displays current line number
 change - cursor of configurator set to Cursors.Wait while saving data
