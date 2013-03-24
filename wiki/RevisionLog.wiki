@@ -1,8 +1,21 @@
 #labels Featured
 = revision history=
 
-== Version 0.1.10==
+== Version 0.1.11==
 <pre>
+
+v 0.1.11
+change - function writeDataFile() rewritten to make it easier to read (and edit) with Notepad etc.
+change - configurator displays current line number
+change - cursor of configurator set to Cursors.Wait while saving data
+change - modifiers in keys and newvals are case tolerant (you may use StartsWith or startsWith or startswith)
+fix - exception if no double colon ':' in NewValue part of rule
+fix - exception if no double colon ':' in Criteria part of rule
+fix - slight delay when code was generated eliminated by removing debug code
+change - Genre field allowed
+change - Tags field allowed
+change - Add, Remove, Replace as modifiers for multi value fields
+change - Tag "DMProc" added if a book has been modified by Data Manager
 
 v 0.1.10 changes r53
 
