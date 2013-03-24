@@ -14,8 +14,14 @@ by docdoom
 
 revision history
 
-v 0.1.11 changes
-function writeDataFile() rewritten to make it easier to read with Notepad etc.
+v 0.1.11
+change - function writeDataFile() rewritten to make it easier to read (and edit) with Notepad etc.
+change - configurator displays current line number
+change - cursor of configurator set to Cursors.Wait while saving data
+change - modifiers in keys and newvals are case tolerant (you may use StartsWith or startsWith or startswith)
+fix - exception if no double colon ':' in NewValue part of rule
+fix - exception if no double colon ':' in Criteria part of rule
+fix - slight delay when code was generated eliminated by removing debug code
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -64,6 +70,7 @@ DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=U
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 VERSION = '0.1.11'
+DEBUG__ = False
 
 sys.path.append(FOLDER)
 
@@ -119,8 +126,7 @@ def writeCode(s, level, linebreak):
 	s = str(s)
 	prefix = '\t' * level
 	s = prefix + s
-	if linebreak == True:
-		s = s + '\n'
+	if linebreak == True: s += '\n'
 	try:
 		File.AppendAllText(TMPFILE, s)
 		
@@ -153,21 +159,25 @@ def parseString(s):
 		criteria = a[0].split(">>")			
 		newValues = String.split(a[1],">>")
 	except Exception, err:
-		return
+		print str(err)
 	
 	# iterate through each of the criteria
 	for c in criteria:
-		i = len(c)
-		if len(c) > 2:
+		#i = len(c)
+		if len(c) > 0:
 			c = String.Trim(String.replace(c,"<<",""))
-
-			tmp = String.split(c,":",1)
-			tmp2 = String.split(tmp[0],".",1)
-			myKey = tmp2[0]
-			try:
-				myModifier = tmp2[1]
-			except Exception, err:
-				myModifier = ""
+			myKey = ''  # only to reference it
+			if String.find(c,':') > 0:
+				tmp = String.split(c,":",1)
+				tmp2 = String.split(tmp[0],".",1)
+				myKey = tmp2[0]
+				try:
+					myModifier = tmp2[1]
+				except Exception, err:
+					myModifier = ""
+			else:
+				File.AppendAllText(ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+				return 0
 
 			if c <> "" and not (myKey in allowedKeys):
 				File.AppendAllText(ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
@@ -177,21 +187,21 @@ def parseString(s):
 			# like Volume.Range:1961, 1963
 			try:
 				if myModifier <> "":
-					if myModifier == "Range":
+					if str.lower(myModifier) == "range":
 						myOperator = "in range"
-					elif myModifier == "Not":
+					elif str.lower(myModifier) == "not":
 						myOperator = "<>"
-					elif myModifier == "Contains":
+					elif str.lower(myModifier) == "contains":
 						myOperator = ""
-					elif myModifier == "Greater":
+					elif str.lower(myModifier) == "greater":
 						myOperator = ">"
-					elif myModifier == "GreaterEq":
+					elif str.lower(myModifier) == "greatereq":
 						myOperator = ">="
-					elif myModifier == "Less":
+					elif str.lower(myModifier) == "less":
 						myOperator = "<"
-					elif myModifier == "LessEq":
+					elif str.lower(myModifier) == "lesseq":
 						myOperator = "<="
-					elif myModifier == "StartsWith":
+					elif str.lower(myModifier) == "startswith":
 						myOperator = "startswith"
 					else:
 						File.AppendAllText(ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
@@ -203,7 +213,7 @@ def parseString(s):
 			myVal = tmp[1]
 			myVal = String.replace(myVal,"\"","\\\"")
 			
-			if myModifier == "Range":
+			if myOperator == "in range":
 				tmp = String.Split(myVal,",")
 				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
 				if myKey in numericalKeys:
@@ -213,9 +223,9 @@ def parseString(s):
 				print myCrit
 			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
 				myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
-			elif myModifier == "Contains" and myKey not in numericalKeys:
+			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
 				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
-			elif myModifier == "StartsWith" and myKey not in numericalKeys:
+			elif myOperator == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
 				
 			else:
@@ -227,18 +237,21 @@ def parseString(s):
 	
 	# iterate through each of the newValues
 	for n in newValues:
-		i = len(n)
-		if len(n) > 2:
+		#i = len(n)
+		if len(n) > 0:
 			n = String.Trim(String.replace(n,"<<",""))
-			tmp = String.split(n,":",1)
-			tmp2 = tmp[0]
-			myKey = tmp2
-			myModifier = ''
-			if String.find(tmp2,'.') > 0:
-				tmp3 = String.split(tmp2,'.')
-				myKey = tmp3[0]
-				myModifier = tmp3[1]
-						
+			if String.find(n,':') > 0:
+				tmp = String.split(n,":",1)
+				tmp2 = tmp[0]
+				myKey = tmp2
+				myModifier = ''
+				if String.find(tmp2,'.') > 0:
+					tmp3 = String.split(tmp2,'.')
+					myKey = tmp3[0]
+					myModifier = tmp3[1]
+			else:
+				File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))			
+				return 0
 			if not (myKey in allowedVals):
 				File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
@@ -249,7 +262,7 @@ def parseString(s):
 			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
 			if myModifier <> "":
-				if myModifier == "Calc":
+				if str.lower(myModifier) == "calc":
 					if myKey not in numericalKeys and myKey <> 'Number':
 						myVal = String.replace(myVal,'{','str(book.')
 					else:
@@ -289,6 +302,8 @@ def validate(s):
 			return '# invalid expression: %s' % s
 		if str.count(s, '<<') <> str.count(s, '>>'):
 			return '# invalid expression: %s' % s
+		if str.count(s, '<<') <> str.count(s,':'):
+			return '# invalid expression: %s' % s
 		if pos > 0:
 			return s [pos:]
 	if s[0] == '#' or s[0:2] == '<<':
@@ -298,7 +313,7 @@ def validate(s):
 
 
 def writeDataFile(theFile, theText):
-	print theText
+	#print theText
 	s = str.split(str(theText),'\n')
 	tmp = str('')
 	for line in s:
@@ -341,6 +356,7 @@ class displayResults(Form):
 		self.Height = 140
 		self.StartPosition = FormStartPosition.CenterScreen
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		#self.Cursor = Cursors.WaitCursor
 		self.Text = 'CR Data Manager %s' % VERSION
 
 		self.label = Label()
@@ -380,7 +396,7 @@ class progressForm(Form):
 		self.progressBar.Width = 330
 		self.progressBar.Minimum = 0
 		self.progressBar.Step = 1
-		
+
 		self.Controls.Add(self.progressBar)
 
 	def setValue(self, s):
@@ -388,6 +404,7 @@ class progressForm(Form):
 
 	def setMax(self, s):
 		self.progressBar.Maximum = s
+
 
 class aboutForm(Form):
 	
@@ -533,9 +550,17 @@ class SimpleTextBoxForm(Form):
 		self.textbox.WordWrap = False
 		self.textbox.AcceptsTab = True
 		self.textbox.TabStop = False
-
+		self.textbox.Click += self.textBoxClick
+		self.textbox.KeyPress += self.textBoxClick
+		self.textbox.KeyDown += self.textBoxClick
+		
 		self.statusLabel = Label()
-		self.statusLabel.Location = Point(10,545)
+		self.statusLabel.Width = 70
+		self.statusLabel.Location = Point(100,545)
+
+		self.positionLabel = Label()
+		self.positionLabel.Width = 70
+		self.positionLabel.Location = Point(10,545)
 						
 		self.button1 = Button()
 		self.button1.Text = 'Save'
@@ -553,19 +578,35 @@ class SimpleTextBoxForm(Form):
 
 		self.Controls.Add(self.textbox)
 		self.Controls.Add(self.statusLabel)
+		self.Controls.Add(self.positionLabel)
 
 		self.addButtons()
 		self.showTheFile()
 		self.StartPosition = FormStartPosition.CenterParent
+
+		self.positionText('')
+
+	def textBoxClick (self, sender, event):
+		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
+		self.positionText( '@ line %d' % line)
+
+		#int lineIndex = this.GetLineFromCharIndex(this.SelectionStart)
+
+	def positionText (self, s):
+		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
+		self.positionLabel.Text = '@ line %d' % line
 
 	def statusText(self, s):
 		if self.theFile == DATFILE:
 			self.statusLabel.Text = s
 
 	def update(self, sender, event):
+		myCursor = self.Cursor.Current
+		self.Cursor = Cursors.WaitCursor
 		writeDataFile(DATFILE,self.textbox.Text)
 		self.isDirty = False
 		self.statusText('data saved')
+		self.Cursor = myCursor
 
 	def formClosing(self, sender, event):
 		if self.isDirty and self.theFile == DATFILE:
@@ -631,8 +672,6 @@ def replaceData(books):
 	form.ShowDialog()
 	form.Dispose()
 
-	print form.DialogResult
-
 	if form.DialogResult == DialogResult.No:
 		dmConfig()
 		return
@@ -651,30 +690,36 @@ def replaceData(books):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % VERSION)
 		return
 
-	
 	writeCode('try:', 0, True)
 	
+	progBar = progressForm()
+	progBar.Show()
 	try:
 		s = File.ReadAllLines(DATFILE)
+		#progBar.setMax(s.Length)
 		i = 0
 		for line in s:
 			i += 1
+			#progBar.setValue(i)
 			if String.find(line," => ") and line[0] <> "#":
 				if not parseString(line):
 					error_message = File.ReadAllText(ERRFILE)
-					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"Parse error")
+					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % VERSION)
 					ERROR_LEVEL = 1
 			
 	except Exception, err:
 		print 'getCode: ', str(err)
+
+	#progBar.Dispose()
 
 	writeCode('except Exception,err:', 0, True)
 	writeCode('print (\"Error in code generation: %s\" % str(err))', 1, True)
 	
 	if ERROR_LEVEL == 0:
 		theCode = parsedCode()	# read generated code from file
-		print "code generated by CR Data Manager: \n%s" % theCode   # remove in first stable release!
-	
+		if DEBUG__:
+			print "code generated by CR Data Manager: \n%s" % theCode   # remove in first stable release!
+			
 		progBar = progressForm()
 		progBar.Show()
 		progBar.setMax(books.Length)
@@ -703,9 +748,9 @@ def replaceData(books):
 			form.ShowDialog()
 			form.Dispose()
 		try:
-			File.Delete(TMPFILE)
+			#File.Delete(TMPFILE)
 			File.Delete(ERRFILE)
 		except Exception, err:
 			pass
-
+	
 
