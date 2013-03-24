@@ -22,6 +22,9 @@ change - modifiers in keys and newvals are case tolerant (you may use StartsWith
 fix - exception if no double colon ':' in NewValue part of rule
 fix - exception if no double colon ':' in Criteria part of rule
 fix - slight delay when code was generated eliminated by removing debug code
+change - Genre field allowed
+change - Tags field allowed
+change - Add, Remove, Replace as modifiers for multi value fields
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -48,6 +51,8 @@ clr.AddReference('System.Windows.Forms')
 clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
+#import dmComicBook
+from dmComicBook import *
 
 # this handles unicode encoding:
 bodyname = System.Text.Encoding.Default.BodyName
@@ -70,7 +75,7 @@ DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=U
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 VERSION = '0.1.11'
-DEBUG__ = False
+DEBUG__ = True
 
 sys.path.append(FOLDER)
 
@@ -90,7 +95,8 @@ allowedKeys = [
 	'Count',
 	'FilePath',
 	'FileName',
-	'Genre'
+	'Genre',
+	'Tags'
 	]
 
 numericalKeys = [
@@ -98,6 +104,11 @@ numericalKeys = [
 	'Month',
 	'Year',
 	'Count'
+	]
+
+multiValueKeys = [
+	'Tags',
+	'Genre'
 	]
 	
 allowedVals = [
@@ -111,7 +122,8 @@ allowedVals = [
 	'Format',
 	'AlternateSeries',
 	'Count',
-	'Genre'
+	'Genre',
+	'Tags'
 	]
 
 
@@ -132,6 +144,38 @@ def writeCode(s, level, linebreak):
 		
 	except Exception, err:
 		print "Error in function writeCode: ", str(err)
+
+def multiValueAdd(myList, myVal):
+	s = str(myVal)
+	
+	theList = str.Replace(myList,', ',',').split(',')
+	if theList.count(s) > 0:		# item already in list?
+		return myList
+	if len(theList) > 0 and theList[0] <> '':
+		theList.append(s)
+		s =  ','.join(theList)
+	return s
+
+def multiValueReplace(myList, oldVal, myVal):
+	s = str(myVal)
+	theList = str.Replace(myList,', ',',').split(',')
+	if theList.count(s) > 0:		# item already in list?
+		return myList
+	try:
+		theList.remove(oldVal)
+		theList.append(myVal)
+	except Exception,err:
+		pass
+	return ','.join(theList)
+
+def multiValueRemove(myList, myVal):
+	s = str(myVal)
+	theList = str.Replace(myList,', ',',').split(',')
+	try:
+		theList.remove(myVal)
+	except Exception, err:
+		pass
+	return ','.join(theList)
 
 def parsedCode():
 	try:
@@ -272,6 +316,44 @@ def parseString(s):
 						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
+				if str.lower(myModifier) == "add":
+					if myKey in numericalKeys or myKey == 'Number':
+						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(ERRFILE, "Add modifier cannot be used in %s field" % (myKey))
+						return 0
+					elif myKey in multiValueKeys:
+						if len(String.Trim(myVal)) == 0:
+							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(ERRFILE, "Remove modifier needs 1 argument")
+							return 0
+						else:
+							writeCode('book.%s = multiValueAdd(book.%s,"%s")' % (myKey, myKey, myVal), 2, True)
+				if str.lower(myModifier) == "replace":
+					if myKey in numericalKeys or myKey == 'Number':
+						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
+						return 0
+					elif myKey in multiValueKeys:
+						tmpVal = myVal.split(',')
+						if len(tmpVal) > 1:
+							writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+						else:
+							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(ERRFILE, "Replace modifier needs 2 arguments")
+							return 0
+				if str.lower(myModifier) == "remove":
+					if myKey in numericalKeys or myKey == 'Number':
+						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
+						return 0
+					elif myKey in multiValueKeys:
+						if len(String.Trim(myVal)) == 0:
+							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(ERRFILE, "Remove modifier needs 1 argument")
+							return 0
+						else:
+							writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+
 			else:
 				if myKey in numericalKeys:
 					writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
@@ -283,6 +365,7 @@ def parseString(s):
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
 			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode('book.Tags = multiValueAdd(book.Tags,"DMProc")', 3, True)
 			writeCode("else:", 2, True)
 			writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
 	return -1
@@ -710,7 +793,7 @@ def replaceData(books):
 	except Exception, err:
 		print 'getCode: ', str(err)
 
-	#progBar.Dispose()
+	progBar.Dispose()
 
 	writeCode('except Exception,err:', 0, True)
 	writeCode('print (\"Error in code generation: %s\" % str(err))', 1, True)
