@@ -75,7 +75,7 @@ DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=U
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 VERSION = '0.1.11'
-DEBUG__ = True
+DEBUG__ = False
 
 sys.path.append(FOLDER)
 
