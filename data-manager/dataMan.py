@@ -8,23 +8,15 @@ the rules are read from file replaceData.dat, located in the script directory
 The CR Data Manager plugin is licensed under the Apache 2.0 software
 license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 
-v 0.1.11
+v 0.1.12
 
 by docdoom
 
+
 revision history
 
-v 0.1.11
-change - function writeDataFile() rewritten to make it easier to read (and edit) with Notepad etc.
-change - configurator displays current line number
-change - cursor of configurator set to Cursors.Wait while saving data
-change - modifiers in keys and newvals are case tolerant (you may use StartsWith or startsWith or startswith)
-fix - exception if no double colon ':' in NewValue part of rule
-fix - exception if no double colon ':' in Criteria part of rule
-fix - slight delay when code was generated eliminated by removing debug code
-change - Genre field allowed
-change - Tags field allowed
-change - Add, Remove, Replace as modifiers for multi value fields
+v 0.1.12
+fixed - colon in series results in #invalid expression
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -52,7 +44,7 @@ clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
 #import dmComicBook
-from dmComicBook import *
+#from dmComicBook import *
 
 # this handles unicode encoding:
 bodyname = System.Text.Encoding.Default.BodyName
@@ -74,7 +66,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.11'
+VERSION = '0.1.12'
 DEBUG__ = False
 
 sys.path.append(FOLDER)
@@ -264,7 +256,6 @@ def parseString(s):
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
 					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
-				print myCrit
 			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
 				myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
@@ -385,7 +376,7 @@ def validate(s):
 			return '# invalid expression: %s' % s
 		if str.count(s, '<<') <> str.count(s, '>>'):
 			return '# invalid expression: %s' % s
-		if str.count(s, '<<') <> str.count(s,':'):
+		if str.count(s, '<<') > str.count(s,':'):
 			return '# invalid expression: %s' % s
 		if pos > 0:
 			return s [pos:]
