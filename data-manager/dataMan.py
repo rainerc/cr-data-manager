@@ -61,7 +61,7 @@ BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
 ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
 TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
-CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')
+CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
 
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
@@ -769,10 +769,12 @@ def replaceData(books):
 	except Exception, err:
 		pass
 	
+	# check if configuration exists
 	if not File.Exists(DATFILE):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % VERSION)
 		return
 
+	# check if configuration has been saved once
 	if not File.Exists(CHKFILE):
 		MessageBox.Show('Please save your configuration first!','Data Manager %s' % VERSION)
 		return
