@@ -9,6 +9,7 @@ fixed - colon in series results in #invalid expression
 fixed - error when running Data Manager if existing dataman.dat was in v 0.1.10 format
 
 v 0.1.11 r62
+
 change - function writeDataFile() rewritten to make it easier to read (and edit) with Notepad etc.
 change - configurator displays current line number
 change - cursor of configurator set to Cursors.Wait while saving data
