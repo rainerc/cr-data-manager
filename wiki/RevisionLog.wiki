@@ -4,6 +4,7 @@
 == Version 0.1.11==
 <pre>
 v 0.1.12 r67
+
 fixed - colon in series results in #invalid expression
 fixed - error when running Data Manager if existing dataman.dat was in v 0.1.10 format
 
