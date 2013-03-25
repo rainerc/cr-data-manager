@@ -17,6 +17,7 @@ revision history
 
 v 0.1.12
 fixed - colon in series results in #invalid expression
+fixed - error when running Data Manager if existing dataman.dat was in v 0.1.10 format
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -60,6 +61,8 @@ BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
 ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
 TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
+CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')
+
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
 IMAGE = Path.Combine(FOLDER, 'dataMan.png')
@@ -395,11 +398,15 @@ def writeDataFile(theFile, theText):
 		if s2 <> '':
 			# using System.Environment.NewLine instead of '\n'
 			# to make the file easier to edit with external tool like Notepad
+			#tmp += validate(str(line)) + '\n'
 			tmp += validate(str(line)) + System.Environment.NewLine
 	if len(theText) > 0:
 		File.WriteAllText(theFile, tmp)
 	else:
 		MessageBox.Show('File not written (0 Byte size)')
+
+	if not File.Exists(CHKFILE):
+		File.Create(CHKFILE)
 	return
 
 def readDataFile(theFile):
@@ -742,6 +749,8 @@ def replaceData(books):
 
 	ERROR_LEVEL = 0
 
+
+
 	form = mainForm()
 	form.ShowDialog()
 	form.Dispose()
@@ -762,6 +771,10 @@ def replaceData(books):
 	
 	if not File.Exists(DATFILE):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % VERSION)
+		return
+
+	if not File.Exists(CHKFILE):
+		MessageBox.Show('Please save your configuration first!','Data Manager %s' % VERSION)
 		return
 
 	writeCode('try:', 0, True)
