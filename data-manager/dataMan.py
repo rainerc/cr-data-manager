@@ -8,17 +8,18 @@ the rules are read from file replaceData.dat, located in the script directory
 The CR Data Manager plugin is licensed under the Apache 2.0 software
 license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 
-v 0.1.13
+v 0.1.14
 
 by docdoom
 
 
 revision history
 
-v 0.1.13
-fixed - exception if generated code raises error
-fixed - exception if rules tries to set numerical field to zero value
-fixed - progress bar does not close if error in generated code
+v 0.1.14
+fixed - unexpected result if criteria in Number field is Null (issue 31)
+fixed - Null values in numerical fields are stored as -1 by CR. Using Null values in
+criteria on these field might return unexpected results
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -71,8 +72,8 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.13'
-DEBUG__ = False
+VERSION = '0.1.14'
+DEBUG__ = True
 
 sys.path.append(FOLDER)
 
@@ -262,13 +263,22 @@ def parseString(s):
 				else:
 					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
 			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
-				myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
+				if str.Trim(myVal) == '':
+					# fix issue 31
+					myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
+					print myCrit
+				else:
+					myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
+				print myCrit
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
 				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			elif myOperator == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
 				
 			else:
+				# numerical values in CR are -1 if Null
+				if myKey in numericalKeys and str.Trim(myVal) == '':
+					myVal = -1
 				myCrit = myCrit + ("str(book.%s) %s \"%s\" and " % (myKey, myOperator, myVal))
 			
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
