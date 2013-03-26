@@ -8,16 +8,17 @@ the rules are read from file replaceData.dat, located in the script directory
 The CR Data Manager plugin is licensed under the Apache 2.0 software
 license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 
-v 0.1.12
+v 0.1.13
 
 by docdoom
 
 
 revision history
 
-v 0.1.12
-fixed - colon in series results in #invalid expression
-fixed - error when running Data Manager if existing dataman.dat was in v 0.1.10 format
+v 0.1.13
+fixed - exception if generated code raises error
+fixed - exception if rules tries to set numerical field to zero value
+fixed - progress bar does not close if error in generated code
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -35,6 +36,7 @@ todo: simulation instead of actual replacing of data
 
 import clr
 import sys
+#import os
 import re
 import System
 import System.Text
@@ -69,7 +71,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.12'
+VERSION = '0.1.13'
 DEBUG__ = False
 
 sys.path.append(FOLDER)
@@ -349,8 +351,12 @@ def parseString(s):
 							writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 
 			else:
+
 				if myKey in numericalKeys:
-					writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
+					if len(myVal) == 0:
+						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
+					else:
+						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
 				else:
 					writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
 				myNewVal = myNewVal + ("\t\tbook.%s = \"%s\"" % (myKey, myVal)) 
@@ -817,29 +823,37 @@ def replaceData(books):
 		for book in books:
 			touched += 1
 			progBar.setValue(touched)
-			exec (theCode)
+			try:
+				exec (theCode)
+				
+			except Exception, err:
+				MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % VERSION)
+				ERROR_LEVEL = 1
+		
 		f.close()				# close logfile
 
-		msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (touched)
-
-		form = displayResults()
-		form.configure(msg)
-		form.ShowDialog()
-		form.Dispose()
-
 		progBar.Dispose()
-
-		if form.DialogResult == DialogResult.Yes:
-
-			form = SimpleTextBoxForm()
-			form.setFile(LOGFILE)
-			form.setTitle('Data Manager Logfile')
+		
+		if ERROR_LEVEL == 0:
+			msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (touched)
+	
+			form = displayResults()
+			form.configure(msg)
 			form.ShowDialog()
 			form.Dispose()
-		try:
-			#File.Delete(TMPFILE)
-			File.Delete(ERRFILE)
-		except Exception, err:
-			pass
+
+			if form.DialogResult == DialogResult.Yes:
+	
+				form = SimpleTextBoxForm()
+				form.setFile(LOGFILE)
+				form.setTitle('Data Manager Logfile')
+				form.ShowDialog()
+				form.Dispose()
+
+	try:
+		#File.Delete(TMPFILE)
+		File.Delete(ERRFILE)
+	except Exception, err:
+		pass
 	
 
