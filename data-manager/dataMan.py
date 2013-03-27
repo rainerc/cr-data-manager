@@ -20,6 +20,7 @@ fixed - unexpected result if criteria in Number field is Null (issue 31)
 fixed - Null values in numerical fields are stored as -1 by CR. Using Null values in
 criteria on these field might return unexpected results
 fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
+fixed - maximization of form displayResults was possible
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -73,7 +74,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.14b r79'
+VERSION = '0.1.14 r81'
 DEBUG__ = True
 
 sys.path.append(FOLDER)
@@ -466,6 +467,7 @@ class displayResults(Form):
 		self.Height = 140
 		self.StartPosition = FormStartPosition.CenterScreen
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.MaximizeBox = False
 		#self.Cursor = Cursors.WaitCursor
 		self.Text = 'CR Data Manager %s' % VERSION
 
