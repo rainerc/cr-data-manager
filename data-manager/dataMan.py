@@ -23,6 +23,7 @@ fixed - exception if book.Number is Null and used in conjunction with ==, >, <, 
 fixed - maximization of form displayResults was possible
 change - multiValueAdd rewritten to get rid of duplicates because of leading blanks etc.
 change - multiValueReplace rewritten to get rid of duplicates because of leading blanks etc.
+change - multiValueRemove rewritten to get rid of duplicates because of leading blanks etc.
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -75,7 +76,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.14 r81'
+VERSION = '0.1.14 r83'
 DEBUG__ = True
 
 sys.path.append(FOLDER)
@@ -151,9 +152,8 @@ def multiValueAdd(myList, myVal):
 	newList = []
 	theList = myList.strip(',').split(',')
 	for l in theList: 
-		l = str.Trim(l)
-		if l <> '': newList.Add(l)
-	#ret = ','.join(newList)
+		l = str.Trim(l)							
+		if l <> '': newList.Add(l)								# eliminate Null values
 	if newList.count(myVal) > 0: return ','.join(newList)		# item already in list?
 	newList.append(myVal)										# otherwise append newVal
 	return ','.join(newList)
@@ -170,15 +170,15 @@ def multiValueReplace(myList, oldVal, myVal):
 			newList.Add(l)
 	return ','.join(newList)
 
-
 def multiValueRemove(myList, myVal):
-	s = str(myVal)
-	theList = str.Replace(myList,', ',',').split(',')
-	try:
-		theList.remove(myVal)
-	except Exception, err:
-		pass
-	return ','.join(theList)
+	myVal = str.Trim(str(myVal))
+	theList = myList.strip(',').split(',')
+	newList = []
+	for l in theList:
+		l = str.Trim(l)
+		if l <> myVal:
+			newList.Add(l)
+	return ','.join(newList)
 
 def nullToZero(s):
 	if String.Trim(str(s)) == '':
