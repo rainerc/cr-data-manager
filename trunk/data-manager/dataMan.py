@@ -19,6 +19,7 @@ v 0.1.14
 fixed - unexpected result if criteria in Number field is Null (issue 31)
 fixed - Null values in numerical fields are stored as -1 by CR. Using Null values in
 criteria on these field might return unexpected results
+fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -72,7 +73,7 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.14b r75'
+VERSION = '0.1.14b r79'
 DEBUG__ = True
 
 sys.path.append(FOLDER)
@@ -175,6 +176,11 @@ def multiValueRemove(myList, myVal):
 		pass
 	return ','.join(theList)
 
+def nullToZero(s):
+	if String.Trim(str(s)) == '':
+		return 0
+	return s
+
 def parsedCode():
 	try:
 		return File.ReadAllText(TMPFILE)
@@ -262,14 +268,21 @@ def parseString(s):
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
 					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
+			# ---------------------------------------------------------------------------
+			# now begins the interesting part for field Number which is stored as 
+			# a string but treated as a numerical value
 			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
 				if str.Trim(myVal) == '':
 					# fix issue 31
-					myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
+					myCrit = myCrit + ('str(book.Number) %s \'\' and ' % (myOperator))
 					print myCrit
 				else:
-					myCrit = myCrit + ('float(book.%s) %s float(%s) and ' % (myKey, myOperator, myVal))
+					# if the current value of book.Number is Null it has to be converted to
+					# number 0 before it can be converted to float
+					myCrit = myCrit + ('float(nullToZero(book.Number)) %s float(%s) and ' % (myOperator, myVal))
 				print myCrit
+			# end of extra handling of Number field
+			# ----------------------------------------------------------------------------
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
 				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			elif myOperator == "startswith" and myKey not in numericalKeys:
@@ -283,7 +296,7 @@ def parseString(s):
 			
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
-	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched\\n')", 2, True)
+	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched \\t(%s)\\n')" % a[0], 2, True)
 	
 	# iterate through each of the newValues
 	for n in newValues:
@@ -765,7 +778,11 @@ def replaceData(books):
 
 	ERROR_LEVEL = 0
 
-
+#	for book in books:
+#		print book.NumberAsText + "Hugo"
+#		print str(book.Number)
+##		print float(book.Number)
+#		return
 
 	form = mainForm()
 	form.ShowDialog()
