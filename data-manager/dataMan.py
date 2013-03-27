@@ -17,7 +17,7 @@ revision history
 
 v 0.1.14
 fixed - unexpected result if criteria in Number field is Null (issue 31)
-fixed - Null values in numerical fields are stored as -1 by CR. Using Null values in
+fixed - Null values in numerical fields are actually stored as -1 by CR. Using Null values in
 criteria on these field might return unexpected results
 fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
 fixed - maximization of form displayResults was possible
@@ -282,7 +282,7 @@ def parseString(s):
 					print myCrit
 				else:
 					# if the current value of book.Number is Null it has to be converted to
-					# number 0 before it can be converted to float
+					# 0 before it can be converted to float
 					myCrit = myCrit + ('float(nullToZero(book.Number)) %s float(%s) and ' % (myOperator, myVal))
 				print myCrit
 			# end of extra handling of Number field
@@ -471,7 +471,6 @@ class displayResults(Form):
 		self.StartPosition = FormStartPosition.CenterScreen
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.MaximizeBox = False
-		#self.Cursor = Cursors.WaitCursor
 		self.Text = 'CR Data Manager %s' % VERSION
 
 		self.label = Label()
@@ -705,8 +704,6 @@ class SimpleTextBoxForm(Form):
 		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
 		self.positionText( '@ line %d' % line)
 
-		#int lineIndex = this.GetLineFromCharIndex(this.SelectionStart)
-
 	def positionText (self, s):
 		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
 		self.positionLabel.Text = '@ line %d' % line
@@ -783,12 +780,6 @@ def replaceData(books):
 
 	ERROR_LEVEL = 0
 
-#	for book in books:
-#		print book.NumberAsText + "Hugo"
-#		print str(book.Number)
-##		print float(book.Number)
-#		return
-
 	form = mainForm()
 	form.ShowDialog()
 	form.Dispose()
@@ -823,11 +814,9 @@ def replaceData(books):
 	progBar.Show()
 	try:
 		s = File.ReadAllLines(DATFILE)
-		#progBar.setMax(s.Length)
 		i = 0
 		for line in s:
 			i += 1
-			#progBar.setValue(i)
 			if String.find(line," => ") and line[0] <> "#":
 				if not parseString(line):
 					error_message = File.ReadAllText(ERRFILE)
