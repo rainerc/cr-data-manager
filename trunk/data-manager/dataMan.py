@@ -21,7 +21,8 @@ fixed - Null values in numerical fields are stored as -1 by CR. Using Null value
 criteria on these field might return unexpected results
 fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
 fixed - maximization of form displayResults was possible
-
+change - multiValueAdd rewritten to get rid of duplicates because of leading blanks etc.
+change - multiValueReplace rewritten to get rid of duplicates because of leading blanks etc.
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -146,27 +147,29 @@ def writeCode(s, level, linebreak):
 		print "Error in function writeCode: ", str(err)
 
 def multiValueAdd(myList, myVal):
-	s = str(myVal)
-	
-	theList = str.Replace(myList,', ',',').split(',')
-	if theList.count(s) > 0:		# item already in list?
-		return myList
-	if len(theList) > 0 and theList[0] <> '':
-		theList.append(s)
-		s =  ','.join(theList)
-	return s
+	myVal = str.Trim(str(myVal))
+	newList = []
+	theList = myList.strip(',').split(',')
+	for l in theList: 
+		l = str.Trim(l)
+		if l <> '': newList.Add(l)
+	#ret = ','.join(newList)
+	if newList.count(myVal) > 0: return ','.join(newList)		# item already in list?
+	newList.append(myVal)										# otherwise append newVal
+	return ','.join(newList)
 
 def multiValueReplace(myList, oldVal, myVal):
-	s = str(myVal)
-	theList = str.Replace(myList,', ',',').split(',')
-	if theList.count(s) > 0:		# item already in list?
-		return myList
-	try:
-		theList.remove(oldVal)
-		theList.append(myVal)
-	except Exception,err:
-		pass
-	return ','.join(theList)
+	oldVal = str.Trim(str(oldVal))
+	myVal = str.Trim(str(myVal))
+	newList = []
+	theList = myList.strip(',').split(',')
+	for l in theList:
+		l = str.Trim(l)
+		if l == oldVal: l = myVal
+		if newList.count(l) == 0:
+			newList.Add(l)
+	return ','.join(newList)
+
 
 def multiValueRemove(myList, myVal):
 	s = str(myVal)
