@@ -76,8 +76,8 @@ IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.14 r83'
-DEBUG__ = True
+VERSION = '0.1.14 r86'
+DEBUG__ = False
 
 sys.path.append(FOLDER)
 
@@ -304,7 +304,6 @@ def parseString(s):
 	
 	# iterate through each of the newValues
 	for n in newValues:
-		#i = len(n)
 		if len(n) > 0:
 			n = String.Trim(String.replace(n,"<<",""))
 			if String.find(n,':') > 0:
