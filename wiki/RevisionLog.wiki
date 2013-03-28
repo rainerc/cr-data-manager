@@ -1,9 +1,21 @@
 #labels Featured
 = revision history=
 
-== Version 0.1.11==
+==Beta releases==
 <pre>
+v 0.1.14 beta release 83
 
+ fixed - unexpected result if criteria in Number field is Null (issue 31)
+fixed - Null values in numerical fields are actually stored as -1 by CR. Using Null values in
+criteria on these field might return unexpected results
+fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
+fixed - maximization of form displayResults was possible
+change - multiValueAdd rewritten to get rid of duplicates because of leading blanks etc.
+change - multiValueReplace rewritten to get rid of duplicates because of leading blanks etc.
+change - multiValueRemove rewritten to get rid of duplicates because of leading blanks etc.
+</pre>
+==Public releases==
+<pre>
 v 0.1.13 r72
 
  fixed - exception if generated code raises error
