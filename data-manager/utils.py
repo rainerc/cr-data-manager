@@ -42,7 +42,36 @@ class comparer(object):
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString.startswith(myVal)
+	
+	def less(self,myString,myVal,caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myString < myVal
 
+	def lessEq(self,myString,myVal,caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myString <= myVal
+
+	def greater(self,myString,myVal,caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myString > myVal
+
+	def greaterEq(self,myString,myVal,caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myString >= myVal
+
+	def notEq(self, myString, myVal, caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myString <> myVal
 
 def nullToZero(s):
 	if String.Trim(str(s)) == '':

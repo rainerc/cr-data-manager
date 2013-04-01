@@ -21,17 +21,11 @@ change - modular rewriting of forms
 change - Contains compares now case insensitive
 change - StartsWith compares now case insensitive
 change - comparison for equality (==) is now case insensitive
-
-
-v 0.1.14
-fixed - unexpected result if criteria in Number field is Null (issue 31)
-fixed - Null values in numerical fields are actually stored as -1 by CR. Using Null values in
-criteria on these field might return unexpected results
-fixed - exception if book.Number is Null and used in conjunction with ==, >, <, >=, <= etc.
-fixed - maximization of form displayResults was possible
-change - multiValueAdd rewritten to get rid of duplicates because of leading blanks etc.
-change - multiValueReplace rewritten to get rid of duplicates because of leading blanks etc.
-change - multiValueRemove rewritten to get rid of duplicates because of leading blanks etc.
+change - comparison for less (<) is now case insensitive
+change - comparison for lessEqual (<=) is now case insensitive
+change - comparison for greater (>) is now case insensitive
+change - comparison for greaterEq (>=) is now case insensitive
+change - comparison for not equal (<>) is now case insensitive
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -64,32 +58,6 @@ from System.Drawing import *
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-#global FOLDER
-#global DATFILE
-##global ICON_SMALL
-#global ICON
-#global IMAGE
-#global DONATE
-#global WIKI
-#global MANUAL
-#global VERSION
-
-#FOLDER = FileInfo(__file__).DirectoryName + "\\"
-#DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
-#SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
-#BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
-#ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
-#TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
-#LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
-#CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
-
-#ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
-#ICON = Path.Combine(FOLDER, 'dataMan.ico')
-#IMAGE = Path.Combine(FOLDER, 'dataMan.png')
-#DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
-#WIKI = 'http://code.google.com/p/cr-data-manager/'
-#MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-#VERSION = '0.1.14 r86'
 DEBUG__ = True
 
 import globalvars
@@ -279,7 +247,17 @@ def parseString(s):
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
 				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
 			elif myOperator == '==' and myKey not in numericalKeys:
-					myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
+				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
+			elif myOperator == '<' and myKey not in numericalKeys:
+				myCrit = myCrit + "comp.less(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
+			elif myOperator == '<=' and myKey not in numericalKeys:
+				myCrit = myCrit + "comp.lessEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
+			elif myOperator == '>' and myKey not in numericalKeys:
+				myCrit = myCrit + "comp.greater(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
+			elif myOperator == '>=' and myKey not in numericalKeys:
+				myCrit = myCrit + "comp.greaterEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
+			elif myOperator == '<>' and myKey not in numericalKeys:
+				myCrit = myCrit + "comp.notEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
 			else:
 				# numerical values in CR are -1 if Null
 				if myKey in numericalKeys and str.Trim(myVal) == '':
