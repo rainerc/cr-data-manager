@@ -8,12 +8,20 @@ the rules are read from file replaceData.dat, located in the script directory
 The CR Data Manager plugin is licensed under the Apache 2.0 software
 license, available at: http://www.apache.org/licenses/LICENSE-2.0.html
 
-v 0.1.14
+v 0.1.15
 
 by docdoom
 
-
 revision history
+
+v 0.1.15
+fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
+        (issue 34) (set ComicRack.Window  as parent window handle for all forms)
+change - modular rewriting of forms
+change - Contains compares now case insensitive
+change - StartsWith compares now case insensitive
+change - comparison for equality (==) is now case insensitive
+
 
 v 0.1.14
 fixed - unexpected result if criteria in Number field is Null (issue 31)
@@ -51,35 +59,48 @@ clr.AddReference('System.Windows.Forms')
 clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
-#import dmComicBook
-#from dmComicBook import *
 
 # this handles unicode encoding:
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-global FOLDER
-global DATFILE
+#global FOLDER
+#global DATFILE
+##global ICON_SMALL
+#global ICON
+#global IMAGE
+#global DONATE
+#global WIKI
+#global MANUAL
+#global VERSION
 
-FOLDER = FileInfo(__file__).DirectoryName + "\\"
-DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
-SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
-BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
-ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
-TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
-LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
-CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
+#FOLDER = FileInfo(__file__).DirectoryName + "\\"
+#DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
+#SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
+#BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
+#ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
+#TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
+#LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
+#CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
 
-ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
-ICON = Path.Combine(FOLDER, 'dataMan.ico')
-IMAGE = Path.Combine(FOLDER, 'dataMan.png')
-DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
-WIKI = 'http://code.google.com/p/cr-data-manager/'
-MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
-VERSION = '0.1.14 r86'
-DEBUG__ = False
+#ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
+#ICON = Path.Combine(FOLDER, 'dataMan.ico')
+#IMAGE = Path.Combine(FOLDER, 'dataMan.png')
+#DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
+#WIKI = 'http://code.google.com/p/cr-data-manager/'
+#MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
+#VERSION = '0.1.14 r86'
+DEBUG__ = True
 
-sys.path.append(FOLDER)
+import globalvars
+from utils import *
+from mainform import mainForm
+from displayResultsForm import displayResultsForm
+from aboutForm import aboutForm
+from progressForm import progressForm
+from configuratorForm import configuratorForm
+
+sys.path.append(globalvars.FOLDER)
 
 allowedKeys = [
 	'Series',
@@ -142,52 +163,14 @@ def writeCode(s, level, linebreak):
 	s = prefix + s
 	if linebreak == True: s += '\n'
 	try:
-		File.AppendAllText(TMPFILE, s)
+		File.AppendAllText(globalvars.TMPFILE, s)
 		
 	except Exception, err:
 		print "Error in function writeCode: ", str(err)
 
-def multiValueAdd(myList, myVal):
-	myVal = str.Trim(str(myVal))
-	newList = []
-	theList = myList.strip(',').split(',')
-	for l in theList: 
-		l = str.Trim(l)							
-		if l <> '': newList.Add(l)								# eliminate Null values
-	if newList.count(myVal) > 0: return ','.join(newList)		# item already in list?
-	newList.append(myVal)										# otherwise append newVal
-	return ','.join(newList)
-
-def multiValueReplace(myList, oldVal, myVal):
-	oldVal = str.Trim(str(oldVal))
-	myVal = str.Trim(str(myVal))
-	newList = []
-	theList = myList.strip(',').split(',')
-	for l in theList:
-		l = str.Trim(l)
-		if l == oldVal: l = myVal
-		if newList.count(l) == 0:
-			newList.Add(l)
-	return ','.join(newList)
-
-def multiValueRemove(myList, myVal):
-	myVal = str.Trim(str(myVal))
-	theList = myList.strip(',').split(',')
-	newList = []
-	for l in theList:
-		l = str.Trim(l)
-		if l <> myVal:
-			newList.Add(l)
-	return ','.join(newList)
-
-def nullToZero(s):
-	if String.Trim(str(s)) == '':
-		return 0
-	return s
-
 def parsedCode():
 	try:
-		return File.ReadAllText(TMPFILE)
+		return File.ReadAllText(globalvars.TMPFILE)
 	except Exception, err:
 		print "Error in function parsedCode: ", str(err)
 		
@@ -288,15 +271,21 @@ def parseString(s):
 			# end of extra handling of Number field
 			# ----------------------------------------------------------------------------
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
-				myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
+				myCrit = myCrit + 'comp.contains(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				#MessageBox.Show(myCrit)
+				#myCrit = myCrit + ("comp.contains
+				# myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			elif myOperator == "startswith" and myKey not in numericalKeys:
-				myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
-				
+				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
+				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
+			elif myOperator == '==' and myKey not in numericalKeys:
+					myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
 			else:
 				# numerical values in CR are -1 if Null
 				if myKey in numericalKeys and str.Trim(myVal) == '':
 					myVal = -1
 				myCrit = myCrit + ("str(book.%s) %s \"%s\" and " % (myKey, myOperator, myVal))
+				
 			
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
@@ -396,378 +385,13 @@ def parseString(s):
 			writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
 	return -1
 	
-def validate(s):
-	s = str.Trim(s)
-	if not len(s) > 0:
-		return ''
-	p = re.compile('(<{2}|#)+.*')
-	m = p.search(s)
-	if m:
-		pos = m.start()
-	else:
-		pos= -1
-	if s [0] <> '#':
-		if str.count(s, '=>') <> 1:
-			return '# invalid expression: %s' % s
-		if str.count(s, '<<') <> str.count(s, '>>'):
-			return '# invalid expression: %s' % s
-		if str.count(s, '<<') > str.count(s,':'):
-			return '# invalid expression: %s' % s
-		if pos > 0:
-			return s [pos:]
-	if s[0] == '#' or s[0:2] == '<<':
-		return s
-	else:
-		return '# invalid expression: %s' % s
-
-
-def writeDataFile(theFile, theText):
-	#print theText
-	s = str.split(str(theText),'\n')
-	tmp = str('')
-	for line in s:
-		s2 = validate(str(line))
-		if s2 <> '':
-			# using System.Environment.NewLine instead of '\n'
-			# to make the file easier to edit with external tool like Notepad
-			#tmp += validate(str(line)) + '\n'
-			tmp += validate(str(line)) + System.Environment.NewLine
-	if len(theText) > 0:
-		File.WriteAllText(theFile, tmp)
-	else:
-		MessageBox.Show('File not written (0 Byte size)')
-
-	if not File.Exists(CHKFILE):
-		File.Create(CHKFILE)
-	return
-
-def readDataFile(theFile):
-	s=[]
-	if theFile == DATFILE:
-		if File.Exists(DATFILE):
-			File.Copy(DATFILE, BAKFILE, True) # just in case something bad happens
-			s = File.ReadAllLines(DATFILE)
-		elif File.Exists(SAMPLEFILE):
-			s = File.ReadAllLines(SAMPLEFILE)
-	else:
-		if File.Exists(theFile):
-			s = File.ReadAllLines(theFile)
-		else:
-			return str('')
-
-	tmp = str('')
-	for line in s:
-		tmp += line + System.Environment.NewLine
-	if len(s) == 0 and theFile == LOGFILE:
-		tmp = 'Your criteria matched no book. No data was touched by the Data Manager.'
-	return tmp
-
-class displayResults(Form):
-
-	def __init__(self):
-		self.Width = 230
-		self.Height = 140
-		self.StartPosition = FormStartPosition.CenterScreen
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.MaximizeBox = False
-		self.Text = 'CR Data Manager %s' % VERSION
-
-		self.label = Label()
-		self.label.Location = Point(10, 20)
-		self.label.Width = 250
-		self.label.Height = 30
-
-		self.buttonYes = Button()
-		self.buttonYes.Location = Point(10,70)
-		self.buttonYes.Text = 'Yes'
-		self.buttonYes.DialogResult = DialogResult.Yes
-
-		self.buttonNo = Button()
-		self.buttonNo.Location = Point(130,70)
-		self.buttonNo.Text = 'No'
-		self.buttonNo.DialogResult = DialogResult.No
-
-		self.Controls.Add(self.label)
-		self.Controls.Add(self.buttonYes)
-		self.Controls.Add(self.buttonNo)
-
-	def configure(self, label):
-		self.label.Text = label
-		
-class progressForm(Form):
-
-	def __init__(self):
-		self.Width = 350
-		self.Height = 80
-		self.StartPosition = FormStartPosition.CenterScreen
-		self.Icon = Icon(ICON_SMALL)
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.Text = 'CR Data Manager Version %s' % VERSION
-
-		self.progressBar = System.Windows.Forms.ProgressBar()
-		self.progressBar.Location = Point(10,10)
-		self.progressBar.Width = 330
-		self.progressBar.Minimum = 0
-		self.progressBar.Step = 1
-
-		self.Controls.Add(self.progressBar)
-
-	def setValue(self, s):
-		self.progressBar.Value = s
-
-	def setMax(self, s):
-		self.progressBar.Maximum = s
-
-
-class aboutForm(Form):
-	
-	def __init__(self):
-		self.Width = 380
-		self.Height = 250
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.StartPosition = FormStartPosition.CenterParent
-		self.ShowIcon = True
-		self.Text = 'CR Data Manager %s' % VERSION
-
-		self.label = Label()
-		self.label.Location = Point(90, 20)
-		self.label.Width = 280
-		self.label.Height = 110
-		self.label.Text = ('The CR Data Manager plugin is licensed under the Apache 2.0 software ' +
-			'license, available at:\nhttp://www.apache.org/licenses/LICENSE-2.0.html\n\n' +
-			'Big thanks go to 600WPMPO and Casublett: without ' + 
-			'their help the plugin would not work as it does now.\n\nImportant links:')
-
-		self.linklabelManual = LinkLabel()
-		self.linklabelManual.Location = Point(90,135)
-		self.linklabelManual.Text = 'Manual'
-		self.linklabelManual.LinkClicked += self.manual
-
-		self.linklabelWiki = LinkLabel()
-		self.linklabelWiki.Location = Point(90,155)
-		self.linklabelWiki.Text = 'Wiki'
-		self.linklabelWiki.LinkClicked += self.wiki
-
-		self.linklabelDonation = LinkLabel()
-		self.linklabelDonation.Location = Point(90,175)
-		self.linklabelDonation.Text = 'Donations'
-		self.linklabelDonation.LinkClicked += self.donate	
-			
-		self.picturebox = PictureBox()
-		self.picturebox.Location = Point(10,10)
-		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
-		self.picturebox.Height = 70
-		self.picturebox.Width = 70
-		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
-		
-		self.buttonClose = Button()
-		self.buttonClose.Location = Point(290,200)
-		self.buttonClose.Text = 'Close'
-		self.buttonClose.DialogResult = DialogResult.Cancel
-		self.Controls.Add(self.picturebox)
-		self.Controls.Add(self.buttonClose)
-		self.Controls.Add(self.label)
-		self.Controls.Add(self.linklabelDonation)
-		self.Controls.Add(self.linklabelManual)
-		self.Controls.Add(self.linklabelWiki)
-
-	def donate(self, sender, event):
-		System.Diagnostics.Process.Start(DONATE)
-
-	def manual(self, sender, event):
-		System.Diagnostics.Process.Start(MANUAL)
-
-	def wiki(self, sender, event):
-		System.Diagnostics.Process.Start(WIKI)
-		pass
-		
-class mainForm(Form):
-
-	def __init__(self):
-		self.Width = 285
-		self.Height = 150
-		self.MaximizeBox = False
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.StartPosition = FormStartPosition.CenterParent
-		self.ShowIcon = True
-		self.Icon = Icon(ICON_SMALL)
-		self.Text = 'CR Data Manager %s' % VERSION
-		
-		self.label = Label()
-		self.label.Location = Point(90,20)
-		self.label.Text = 'Welcome to the Data Manager.\n\nClick on the icon for more information.'
-		self.label.Width = 300
-		self.label.Height = 50
-
-		self.picturebox = PictureBox()
-		self.picturebox.Location = Point(10,10)
-		self.picturebox.Image = System.Drawing.Image.FromFile(IMAGE)
-		self.picturebox.Height = 70
-		self.picturebox.Width = 70
-		self.picturebox.SizeMode = PictureBoxSizeMode.StretchImage
-		self.picturebox.Cursor = Cursors.Hand
-		self.picturebox.Click += self.aboutDialog
-		
-		self.tooltip1 = ToolTip()
-		self.tooltip1.AutoPopDelay = 5000
-		self.tooltip1.InitialDelay = 1000
-		self.tooltip1.ShowAlways = True 
-		self.tooltip1.SetToolTip(self.picturebox, "click on the image for more information")
-		
-		self.buttonRun = Button()
-		self.buttonRun.Location = Point(10,90)
-		self.buttonRun.Width = 120
-		self.buttonRun.Text = 'Run the DataMan'
-		self.buttonRun.DialogResult = DialogResult.OK
-
-		self.buttonConfig = Button()
-		self.buttonConfig.Location = Point(150,90)
-		self.buttonConfig.Width = 120
-		self.buttonConfig.Text = 'Configure'
-		self.buttonConfig.DialogResult = DialogResult.No
-
-		self.Controls.Add(self.label)
-		self.Controls.Add(self.buttonRun)
-		self.Controls.Add(self.buttonConfig)
-		self.Controls.Add(self.picturebox)
-		
-	def aboutDialog(self, sender, event):
-		form = aboutForm()
-		form.ShowDialog()
-		form.Dispose()
-		
-
-
-class SimpleTextBoxForm(Form):
-	
-	def __init__(self):
-
-		self.isDirty = False
-
-		self.theFile = ''
-
-		self.Width = 800
-		self.Height = 600
-		self.MaximizeBox = False
-		self.ShowIcon = True
-		self.Icon = Icon(ICON_SMALL)
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-		self.Closing += self.formClosing
-		
-		self.textbox = TextBox()
-		self.textbox.Location = Point(10, 10)
-		self.textbox.Width = 780
-		self.textbox.Height = 530
-		self.textbox.Multiline = True
-		self.textbox.ScrollBars = ScrollBars.Both
-		self.textbox.WordWrap = False
-		self.textbox.AcceptsTab = True
-		self.textbox.TabStop = False
-		self.textbox.Click += self.textBoxClick
-		self.textbox.KeyPress += self.textBoxClick
-		self.textbox.KeyDown += self.textBoxClick
-		
-		self.statusLabel = Label()
-		self.statusLabel.Width = 70
-		self.statusLabel.Location = Point(100,545)
-
-		self.positionLabel = Label()
-		self.positionLabel.Width = 70
-		self.positionLabel.Location = Point(10,545)
-						
-		self.button1 = Button()
-		self.button1.Text = 'Save'
-		self.button1.Location = Point(580, 545)
-		self.button1.Width = 100
-		self.button1.Click += self.update
-
-		self.button2 = Button()
-		self.button2.Text = 'Close'
-		self.button2.Width = 100
-		self.button2.Location = Point(690, 545)
-
-		self.button2.DialogResult = DialogResult.Cancel
-		self.button2.Click += self.reset
-
-		self.Controls.Add(self.textbox)
-		self.Controls.Add(self.statusLabel)
-		self.Controls.Add(self.positionLabel)
-
-		self.addButtons()
-		self.showTheFile()
-		self.StartPosition = FormStartPosition.CenterParent
-
-		self.positionText('')
-
-	def textBoxClick (self, sender, event):
-		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
-		self.positionText( '@ line %d' % line)
-
-	def positionText (self, s):
-		line = self.textbox.GetLineFromCharIndex(self.textbox.SelectionStart) + 1
-		self.positionLabel.Text = '@ line %d' % line
-
-	def statusText(self, s):
-		if self.theFile == DATFILE:
-			self.statusLabel.Text = s
-
-	def update(self, sender, event):
-		myCursor = self.Cursor.Current
-		self.Cursor = Cursors.WaitCursor
-		writeDataFile(DATFILE,self.textbox.Text)
-		self.isDirty = False
-		self.statusText('data saved')
-		self.Cursor = myCursor
-
-	def formClosing(self, sender, event):
-		if self.isDirty and self.theFile == DATFILE:
-			result = (MessageBox.Show(
-                   'Would you like to save your changes before closing?'
-                   , 'CR Data Manager - %s' % VERSION
-                   , MessageBoxButtons.YesNoCancel
-                   , MessageBoxIcon.Question))
-			if result == DialogResult.Yes:
-				if self.theFile == DATFILE:
-					writeDataFile(DATFILE,self.textbox.Text)
-					self.statusText('')
-
-			elif result == DialogResult.No:
-				pass
-			elif result == DialogResult.Cancel:
-				event.Cancel = True
-	
-	def textChanged(self, sender, event):
-		self.isDirty = True
-		self.statusText('* data changed')
-		
-	def showTheFile(self):
-		self.textbox.Text = readDataFile(self.theFile)
-
-	def addButtons(self):
-		if self.theFile == DATFILE:
-			self.Controls.Add(self.button1)
-			self.button2.TabStop = False
-			
-		self.Controls.Add(self.button2)
-
-	def setFile(self, f):
-		self.theFile = f
-		self.showTheFile()
-		self.textbox.TextChanged += self.textChanged
-		self.addButtons()
-
-	def setTitle(self, s):
-		self.Text = '%s - Version %s' % (s, VERSION)
-		
-	def reset(self, sender, event):
-		self.Close
 
 def dmConfig():
 
-	form = SimpleTextBoxForm()
-	form.setFile(DATFILE)
+	form = configuratorForm()
+	form.setFile(globalvars.DATFILE)
 	form.setTitle('Data Manager Configurator')
-	form.ShowDialog()
+	form.ShowDialog(ComicRack.MainWindow)
 	form.Dispose()
 
 
@@ -780,7 +404,7 @@ def replaceData(books):
 	ERROR_LEVEL = 0
 
 	form = mainForm()
-	form.ShowDialog()
+	form.ShowDialog(ComicRack.MainWindow)
 	form.Dispose()
 
 	if form.DialogResult == DialogResult.No:
@@ -792,34 +416,37 @@ def replaceData(books):
 		pass
 	
 	try:
-		File.Delete(TMPFILE)
-		File.Delete(ERRFILE)
+		File.Delete(globalvars.TMPFILE)
+		File.Delete(globalvars.ERRFILE)
 	except Exception, err:
 		pass
 	
 	# check if configuration exists
-	if not File.Exists(DATFILE):
-		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % VERSION)
+	if not File.Exists(globalvars.DATFILE):
+		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % globalvars.VERSION)
 		return
 
 	# check if configuration has been saved once
-	if not File.Exists(CHKFILE):
-		MessageBox.Show('Please save your configuration first!','Data Manager %s' % VERSION)
+	if not File.Exists(globalvars.CHKFILE):
+		MessageBox.Show('Please save your configuration first!','Data Manager %s' % globalvars.VERSION)
 		return
 
 	writeCode('try:', 0, True)
 	
 	progBar = progressForm()
 	progBar.Show()
+	writeCode('from globalvars import *',1,True)
+	writeCode('from utils import *',1,True)
+	writeCode('comp = comparer()',1,True)
 	try:
-		s = File.ReadAllLines(DATFILE)
+		s = File.ReadAllLines(globalvars.DATFILE)
 		i = 0
 		for line in s:
 			i += 1
 			if String.find(line," => ") and line[0] <> "#":
 				if not parseString(line):
 					error_message = File.ReadAllText(ERRFILE)
-					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % VERSION)
+					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
 			
 	except Exception, err:
@@ -839,7 +466,7 @@ def replaceData(books):
 		progBar.Show()
 		progBar.setMax(books.Length)
 		touched = 0
-		f=open(LOGFILE, "w")	# open logfile
+		f=open(globalvars.LOGFILE, "w")	# open logfile
 		for book in books:
 			touched += 1
 			progBar.setValue(touched)
@@ -847,7 +474,7 @@ def replaceData(books):
 				exec (theCode)
 				
 			except Exception, err:
-				MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % VERSION)
+				MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
 				ERROR_LEVEL = 1
 		
 		f.close()				# close logfile
@@ -857,22 +484,22 @@ def replaceData(books):
 		if ERROR_LEVEL == 0:
 			msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (touched)
 	
-			form = displayResults()
+			form = displayResultsForm()
 			form.configure(msg)
-			form.ShowDialog()
+			form.ShowDialog(ComicRack.MainWindow)
 			form.Dispose()
 
 			if form.DialogResult == DialogResult.Yes:
 	
-				form = SimpleTextBoxForm()
-				form.setFile(LOGFILE)
+				form = configuratorForm()
+				form.setFile(globalvars.LOGFILE)
 				form.setTitle('Data Manager Logfile')
-				form.ShowDialog()
+				form.ShowDialog(ComicRack.MainWindow)
 				form.Dispose()
 
 	try:
 		#File.Delete(TMPFILE)
-		File.Delete(ERRFILE)
+		File.Delete(globalvars.ERRFILE)
 	except Exception, err:
 		pass
 	
