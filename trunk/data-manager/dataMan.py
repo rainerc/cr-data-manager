@@ -43,7 +43,6 @@ todo: simulation instead of actual replacing of data
 
 import clr
 import sys
-#import os
 import re
 import System
 import System.Text
