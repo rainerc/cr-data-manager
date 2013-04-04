@@ -60,7 +60,7 @@ allowedOperators = [
 	'contains any of'
 ]
 
-class MainForm(Form):
+class FlowLayoutForm(Form):
 	def __init__(self):
 		self.InitializeComponent()
 	
@@ -194,6 +194,10 @@ class MainForm(Form):
 			allowedKeys))
 		self.myCombo.Sorted = True
 		self._flowLayoutPanel1.Controls.Add(self.myCombo)
+		
+		self.myCheckBox = CheckBox()
+		self.myCheckBox.Name = 'myNegator%s' % str(i)
+		self._flowLayoutPanel1.Controls.Add(self.myCheckBox)
 		
 		i += 1
 		self.myCombo = ComboBox()
