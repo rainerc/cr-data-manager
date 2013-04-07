@@ -28,6 +28,9 @@ change - comparison for greaterEq (>=) is now case insensitive
 change - comparison for not equal (<>) is now case insensitive
 fix - missing references to globalvars added
 change - PageCount added to allowed keys
+change - new modifier ContainsAnyOf
+change - new modifier ContainsNot
+change - new modifier ContainsAllOf
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -209,6 +212,12 @@ def parseString(s):
 						myOperator = "<="
 					elif str.lower(myModifier) == "startswith":
 						myOperator = "startswith"
+					elif str.lower(myModifier) == "containsanyof":
+						myOperator = ""
+					elif str.lower(myModifier) == "containsnot":
+						pass
+					elif str.lower(myModifier) == "containsallof":
+						pass
 					else:
 						File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
 						return 0
@@ -246,6 +255,28 @@ def parseString(s):
 				#MessageBox.Show(myCrit)
 				#myCrit = myCrit + ("comp.contains
 				# myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
+			elif str.lower(myModifier) == "containsanyof": # and myKey not in numericalKeys:
+				if myKey not in numericalKeys:
+					myCrit = myCrit + 'comp.containsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "ContainsAnyOf modifier cannot be used in %s field" % (myKey))
+					return 0
+			elif str.lower(myModifier) == "containsallof": # and myKey not in numericalKeys:
+				if myKey not in numericalKeys:
+					myCrit = myCrit + 'comp.containsAllOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "ContainsAllOf modifier cannot be used in %s field" % (myKey))
+					return 0
+
+			elif str.lower(myModifier) == "containsnot":
+				if myKey not in numericalKeys:
+					myCrit = myCrit + 'comp.containsNot(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "ContainsNot modifier cannot be used in %s field" % (myKey))
+					return 0															
 			elif myOperator == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
 				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
