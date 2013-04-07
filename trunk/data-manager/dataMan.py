@@ -26,6 +26,8 @@ change - comparison for lessEqual (<=) is now case insensitive
 change - comparison for greater (>) is now case insensitive
 change - comparison for greaterEq (>=) is now case insensitive
 change - comparison for not equal (<>) is now case insensitive
+fix - missing references to globalvars added
+change - PageCount added to allowed keys
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -86,14 +88,16 @@ allowedKeys = [
 	'FilePath',
 	'FileName',
 	'Genre',
-	'Tags'
+	'Tags',
+	'PageCount'
 	]
 
 numericalKeys = [
 	'Volume',
 	'Month',
 	'Year',
-	'Count'
+	'Count',
+	'PageCount'
 	]
 
 multiValueKeys = [
@@ -178,11 +182,11 @@ def parseString(s):
 				except Exception, err:
 					myModifier = ""
 			else:
-				File.AppendAllText(ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
 			if c <> "" and not (myKey in allowedKeys):
-				File.AppendAllText(ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			myOperator = "=="
 			# handling if modifier is appended to field
@@ -206,7 +210,7 @@ def parseString(s):
 					elif str.lower(myModifier) == "startswith":
 						myOperator = "startswith"
 					else:
-						File.AppendAllText(ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
+						File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
 						return 0
 											
 			except Exception, err:
@@ -282,10 +286,10 @@ def parseString(s):
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
 			else:
-				File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))			
+				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))			
 				return 0
 			if not (myKey in allowedVals):
-				File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			# to do: handling if function is appended to field
 				
@@ -306,38 +310,38 @@ def parseString(s):
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
 				if str.lower(myModifier) == "add":
 					if myKey in numericalKeys or myKey == 'Number':
-						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(ERRFILE, "Add modifier cannot be used in %s field" % (myKey))
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Add modifier cannot be used in %s field" % (myKey))
 						return 0
 					elif myKey in multiValueKeys:
 						if len(String.Trim(myVal)) == 0:
-							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(ERRFILE, "Remove modifier needs 1 argument")
+							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
 							return 0
 						else:
 							writeCode('book.%s = multiValueAdd(book.%s,"%s")' % (myKey, myKey, myVal), 2, True)
 				if str.lower(myModifier) == "replace":
 					if myKey in numericalKeys or myKey == 'Number':
-						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
 						return 0
 					elif myKey in multiValueKeys:
 						tmpVal = myVal.split(',')
 						if len(tmpVal) > 1:
 							writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 						else:
-							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(ERRFILE, "Replace modifier needs 2 arguments")
+							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(globalvars.ERRFILE, "Replace modifier needs 2 arguments")
 							return 0
 				if str.lower(myModifier) == "remove":
 					if myKey in numericalKeys or myKey == 'Number':
-						File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
 					elif myKey in multiValueKeys:
 						if len(String.Trim(myVal)) == 0:
-							File.AppendAllText(ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(ERRFILE, "Remove modifier needs 1 argument")
+							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+							File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
 							return 0
 						else:
 							writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
@@ -422,7 +426,7 @@ def replaceData(books):
 			i += 1
 			if String.find(line," => ") and line[0] <> "#":
 				if not parseString(line):
-					error_message = File.ReadAllText(ERRFILE)
+					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
 			
