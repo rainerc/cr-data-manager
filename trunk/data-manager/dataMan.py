@@ -31,7 +31,6 @@ change - PageCount added to allowed keys
 change - new modifier ContainsAnyOf (issue 28)
 change - new modifier ContainsNot (may used as well as NotContains)
 change - new modifier ContainsAllOf
-...
 change - if no value was modified by the DM, only "book xxx was touched" is written to logfile
 change - new modifier NotContainsAnyOf
 change - new modifier StartsWithAnyOf
