@@ -1,11 +1,22 @@
 import System
 from System import String
 from System.IO import File
+from System.Windows.Forms import MessageBox
 import re
 import globalvars
+#import str
 
 class comparer(object):
 	"""description of class"""
+
+	def inList(self,myString,myVal,caseInsensitive):
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		theVals = myVal.strip(',').split(',')
+		for word in theVals:
+			if String.Trim(word) == String.Trim(myString): return True
+		return False
 
 	def containsAnyOf(self, myString, myVals,caseInsensitive):
 		theVals = myVals.strip(',').split(',')
@@ -16,11 +27,22 @@ class comparer(object):
 				if str.find(myString,word) >= 0: return True
 		return False
 	
+	def notContainsAnyOf(myString,myVal,caseInsensitive):
+		theVals = myVal.strip(',').split(',')
+		myString = String.Trim(myString)
+		for word in theVals:
+			word = String.Trim(word)
+			if caseInsensitive == True:
+				if str.find(str.lower(myString),str.lower(word)) >= 0: return False
+			else:
+				if str.find(myString,word) >= 0: return False
+		return True
+
 	def containsAllOf(self, myString, myVals,caseInsensitive):
 		theVals = myVals.strip(',').split(',')
 		for word in theVals:
 			if caseInsensitive == True:
-				if str.find(str.lower(myString),str.lower(word)) < 0: return True
+				if str.find(str.lower(myString),str.lower(word)) < 0: return False
 			else:
 				if str.find(myString,word) < 0: return False
 		return True
@@ -48,6 +70,18 @@ class comparer(object):
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString.startswith(myVal)
+	
+	def startsWithAnyOf(self, myString, myVals, caseInsensitive):
+		theVals = myVals.strip(',').split(',')
+		for word in theVals:
+			if caseInsensitive == True:
+				if String.StartsWith(lower(myString),lower(word)):
+					return True
+			else:
+				if String.StartsWith(myString,word):
+					return True
+		return False
+		
 	
 	def less(self,myString,myVal,caseInsensitive):
 		if caseInsensitive == True:
@@ -117,6 +151,10 @@ def multiValueRemove(myList, myVal):
 			newList.Add(l)
 	return ','.join(newList)
 
+class parser(object):
+	
+	
+	pass
 
 def validate(s):
 	'''
@@ -128,6 +166,7 @@ def validate(s):
 	s = String.Trim(s)
 	if not len(s) > 0:
 		return ''
+
 	p = re.compile('(<{2}|#)+.*')
 	m = p.search(s)
 	if m:
@@ -135,6 +174,8 @@ def validate(s):
 	else:
 		pos= -1
 	if s [0] <> '#':
+		if not (String.StartsWith(s,'<<') and String.EndsWith(s,'>>')):
+			return '# invalid expression: %s' % s
 		if str.count(s, '=>') <> 1:
 			return '# invalid expression: %s' % s
 		if str.count(s, '<<') <> str.count(s, '>>'):
@@ -175,6 +216,7 @@ def writeDataFile(theFile, theText):
 	'''
 	s = str.split(str(theText),'\n')
 	tmp = str('')
+	errlines = 0
 	for line in s:
 		s2 = validate(str(line))	# some basic validation
 		if s2 <> '':
@@ -182,10 +224,14 @@ def writeDataFile(theFile, theText):
 			# to make the file easier to edit with external tool like Notepad
 			#tmp += validate(str(line)) + '\n'
 			tmp += validate(str(line)) + System.Environment.NewLine
+			if String.StartsWith(str(line), '# invalid expression'):
+				errlines += 1
 	if len(theText) > 0:
 		File.WriteAllText(theFile, tmp)
 	else:
 		MessageBox.Show('File not written (0 Byte size)')
+	if errlines > 0:
+			MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
 
 	if not File.Exists(globalvars.CHKFILE):
 		File.Create(globalvars.CHKFILE)
