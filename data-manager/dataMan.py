@@ -28,9 +28,14 @@ change - comparison for greaterEq (>=) is now case insensitive
 change - comparison for not equal (<>) is now case insensitive
 fix - missing references to globalvars added
 change - PageCount added to allowed keys
-change - new modifier ContainsAnyOf
-change - new modifier ContainsNot
+change - new modifier ContainsAnyOf (issue 28)
+change - new modifier ContainsNot (may used as well as NotContains)
 change - new modifier ContainsAllOf
+...
+change - if no value was modified by the DM, only "book xxx was touched" is written to logfile
+change - new modifier NotContainsAnyOf
+change - new modifier StartsWithAnyOf
+change - new directive "#@ END_RULES"
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -212,12 +217,16 @@ def parseString(s):
 						myOperator = "<="
 					elif str.lower(myModifier) == "startswith":
 						myOperator = "startswith"
+					elif str.lower(myModifier) == 'startswithanyof':
+						myOperator = ''
 					elif str.lower(myModifier) == "containsanyof":
 						myOperator = ""
-					elif str.lower(myModifier) == "containsnot":
-						pass
+					elif str.lower(myModifier) == "notcontainsanyof":
+						myOperator = ""
+					elif str.lower(myModifier) == "containsnot" or str.lower(myModifier) == "notcontains":
+						myModifier = "ContainsNot"
 					elif str.lower(myModifier) == "containsallof":
-						pass
+						myOperator = ""
 					else:
 						File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
 						return 0
@@ -255,6 +264,7 @@ def parseString(s):
 				#MessageBox.Show(myCrit)
 				#myCrit = myCrit + ("comp.contains
 				# myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
+			
 			elif str.lower(myModifier) == "containsanyof": # and myKey not in numericalKeys:
 				if myKey not in numericalKeys:
 					myCrit = myCrit + 'comp.containsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
@@ -262,6 +272,14 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "ContainsAnyOf modifier cannot be used in %s field" % (myKey))
 					return 0
+			elif str.lower(myModifier) == "notcontainsanyof":
+				if myKey not in numericalKeys:
+					myCrit = myCrit + 'comp.notContainsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "NotContainsAnyOf modifier cannot be used in %s field" % (myKey))
+					return 0
+				
 			elif str.lower(myModifier) == "containsallof": # and myKey not in numericalKeys:
 				if myKey not in numericalKeys:
 					myCrit = myCrit + 'comp.containsAllOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
@@ -280,6 +298,13 @@ def parseString(s):
 			elif myOperator == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
 				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
+			elif str.lower(myModifier) == "startswithanyof": # and myKey not in numericalKeys:
+				if myKey not in numericalKeys:
+					myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf modifier cannot be used in %s field" % (myKey))
+					return 0
 			elif myOperator == '==' and myKey not in numericalKeys:
 				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
 			elif myOperator == '<' and myKey not in numericalKeys:
@@ -394,7 +419,8 @@ def parseString(s):
 			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode('book.Tags = multiValueAdd(book.Tags,"DMProc")', 3, True)
 			writeCode("else:", 2, True)
-			writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
+			writeCode("pass",3,True)
+			# writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
 	return -1
 	
 
@@ -460,6 +486,9 @@ def replaceData(books):
 					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
+					break
+			if String.StartsWith(line,'#@ end rules'):
+				break
 			
 	except Exception, err:
 		print 'getCode: ', str(err)
