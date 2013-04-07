@@ -15,7 +15,7 @@ class comparer(object):
 			else:
 				if str.find(myString,word) >= 0: return True
 		return False
-
+	
 	def containsAllOf(self, myString, myVals,caseInsensitive):
 		theVals = myVals.strip(',').split(',')
 		for word in theVals:
@@ -30,7 +30,13 @@ class comparer(object):
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return str.find(myString,myVal) >= 0
-
+	
+	def containsNot(self, myString, myVal, caseInsensitive):#
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)		
+		return str.find(myString,myVal) < 0
+	
 	def equals(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
