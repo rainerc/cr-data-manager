@@ -37,6 +37,10 @@ change - new modifier StartsWithAnyOf
 change - new directive "#@ END_RULES"
 ...
 change - new class "parser"
+change - new class "ruleFile" (encapsulated reading and writing the DATFILE)
+fix - exception when Null value was used in Range modifier
+change - when error was raised by compiling code a MessageBox will show the error
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -74,6 +78,7 @@ import globalvars
 import utils
 from utils import parser
 from utils import comparer
+from utils import nullToZero
 from mainform import mainForm
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
@@ -157,6 +162,7 @@ def parsedCode():
 		print "Error in function parsedCode: ", str(err)
 		
 def parseString(s):
+	# todo: this belongs in class ruleFile
 	
 	# read a line from replaceData.dat and generate python code from it
 	
@@ -240,7 +246,8 @@ def parseString(s):
 						return 0
 											
 			except Exception, err:
-				print "error at parseString: " + str(err)
+				MessageBox.Show("error at parseString: %s" % str(err))
+				return
 
 			myVal = tmp[1]
 			myVal = String.replace(myVal,"\"","\\\"")
@@ -251,7 +258,8 @@ def parseString(s):
 				if myKey in numericalKeys:
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
-					myCrit = myCrit + ("float(book.%s) %s (%s) and " % (myKey, myOperator, myVal))
+					myCrit = myCrit + ("float(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
+					print myCrit
 			# ---------------------------------------------------------------------------
 			# now begins the interesting part for field Number which is stored as 
 			# a string but treated as a numerical value
@@ -263,8 +271,7 @@ def parseString(s):
 				else:
 					# if the current value of book.Number is Null it has to be converted to
 					# 0 before it can be converted to float
-					myCrit = myCrit + ('float(nullToZero(book.Number)) %s float(%s) and ' % (myOperator, myVal))
-				print myCrit
+					myCrit = myCrit + ('float(nullToZero(book.Number)) %s float(nullToZero(%s)) and ' % (myOperator, myVal))
 			# end of extra handling of Number field
 			# ----------------------------------------------------------------------------
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
@@ -481,15 +488,21 @@ def replaceData(books):
 	
 	progBar = progressForm()
 	progBar.Show()
+	writeCode('import System',1,True)
+	writeCode('from System.Windows.Forms import MessageBox',1,True)
 	writeCode('from globalvars import *',1,True)
 	writeCode('from utils import *',1,True)
 	writeCode('comp = comparer()',1,True)
 	try:
 		s = File.ReadAllLines(globalvars.DATFILE)
+#		print s
 		i = 0
+		s = [line for line in s if str.Trim(line) <> '']
 		for line in s:
 			i += 1
-			if String.find(line," => ") and line[0] <> "#":
+#			if String.find(line," => ") and line[0] <> "#":
+			if not line.StartsWith('#'):
+
 				if not parseString(line):
 					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
@@ -504,7 +517,7 @@ def replaceData(books):
 	progBar.Dispose()
 
 	writeCode('except Exception,err:', 0, True)
-	writeCode('print (\"Error in code generation: %s\" % str(err))', 1, True)
+	writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
 	
 	if ERROR_LEVEL == 0:
 		theCode = parsedCode()	# read generated code from file
