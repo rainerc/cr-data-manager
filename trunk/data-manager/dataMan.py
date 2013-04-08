@@ -35,12 +35,11 @@ change - if no value was modified by the DM, only "book xxx was touched" is writ
 change - new modifier NotContainsAnyOf
 change - new modifier StartsWithAnyOf
 change - new directive "#@ END_RULES"
-...
 change - new class "parser"
 change - new class "ruleFile" (encapsulated reading and writing the DATFILE)
 fix - exception when Null value was used in Range modifier
 change - when error was raised by compiling code a MessageBox will show the error
-
+...
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -259,7 +258,7 @@ def parseString(s):
 					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
 				else:
 					myCrit = myCrit + ("float(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
-					print myCrit
+
 			# ---------------------------------------------------------------------------
 			# now begins the interesting part for field Number which is stored as 
 			# a string but treated as a numerical value
@@ -267,7 +266,6 @@ def parseString(s):
 				if str.Trim(myVal) == '':
 					# fix issue 31
 					myCrit = myCrit + ('str(book.Number) %s \'\' and ' % (myOperator))
-					print myCrit
 				else:
 					# if the current value of book.Number is Null it has to be converted to
 					# 0 before it can be converted to float
