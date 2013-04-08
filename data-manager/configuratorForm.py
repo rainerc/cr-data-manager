@@ -9,7 +9,8 @@ from System.IO import FileInfo
 import globalvars
 import utils
 #from globalvars import DATFILE, ICON_SMALL, VERSION
-from utils import readDataFile, writeDataFile
+from utils import readFile
+from utils import ruleFile
 
 class configuratorForm(Form):
 	
@@ -85,15 +86,24 @@ class configuratorForm(Form):
 			self.statusLabel.Text = s
 
 	def update(self, sender, event):
-		myCursor = self.Cursor.Current
-		self.Cursor = Cursors.WaitCursor
-		if not writeDataFile(globalvars.DATFILE,self.textbox.Text):
-			self.showTheFile()
-#			event.Cancel = True
-		self.isDirty = False
-		self.statusText('data saved')
-		self.Cursor = myCursor
+		self.writeRuleFile()
 
+	def writeRuleFile(self):
+		self.Cursor = Cursors.WaitCursor
+		rulefile = utils.ruleFile()
+		if rulefile.write(self.textbox.Text) == rulefile.NOERROR:
+			self.showTheFile()
+			self.isDirty = False
+			self.statusText('data saved')
+		else:
+			# todo: more meaningful error text
+			MessageBox.Show('Data could not be saved')
+		self.Cursor = Cursors.Default
+		if rulefile.editedByParser:
+			# todo: more meaningfull error message
+			MessageBox.Show('Some rules were invalid! Those rules were marked.')
+		return not rulefile.editedByParser
+		
 	def formClosing(self, sender, event):
 		if self.isDirty and self.theFile == globalvars.DATFILE:
 			result = (MessageBox.Show(
@@ -102,11 +112,7 @@ class configuratorForm(Form):
                    , MessageBoxButtons.YesNoCancel
                    , MessageBoxIcon.Question))
 			if result == DialogResult.Yes:
-				if self.theFile == globalvars.DATFILE:
-					if not writeDataFile(globalvars.DATFILE,self.textbox.Text):
-						self.showTheFile()
-					self.statusText('')
-
+				if not self.writeRuleFile(): event.Cancel = True
 			elif result == DialogResult.No:
 				pass
 			elif result == DialogResult.Cancel:
@@ -118,10 +124,16 @@ class configuratorForm(Form):
 		
 	def showTheFile(self):
 		if self.theFile <> '':
-			self.textbox.Text = readDataFile(self.theFile)
-			if not self.compareSource(self.theFile,self.textbox.Text):
-				self.isDirty = True
-				self.statusText('* data changed')
+			if self.theFile == globalvars.DATFILE:
+				ruleFile = utils.ruleFile()
+				self.textbox.Text = ruleFile.read()
+				if ruleFile.editedByParser:
+					self.isDirty = True
+					self.statusText('* data changed')
+					MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
+	
+			else:		
+				self.textbox.Text = readFile(self.theFile)
 
 	def addButtons(self):
 		if self.theFile == globalvars.DATFILE:
@@ -136,12 +148,12 @@ class configuratorForm(Form):
 		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
 		
-	def compareSource(self,theFile,theText):
-		try:
-			pos = theText.index('#\tinvalid syntax')
-			return False
-		except Exception, err:
-			return True
+#	def compareSource(self,theFile,theText):
+#		try:
+#			pos = theText.index('#\tinvalid syntax')
+#			return False
+#		except Exception, err:
+#			return True
 		
 
 	def setTitle(self, s):

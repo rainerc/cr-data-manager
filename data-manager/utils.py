@@ -170,14 +170,17 @@ class parser(object):
 	
 		'''
 		s = String.Trim(s)
+#		print s
 		if not len(s) > 0:
 			self.err = False
 		# check if line is comment
 		if s.StartsWith('#@'):		# directive?
 			self.err = False
-		elif s.StartsWith('#'):		# comment?
+			return
+		if s.StartsWith('#'):		# comment?
 			self.err = False
-		elif s.StartsWith('<<'):	# valid rule
+			return
+		if s.StartsWith('<<'):	# valid rule
 			if not String.EndsWith(s,'>>'):
 				self.err = True
 				self.error = 'missing >> at the end of rule'
@@ -243,34 +246,122 @@ class parser(object):
 #	else:
 #		return '# invalid expression: %s' % s
 
-def readDataFile(theFile):
-	# reading configuration file?
-	if theFile == globalvars.DATFILE:
+class ruleFile(object):
+	
+	def __init__(self):
+		# some constants
+		self.NOERROR = 0
+		self.ERRORSAVEFILE = 1
+		self.ERRORSAVEFILE_NOBYTES = 2
+		
+		self.err = self.NOERROR
+		self.theFile = globalvars.DATFILE
+		self.editedByParser = False
+	
+	def read(self):
+		'''
+		reading rules configuration
+		returns string of parsed rules delimited by System.Environment.NewLine
+		if the parser made any alterations the editedByParser property will be
+		set to True
+		'''
 		s1=[]
 		s = []
 		myParser = parser()
-
-		if File.Exists(globalvars.DATFILE):
-			File.Copy(globalvars.DATFILE, globalvars.BAKFILE, True) # just in case something bad happens
-			s1 = File.ReadAllLines(globalvars.DATFILE)
+		self.editedByParser = False
+		if File.Exists(self.theFile):
+			File.Copy(self.theFile, globalvars.BAKFILE, True) # just in case something bad happens
+			s1 = File.ReadAllLines(self.theFile)
 			s1 = [line for line in s1 if str.Trim(line) <> '']
 			for line in s1:
 				myParser.validate(str(line))
 				if myParser.err:
+					self.editedByParser = True
 					pre = myParser.commentedLine(line)
 				else:
 					pre = line
 				s.Add(pre)
-			# s = s1
 		elif File.Exists(globalvars.SAMPLEFILE):
 			s = File.ReadAllLines(globalvars.SAMPLEFILE)
+				
+		tmp = str('')
+		s = [line for line in s if str.Trim(line) <> '']
+		for line in s:
+			tmp += '%s%s' % (line, System.Environment.NewLine)
+		return tmp
+	
+	def write(self, theText):
+		'''
+		writes the context of the configurator window to a file
+		returns ERROR constant (NOERROR if successful)
+		if the parser made any alterations the editedByParser property will be
+		set to True
+		'''
+		self.editedByParser = False
+		s = str.split(str(theText),'\n')
+		tmp = str('')
+		errlines = 0
+		myParser = parser()
+		pre = ''
+		
+		s = [line for line in s if str.Trim(line) <> '']
+	
+		for line in s:
+			myParser.validate(str(line))
+#			print str(line)
+#			print str(myParser.error)
+#			print str(myParser.err)
+			if myParser.err:
+				pre = myParser.commentedLine(line)
+				errlines += 1
+				self.editedByParser = True
+			else:
+				pre = str(line)
+			tmp += '%s%s' % (pre, System.Environment.NewLine)
+		if len(tmp) > 0:
+			try:
+				File.WriteAllText(self.theFile, tmp)
+			except Exception, err:
+				return self.ERRORSAVEFILE
+		else:
+			return self.ERRORSAVEFILE_NOBYTES
+#		if errlines > 0:
+#				MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
+	
+		if not File.Exists(globalvars.CHKFILE):
+			File.Create(globalvars.CHKFILE)
+			
+		return self.NOERROR
+		
+	
+def readFile(theFile):
+	# reading configuration file?
+#	if theFile == globalvars.DATFILE:
+#		s1=[]
+#		s = []
+#		myParser = parser()
+#
+#		if File.Exists(globalvars.DATFILE):
+#			File.Copy(globalvars.DATFILE, globalvars.BAKFILE, True) # just in case something bad happens
+#			s1 = File.ReadAllLines(globalvars.DATFILE)
+#			s1 = [line for line in s1 if str.Trim(line) <> '']
+#			for line in s1:
+#				myParser.validate(str(line))
+#				if myParser.err:
+#					pre = myParser.commentedLine(line)
+#				else:
+#					pre = line
+#				s.Add(pre)
+#			# s = s1
+#		elif File.Exists(globalvars.SAMPLEFILE):
+#			s = File.ReadAllLines(globalvars.SAMPLEFILE)
 			
 	# reading other file?
+#	else:
+	if File.Exists(theFile):
+		s = File.ReadAllLines(theFile)
 	else:
-		if File.Exists(theFile):
-			s = File.ReadAllLines(theFile)
-		else:
-			return str('')
+		return str('')
 
 	tmp = str('')
 	s = [line for line in s if str.Trim(line) <> '']
@@ -280,38 +371,38 @@ def readDataFile(theFile):
 		tmp = 'Your criteria matched no book. No data was touched by the Data Manager.'
 	return tmp
 
-def writeDataFile(theFile, theText):
-	'''
-	writes the context of the configurator window to a file
-	'''
-	s = str.split(str(theText),'\n')
-	tmp = str('')
-	errlines = 0
-	myParser = parser()
-	pre = ''
-	
-	s = [line for line in s if str.Trim(line) <> '']
-
-	for line in s:
-		myParser.validate(str(line))
-		print str(line)
-		print str(myParser.error)
-		print str(myParser.err)
-		if myParser.err:
-			# pre = '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (System.Environment.NewLine,myParser.error, System.Environment.NewLine, line, System.Environment.NewLine)
-			pre = myParser.commentedLine(line)
-			errlines += 1
-		else:
-			pre = str(line)
-		tmp += '%s%s' % (pre, System.Environment.NewLine)
-	if len(tmp) > 0:
-		File.WriteAllText(theFile, tmp)
-	else:
-		MessageBox.Show('File not written (0 Byte size)')
-	if errlines > 0:
-			MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
-
-	if not File.Exists(globalvars.CHKFILE):
-		File.Create(globalvars.CHKFILE)
-		
-	return errlines == 0
+#def writeDataFile(theFile, theText):
+#	'''
+#	writes the context of the configurator window to a file
+#	'''
+#	s = str.split(str(theText),'\n')
+#	tmp = str('')
+#	errlines = 0
+#	myParser = parser()
+#	pre = ''
+#	
+#	s = [line for line in s if str.Trim(line) <> '']
+#
+#	for line in s:
+#		myParser.validate(str(line))
+#		print str(line)
+#		print str(myParser.error)
+#		print str(myParser.err)
+#		if myParser.err:
+#			# pre = '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (System.Environment.NewLine,myParser.error, System.Environment.NewLine, line, System.Environment.NewLine)
+#			pre = myParser.commentedLine(line)
+#			errlines += 1
+#		else:
+#			pre = str(line)
+#		tmp += '%s%s' % (pre, System.Environment.NewLine)
+#	if len(tmp) > 0:
+#		File.WriteAllText(theFile, tmp)
+#	else:
+#		MessageBox.Show('File not written (0 Byte size)')
+#	if errlines > 0:
+#			MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
+#
+#	if not File.Exists(globalvars.CHKFILE):
+#		File.Create(globalvars.CHKFILE)
+#		
+#	return errlines == 0
