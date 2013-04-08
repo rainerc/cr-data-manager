@@ -35,6 +35,8 @@ change - if no value was modified by the DM, only "book xxx was touched" is writ
 change - new modifier NotContainsAnyOf
 change - new modifier StartsWithAnyOf
 change - new directive "#@ END_RULES"
+...
+change - new class "parser"
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -69,7 +71,9 @@ sys.setdefaultencoding(bodyname)
 DEBUG__ = True
 
 import globalvars
-from utils import *
+import utils
+from utils import parser
+from utils import comparer
 from mainform import mainForm
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
@@ -160,6 +164,11 @@ def parseString(s):
 	myNewVal = ''			# this will later contain the new value (right part of rule)
 	myModifier = ''			# the modifier (like Contains, Range, Calc etc.)
 
+	myParser = utils.parser()
+	myParser.validate(s)
+	if myParser.err:
+		File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (%s)\nline: %s)" % (myParser.error, s))
+		return 0
 	
 	a = String.split(s,"=>")
 	i = len(a[0])

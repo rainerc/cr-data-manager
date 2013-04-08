@@ -4,6 +4,7 @@ clr.AddReference('System.Windows.Forms')
 from System.Windows.Forms import *
 from System.Drawing import *
 from System.IO import File
+from System.IO import FileInfo
 
 import globalvars
 import utils
@@ -86,7 +87,9 @@ class configuratorForm(Form):
 	def update(self, sender, event):
 		myCursor = self.Cursor.Current
 		self.Cursor = Cursors.WaitCursor
-		writeDataFile(globalvars.DATFILE,self.textbox.Text)
+		if not writeDataFile(globalvars.DATFILE,self.textbox.Text):
+			self.showTheFile()
+#			event.Cancel = True
 		self.isDirty = False
 		self.statusText('data saved')
 		self.Cursor = myCursor
@@ -100,7 +103,8 @@ class configuratorForm(Form):
                    , MessageBoxIcon.Question))
 			if result == DialogResult.Yes:
 				if self.theFile == globalvars.DATFILE:
-					writeDataFile(globalvars.DATFILE,self.textbox.Text)
+					if not writeDataFile(globalvars.DATFILE,self.textbox.Text):
+						self.showTheFile()
 					self.statusText('')
 
 			elif result == DialogResult.No:
@@ -113,7 +117,11 @@ class configuratorForm(Form):
 		self.statusText('* data changed')
 		
 	def showTheFile(self):
-		self.textbox.Text = readDataFile(self.theFile)
+		if self.theFile <> '':
+			self.textbox.Text = readDataFile(self.theFile)
+			if not self.compareSource(self.theFile,self.textbox.Text):
+				self.isDirty = True
+				self.statusText('* data changed')
 
 	def addButtons(self):
 		if self.theFile == globalvars.DATFILE:
@@ -127,6 +135,14 @@ class configuratorForm(Form):
 		self.showTheFile()
 		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
+		
+	def compareSource(self,theFile,theText):
+		try:
+			pos = theText.index('#\tinvalid syntax')
+			return False
+		except Exception, err:
+			return True
+		
 
 	def setTitle(self, s):
 		self.Text = '%s - Version %s' % (s, globalvars.VERSION)
