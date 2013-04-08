@@ -148,14 +148,6 @@ class configuratorForm(Form):
 		self.textbox.TextChanged += self.textChanged
 		self.addButtons()
 		
-#	def compareSource(self,theFile,theText):
-#		try:
-#			pos = theText.index('#\tinvalid syntax')
-#			return False
-#		except Exception, err:
-#			return True
-		
-
 	def setTitle(self, s):
 		self.Text = '%s - Version %s' % (s, globalvars.VERSION)
 		
