@@ -40,8 +40,13 @@ change - new class "ruleFile" (encapsulated reading and writing the DATFILE)
 fix - exception when Null value was used in Range modifier
 change - when error was raised by compiling code a MessageBox will show the error
 ...
+r105
 change - Configurator form re-written
 change - basic Search functionality in Configurator
+...
+r106
+change - first rudimentary GUI written (no functionality yet)
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -156,11 +161,11 @@ def writeCode(s, level, linebreak):
 	except Exception, err:
 		print "Error in function writeCode: ", str(err)
 
-def parsedCode():
-	try:
-		return File.ReadAllText(globalvars.TMPFILE)
-	except Exception, err:
-		print "Error in function parsedCode: ", str(err)
+#def parsedCode():
+#	try:
+#		return File.ReadAllText(globalvars.TMPFILE)
+#	except Exception, err:
+#		print "Error in function parsedCode: ", str(err)
 		
 def parseString(s):
 	# todo: this belongs in class ruleFile
@@ -443,7 +448,7 @@ def dmConfig():
 
 	form = configuratorForm()
 	form.setFile(globalvars.DATFILE)
-	form.setTitle('Data Manager Configurator')
+	form.Text = 'Data Manager Configurator %s' % globalvars.VERSION
 	form.ShowDialog(ComicRack.MainWindow)
 	form.Dispose()
 
@@ -556,7 +561,7 @@ def replaceData(books):
 	
 				form = configuratorForm()
 				form.setFile(globalvars.LOGFILE)
-				form.setTitle('Data Manager Logfile')
+				form.Text = 'Data Manager Logfile %s' % globalvars.VERSION
 				form.ShowDialog(ComicRack.MainWindow)
 				form.Dispose()
 
