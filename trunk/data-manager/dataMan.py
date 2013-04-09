@@ -12,6 +12,8 @@ v 0.1.15
 
 by docdoom
 
+images and icons used by permission of 600WPMPO and www.aha-soft.com
+
 revision history
 
 v 0.1.15
@@ -46,6 +48,8 @@ change - basic Search functionality in Configurator
 ...
 r106
 change - first rudimentary GUI written (no functionality yet)
+...
+change - ComicRack version check at start (min is 0.9.165)
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -90,57 +94,58 @@ from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
 from progressForm import progressForm
 from configuratorForm import configuratorForm
+from utils import ruleFile
 
 sys.path.append(globalvars.FOLDER)
 
-allowedKeys = [
-	'Series',
-	'Volume',
-	'Imprint',
-	'Publisher',
-	'Number',
-	'FileDirectory',
-	'SeriesGroup',
-	'Month',
-	'Year',
-	'MainCharacterOrTeam',
-	'Format',
-	'AlternateSeries',
-	'Count',
-	'FilePath',
-	'FileName',
-	'Genre',
-	'Tags',
-	'PageCount'
-	]
+#allowedKeys = [
+#	'Series',
+#	'Volume',
+#	'Imprint',
+#	'Publisher',
+#	'Number',
+#	'FileDirectory',
+#	'SeriesGroup',
+#	'Month',
+#	'Year',
+#	'MainCharacterOrTeam',
+#	'Format',
+#	'AlternateSeries',
+#	'Count',
+#	'FilePath',
+#	'FileName',
+#	'Genre',
+#	'Tags',
+#	'PageCount'
+#	]
 
-numericalKeys = [
-	'Volume',
-	'Month',
-	'Year',
-	'Count',
-	'PageCount'
-	]
+#numericalKeys = [
+#	'Volume',
+#	'Month',
+#	'Year',
+#	'Count',
+#	'PageCount'
+#	]
 
-multiValueKeys = [
-	'Tags',
-	'Genre'
-	]
+#multiValueKeys = [
+#	'Tags',
+#	'Genre'
+#	]
 	
-allowedVals = [
-	'Series',
-	'Volume',
-	'Imprint',
-	'Publisher',
-	'Number',
-	'SeriesGroup',
-	'MainCharacterOrTeam',
-	'Format',
-	'AlternateSeries',
-	'Count',
-	'Genre',
-	'Tags'
-	]
+#allowedVals = [
+#	'Series',
+#	'Volume',
+#	'Imprint',
+#	'Publisher',
+#	'Number',
+#	'SeriesGroup',
+#	'MainCharacterOrTeam',
+#	'Format',
+#	'AlternateSeries',
+#	'Count',
+#	'Genre',
+#	'Tags'
+#	]
 
 
 def writeCode(s, level, linebreak):
@@ -176,6 +181,12 @@ def parseString(s):
 	myNewVal = ''			# this will later contain the new value (right part of rule)
 	myModifier = ''			# the modifier (like Contains, Range, Calc etc.)
 
+	rules = utils.ruleFile()
+	allowedKeys = rules.allowedKeys
+	allowedVals = rules.allowedVals
+	numericalKeys = rules.numericalKeys
+	multiValueKeys = rules.multiValueKeys
+	
 	myParser = utils.parser()
 	myParser.validate(s)
 	if myParser.err:
@@ -452,6 +463,18 @@ def dmConfig():
 	form.ShowDialog(ComicRack.MainWindow)
 	form.Dispose()
 
+def crVersion():
+	minVersion = '0.9.164'
+	vMin = 0 + 9000 + 164
+	myVersion = ComicRack.App.ProductVersion
+	v = str.Split(myVersion,'.')
+	vMyVersion = (int(v[0]) * 1000000) + (int(v[1]) * 1000) + int(v[2])
+	if vMyVersion < vMin:
+		MessageBox.Show(
+		'You have only CR version %s installed.\nPlease install at least version %s of ComicRack first!' % (myVersion,minVersion),
+		'Data Manger for ComicRack %s' % globalvars.VERSION)
+		return False
+	return True
 
 #@Name	Data Manager
 #@Image dataMan16.png
@@ -461,6 +484,8 @@ def replaceData(books):
 
 	ERROR_LEVEL = 0
 
+	if not crVersion():
+		return
 	form = mainForm()
 	form.ShowDialog(ComicRack.MainWindow)
 	form.Dispose()
@@ -498,6 +523,7 @@ def replaceData(books):
 	writeCode('from globalvars import *',1,True)
 	writeCode('from utils import *',1,True)
 	writeCode('comp = comparer()',1,True)
+	
 	try:
 		s = File.ReadAllLines(globalvars.DATFILE)
 #		print s

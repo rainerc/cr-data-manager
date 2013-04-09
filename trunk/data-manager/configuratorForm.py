@@ -10,6 +10,7 @@ import utils
 from utils import readFile
 from utils import ruleFile
 
+rulefile = utils.ruleFile()
 
 class configuratorForm(Form):
 	def __init__(self):
@@ -18,7 +19,14 @@ class configuratorForm(Form):
 		self.theFile = ''
 		self.searchLabelText = 'search ...'
 		self.textBoxHeight = 500
-		self.textBoxMinHeight = 250
+		self.textBoxMinHeight = 333
+		
+		self.rulefile = rulefile
+		self.allowedKeys = rulefile.allowedKeys
+		self.allowedVals = rulefile.allowedVals
+#		self.numericalKeys = rulefile.numericalKeys
+		self.allowedKeyModifiers = rulefile.allowedKeyModifiers
+		self.allowedValModifiers = rulefile.allowedValModifiers
 	
 	def InitializeComponent(self):
 		self._textBox1 = System.Windows.Forms.TextBox()
@@ -31,21 +39,21 @@ class configuratorForm(Form):
 		self._toolStripStatusLabel3 = System.Windows.Forms.ToolStripStatusLabel()
 		self._buttonPlus = System.Windows.Forms.Button()
 		self._textBoxSearch = System.Windows.Forms.ToolStripTextBox()
-		self._buttonFind = System.Windows.Forms.Button()
 		self._panelGUI = System.Windows.Forms.Panel()
 		self._label3 = System.Windows.Forms.Label()
 		self._comboBox7 = System.Windows.Forms.ComboBox()
 		self._label1 = System.Windows.Forms.Label()
-		self._comboBox1 = System.Windows.Forms.ComboBox()
-		self._comboBox2 = System.Windows.Forms.ComboBox()
-		self._button1 = System.Windows.Forms.Button()
+		self._comboKeyModifiers = System.Windows.Forms.ComboBox()
+		self._buttonAddCriteria = System.Windows.Forms.Button()
 		self._label2 = System.Windows.Forms.Label()
-		self._comboBox4 = System.Windows.Forms.ComboBox()
-		self._comboBox5 = System.Windows.Forms.ComboBox()
+		self._comboValFields = System.Windows.Forms.ComboBox()
+		self._comboValModifiers = System.Windows.Forms.ComboBox()
 		self._button2 = System.Windows.Forms.Button()
-		self._textBox2 = System.Windows.Forms.TextBox()
+		self._textBoxCriteria = System.Windows.Forms.TextBox()
 		self._textBox3 = System.Windows.Forms.TextBox()
 		self._button3 = System.Windows.Forms.Button()
+		self._buttonFind = System.Windows.Forms.ToolStripButton()
+		self._comboCriteriaFields = System.Windows.Forms.ComboBox()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
@@ -60,13 +68,14 @@ class configuratorForm(Form):
 		self._textBox1.Multiline = True
 		self._textBox1.Name = "textBox1"
 		self._textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
-		self._textBox1.Size = System.Drawing.Size(760, 250)
+		self._textBox1.Size = System.Drawing.Size(760, 333)
 		self._textBox1.TabIndex = 0
 		self._textBox1.TabStop = False
 		self._textBox1.WordWrap = False
 		self._textBox1.Click += self.TextBox1Click
 		self._textBox1.KeyPress += self.TextBox1KeyPress
 		self._textBox1.KeyUp += self.TextBox1KeyUp
+		self._textBox1.MouseDown += self.TextBox1MouseDown
 		# 
 		# buttonClose
 		# 
@@ -110,7 +119,8 @@ class configuratorForm(Form):
 		# toolStrip1
 		# 
 		self._toolStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
-			[self._textBoxSearch]))
+			[self._textBoxSearch,
+			self._buttonFind]))
 		self._toolStrip1.Location = System.Drawing.Point(0, 0)
 		self._toolStrip1.Name = "toolStrip1"
 		self._toolStrip1.Size = System.Drawing.Size(784, 25)
@@ -137,7 +147,7 @@ class configuratorForm(Form):
 		# 
 		# buttonPlus
 		# 
-		self._buttonPlus.Location = System.Drawing.Point(249, 537)
+		self._buttonPlus.Location = System.Drawing.Point(333, 537)
 		self._buttonPlus.Name = "buttonPlus"
 		self._buttonPlus.Size = System.Drawing.Size(75, 23)
 		self._buttonPlus.TabIndex = 5
@@ -156,32 +166,22 @@ class configuratorForm(Form):
 		self._textBoxSearch.KeyDown += self.ToolStripTextBox1KeyDown
 		self._textBoxSearch.DoubleClick += self.ToolStripTextBox1DoubleClick
 		# 
-		# buttonFind
-		# 
-		self._buttonFind.Location = System.Drawing.Point(237, 2)
-		self._buttonFind.Name = "buttonFind"
-		self._buttonFind.Size = System.Drawing.Size(75, 23)
-		self._buttonFind.TabIndex = 6
-		self._buttonFind.Text = "Find"
-		self._buttonFind.UseVisualStyleBackColor = True
-		self._buttonFind.Click += self.ButtonFindClick
-		# 
 		# panelGUI
 		# 
+		self._panelGUI.Controls.Add(self._comboCriteriaFields)
 		self._panelGUI.Controls.Add(self._button3)
 		self._panelGUI.Controls.Add(self._textBox3)
-		self._panelGUI.Controls.Add(self._textBox2)
+		self._panelGUI.Controls.Add(self._textBoxCriteria)
 		self._panelGUI.Controls.Add(self._label3)
 		self._panelGUI.Controls.Add(self._comboBox7)
 		self._panelGUI.Controls.Add(self._label1)
-		self._panelGUI.Controls.Add(self._comboBox1)
-		self._panelGUI.Controls.Add(self._comboBox2)
-		self._panelGUI.Controls.Add(self._button1)
+		self._panelGUI.Controls.Add(self._comboKeyModifiers)
+		self._panelGUI.Controls.Add(self._buttonAddCriteria)
 		self._panelGUI.Controls.Add(self._label2)
-		self._panelGUI.Controls.Add(self._comboBox4)
-		self._panelGUI.Controls.Add(self._comboBox5)
+		self._panelGUI.Controls.Add(self._comboValFields)
+		self._panelGUI.Controls.Add(self._comboValModifiers)
 		self._panelGUI.Controls.Add(self._button2)
-		self._panelGUI.Location = System.Drawing.Point(13, 284)
+		self._panelGUI.Location = System.Drawing.Point(12, 367)
 		self._panelGUI.Name = "panelGUI"
 		self._panelGUI.Size = System.Drawing.Size(759, 138)
 		self._panelGUI.TabIndex = 22
@@ -190,9 +190,10 @@ class configuratorForm(Form):
 		# 
 		# label3
 		# 
+		self._label3.AutoSize = True
 		self._label3.Location = System.Drawing.Point(13, 67)
 		self._label3.Name = "label3"
-		self._label3.Size = System.Drawing.Size(100, 23)
+		self._label3.Size = System.Drawing.Size(38, 13)
 		self._label3.TabIndex = 33
 		self._label3.Text = "Others"
 		# 
@@ -203,9 +204,9 @@ class configuratorForm(Form):
 			["=>",
 			"Commentary line",
 			"New empty line"]))
-		self._comboBox7.Location = System.Drawing.Point(119, 67)
+		self._comboBox7.Location = System.Drawing.Point(80, 67)
 		self._comboBox7.Name = "comboBox7"
-		self._comboBox7.Size = System.Drawing.Size(121, 21)
+		self._comboBox7.Size = System.Drawing.Size(159, 21)
 		self._comboBox7.TabIndex = 32
 		# 
 		# label1
@@ -216,54 +217,48 @@ class configuratorForm(Form):
 		self._label1.TabIndex = 25
 		self._label1.Text = "Criteria"
 		# 
-		# comboBox1
+		# comboKeyModifiers
 		# 
-		self._comboBox1.FormattingEnabled = True
-		self._comboBox1.Location = System.Drawing.Point(119, 10)
-		self._comboBox1.Name = "comboBox1"
-		self._comboBox1.Size = System.Drawing.Size(121, 21)
-		self._comboBox1.TabIndex = 22
+		self._comboKeyModifiers.FormattingEnabled = True
+		self._comboKeyModifiers.Location = System.Drawing.Point(246, 10)
+		self._comboKeyModifiers.Name = "comboKeyModifiers"
+		self._comboKeyModifiers.Size = System.Drawing.Size(121, 21)
+		self._comboKeyModifiers.TabIndex = 23
 		# 
-		# comboBox2
+		# buttonAddCriteria
 		# 
-		self._comboBox2.FormattingEnabled = True
-		self._comboBox2.Location = System.Drawing.Point(246, 10)
-		self._comboBox2.Name = "comboBox2"
-		self._comboBox2.Size = System.Drawing.Size(121, 21)
-		self._comboBox2.TabIndex = 23
-		# 
-		# button1
-		# 
-		self._button1.Location = System.Drawing.Point(660, 10)
-		self._button1.Name = "button1"
-		self._button1.Size = System.Drawing.Size(75, 23)
-		self._button1.TabIndex = 26
-		self._button1.Text = "Add"
-		self._button1.UseVisualStyleBackColor = True
+		self._buttonAddCriteria.Location = System.Drawing.Point(660, 10)
+		self._buttonAddCriteria.Name = "buttonAddCriteria"
+		self._buttonAddCriteria.Size = System.Drawing.Size(75, 23)
+		self._buttonAddCriteria.TabIndex = 26
+		self._buttonAddCriteria.Text = "Add"
+		self._buttonAddCriteria.UseVisualStyleBackColor = True
+		self._buttonAddCriteria.Click += self.ButtonAddCriteriaClick
 		# 
 		# label2
 		# 
+		self._label2.AutoSize = True
 		self._label2.Location = System.Drawing.Point(13, 39)
 		self._label2.Name = "label2"
-		self._label2.Size = System.Drawing.Size(100, 23)
+		self._label2.Size = System.Drawing.Size(64, 13)
 		self._label2.TabIndex = 27
 		self._label2.Text = "New Values"
 		# 
-		# comboBox4
+		# comboValFields
 		# 
-		self._comboBox4.FormattingEnabled = True
-		self._comboBox4.Location = System.Drawing.Point(119, 39)
-		self._comboBox4.Name = "comboBox4"
-		self._comboBox4.Size = System.Drawing.Size(121, 21)
-		self._comboBox4.TabIndex = 28
+		self._comboValFields.FormattingEnabled = True
+		self._comboValFields.Location = System.Drawing.Point(80, 39)
+		self._comboValFields.Name = "comboValFields"
+		self._comboValFields.Size = System.Drawing.Size(159, 21)
+		self._comboValFields.TabIndex = 28
 		# 
-		# comboBox5
+		# comboValModifiers
 		# 
-		self._comboBox5.FormattingEnabled = True
-		self._comboBox5.Location = System.Drawing.Point(246, 39)
-		self._comboBox5.Name = "comboBox5"
-		self._comboBox5.Size = System.Drawing.Size(121, 21)
-		self._comboBox5.TabIndex = 29
+		self._comboValModifiers.FormattingEnabled = True
+		self._comboValModifiers.Location = System.Drawing.Point(246, 39)
+		self._comboValModifiers.Name = "comboValModifiers"
+		self._comboValModifiers.Size = System.Drawing.Size(121, 21)
+		self._comboValModifiers.TabIndex = 29
 		# 
 		# button2
 		# 
@@ -274,12 +269,12 @@ class configuratorForm(Form):
 		self._button2.Text = "Add"
 		self._button2.UseVisualStyleBackColor = True
 		# 
-		# textBox2
+		# textBoxCriteria
 		# 
-		self._textBox2.Location = System.Drawing.Point(374, 10)
-		self._textBox2.Name = "textBox2"
-		self._textBox2.Size = System.Drawing.Size(280, 20)
-		self._textBox2.TabIndex = 34
+		self._textBoxCriteria.Location = System.Drawing.Point(374, 10)
+		self._textBoxCriteria.Name = "textBoxCriteria"
+		self._textBoxCriteria.Size = System.Drawing.Size(280, 20)
+		self._textBoxCriteria.TabIndex = 34
 		# 
 		# textBox3
 		# 
@@ -297,11 +292,28 @@ class configuratorForm(Form):
 		self._button3.Text = "Add"
 		self._button3.UseVisualStyleBackColor = True
 		# 
+		# buttonFind
+		# 
+		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+		self._buttonFind.ImageTransparentColor = System.Drawing.Color.Magenta
+		self._buttonFind.Name = "buttonFind"
+		self._buttonFind.Size = System.Drawing.Size(34, 22)
+		self._buttonFind.Text = "Find"
+		self._buttonFind.Click += self.ButtonFindClick
+		# 
+		# comboCriteriaFields
+		# 
+		self._comboCriteriaFields.FormattingEnabled = True
+		self._comboCriteriaFields.Location = System.Drawing.Point(81, 10)
+		self._comboCriteriaFields.Name = "comboCriteriaFields"
+		self._comboCriteriaFields.Size = System.Drawing.Size(159, 21)
+		self._comboCriteriaFields.TabIndex = 37
+		self._comboCriteriaFields.SelectedIndexChanged += self.ComboCriteriaFieldsSelectedIndexChanged
+		# 
 		# configuratorForm
 		# 
 		self.ClientSize = System.Drawing.Size(784, 562)
 		self.Controls.Add(self._panelGUI)
-		self.Controls.Add(self._buttonFind)
 		self.Controls.Add(self._buttonPlus)
 		self.Controls.Add(self._buttonSave)
 		self.Controls.Add(self._toolStrip1)
@@ -348,14 +360,7 @@ class configuratorForm(Form):
 		currentPos = self._textBox1.SelectionStart
 		currentLen = self._textBox1.SelectionLength
 		self.setLineInfo()
-#		tmp = self._textBox1.Text.split(System.Environment.NewLine)
-#		tmp.insert(currentLine + 1,'New line %d' % currentLine)
 
-		if False:
-			hash = self._textBox1.Text
-			hashlist = list(hash)
-			hashlist.insert(self._textBox1.SelectionStart, '<<   >>')
-			self._textBox1.Text = ''.join(hashlist)
 			
 		if self._textBox1.Height == self.textBoxHeight:
 			self._textBox1.Height = self.textBoxMinHeight
@@ -380,16 +385,13 @@ class configuratorForm(Form):
 		try:
 			result = True
 			pos = myText.find(str.lower(self._textBoxSearch.Text), self._textBox1.SelectionStart + 1)
-#			if pos > 0:
 			self._textBox1.SelectionStart = pos
 			self._textBox1.SelectionLength = len(self._textBoxSearch.Text)
 			self._textBox1.Focus()
 			self._textBox1.ScrollToCaret()
-#			else:
-#				pos = 0
-#				self.findString()
 		except Exception, err:
-			MessageBox.Show('String not found')
+			MessageBox.Show('End of rule set reached: \"%s\" was not found.' % self._textBoxSearch.Text,
+				'Data Manager for ComicRack %s' % globalvars.VERSION)
 		self.setLineInfo()
 
 	def showTheFile(self):
@@ -402,7 +404,8 @@ class configuratorForm(Form):
 					self.statusText('* data changed')
 					MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
 	
-			else:		
+			else:
+				self._buttonPlus.Visible = False						
 				self._textBox1.Text = readFile(self.theFile)
 				
 	def textChanged(self, sender, event):
@@ -439,8 +442,12 @@ class configuratorForm(Form):
 		self._textBox1.SelectionLength = 0
 		self._textBoxSearch.Text = self.searchLabelText
 		self._textBox1.Height = self.textBoxHeight
-#		self._buttonPlus.Visible = False
-
+		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
+		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+		self._comboCriteriaFields.DataSource = sorted(self.allowedKeys)
+		self._comboValFields.DataSource = sorted(self.allowedVals)
+		self._comboKeyModifiers.DataSource = sorted(self.allowedKeyModifiers)
+		self._comboValModifiers.DataSource = self.allowedValModifiers
 
 	def ButtonSaveClick(self, sender, e):
 		self.writeRuleFile()
@@ -491,4 +498,46 @@ class configuratorForm(Form):
 		
 
 	def Panel1Paint(self, sender, e):
+		pass
+
+	def ComboCriteriaFieldsSelectedIndexChanged(self, sender, e):
+		myKey = self._comboCriteriaFields.SelectedValue
+		self._toolStripStatusLabel3.Text = myKey
+		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
+		pass
+
+	def ButtonAddCriteriaClick(self, sender, e):
+		theText = '<<%s.%s:%s>>' % (
+			self._comboCriteriaFields.SelectedValue,
+			self._comboKeyModifiers.SelectedValue,
+			self._textBoxCriteria.Text
+			)
+			
+		MessageBox.Show(theText)
+		if True:
+			self.addTextToRuleSet(theText)
+		pass
+	
+	def addTextToRuleSet(self,theText):
+		myPos = self._textBox1.SelectionStart
+		myLen = self._textBox1.SelectionLength
+		hash = self._textBox1.Text
+		print myPos
+		print myLen
+		hashlist = list(hash)
+		i = myPos
+		while i < myPos + (myLen):
+			print hashlist[i]
+			hashlist.pop(myPos)
+			i += 1
+
+		hashlist.insert(myPos, theText)
+		self._textBox1.Text = ''.join(hashlist)
+		self._textBox1.SelectionStart = myPos
+		self._textBox1.SelectionLength = len(theText)
+
+	def TextBox1MouseDown(self, sender, e):
+		if e.Button == MouseButtons.Left:
+			stText = self._textBox1.Text
+			self._textBox1.DoDragDrop(self._textBox1.Text, DragDropEffects.Copy)
 		pass
