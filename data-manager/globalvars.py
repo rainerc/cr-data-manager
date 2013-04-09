@@ -15,6 +15,7 @@ CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the config
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
 IMAGE = Path.Combine(FOLDER, 'dataMan.png')
+IMAGESEARCH = Path.Combine(FOLDER, 'search.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'

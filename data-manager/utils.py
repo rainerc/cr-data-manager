@@ -213,40 +213,13 @@ class parser(object):
 	
 	pass
 
-#def validate(s):
-#	'''
-#	validates the current line in the configuration for basic syntax errors
-#	if everything ok it returns the line
-#	else it returns the line prefixed with '# invalid expression'
-#
-#	'''
-#	s = String.Trim(s)
-#	if not len(s) > 0:
-#		return ''
-#
-#	p = re.compile('(<{2}|#)+.*')
-#	m = p.search(s)
-#	if m:
-#		pos = m.start()
-#	else:
-#		pos= -1
-#	if s [0] <> '#':
-#		if not (String.StartsWith(s,'<<') and String.EndsWith(s,'>>')):
-#			return '# invalid expression: %s' % s
-#		if str.count(s, '=>') <> 1:
-#			return '# invalid expression: %s' % s
-#		if str.count(s, '<<') <> str.count(s, '>>'):
-#			return '# invalid expression: %s' % s
-#		if str.count(s, '<<') > str.count(s,':'):
-#			return '# invalid expression: %s' % s
-#		if pos > 0:
-#			return s [pos:]
-#	if s[0] == '#' or s[0:2] == '<<':
-#		return s
-#	else:
-#		return '# invalid expression: %s' % s
 
 class ruleFile(object):
+	
+
+	
+
+
 	
 	def __init__(self):
 		# some constants
@@ -257,6 +230,92 @@ class ruleFile(object):
 		self.err = self.NOERROR
 		self.theFile = globalvars.DATFILE
 		self.editedByParser = False
+		
+		self.numericalKeys = [
+			'Volume',
+			'Month',
+			'Year',
+			'Count',
+			'PageCount'
+			]
+
+		self.allowedKeyModifiers = [
+			'Is',
+			'Range',
+			'Not',
+			'Contains',
+			'Greater',
+			'GreaterEq',
+			'Less',
+			'LessEq',
+			'Startswith',
+			'StartsWithAnyOf',
+			'ContainsAnyOf',
+			'NotContainsAnyOf',
+			'NotContains',
+			'ContainsAllOf'
+		]
+		
+		self.allowedKeyModifiersNumeric = [
+			'Is',
+			'Range',
+			'Not',
+			'Greater',
+			'GreaterEq',
+			'Less',
+			'LessEq',
+			'ContainsAnyOf',
+			'NotContainsAnyOf',
+			'NotContains',
+			'ContainsAllOf'
+		]
+		
+		self.allowedValModifiers = [
+			'SetValue',
+			'Calc'
+		]
+		
+		self.allowedKeys = [
+			'Series',
+			'Volume',
+			'Imprint',
+			'Publisher',
+			'Number',
+			'FileDirectory',
+			'SeriesGroup',
+			'Month',
+			'Year',
+			'MainCharacterOrTeam',
+			'Format',
+			'AlternateSeries',
+			'Count',
+			'FilePath',
+			'FileName',
+			'Genre',
+			'Tags',
+			'PageCount'
+			]
+			
+			
+		self.multiValueKeys = [
+			'Tags',
+			'Genre'
+			]
+			
+		self.allowedVals = [
+			'Series',
+			'Volume',
+			'Imprint',
+			'Publisher',
+			'Number',
+			'SeriesGroup',
+			'MainCharacterOrTeam',
+			'Format',
+			'AlternateSeries',
+			'Count',
+			'Genre',
+			'Tags'
+			]
 	
 	def read(self):
 		'''
@@ -308,9 +367,6 @@ class ruleFile(object):
 	
 		for line in s:
 			myParser.validate(str(line))
-#			print str(line)
-#			print str(myParser.error)
-#			print str(myParser.err)
 			if myParser.err:
 				pre = myParser.commentedLine(line)
 				errlines += 1
@@ -325,39 +381,25 @@ class ruleFile(object):
 				return self.ERRORSAVEFILE
 		else:
 			return self.ERRORSAVEFILE_NOBYTES
-#		if errlines > 0:
-#				MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
 	
 		if not File.Exists(globalvars.CHKFILE):
 			File.Create(globalvars.CHKFILE)
 			
 		return self.NOERROR
-		
+	
+	def getAllowedKeyModifiers(self,myKey):
+		myKey = str.lower(myKey)
+		try:
+			myModifierList = ['']
+			if myKey == 'number' or myKey in [str.lower(x) for x in self.numericalKeys]:
+				return self.allowedKeyModifiersNumeric
+			if myKey not in [str.lower(x) for x in self.numericalKeys]:
+				return self.allowedKeyModifiers
+			return myModifierList
+		except Exception, err:
+			print str(err)					
 	
 def readFile(theFile):
-	# reading configuration file?
-#	if theFile == globalvars.DATFILE:
-#		s1=[]
-#		s = []
-#		myParser = parser()
-#
-#		if File.Exists(globalvars.DATFILE):
-#			File.Copy(globalvars.DATFILE, globalvars.BAKFILE, True) # just in case something bad happens
-#			s1 = File.ReadAllLines(globalvars.DATFILE)
-#			s1 = [line for line in s1 if str.Trim(line) <> '']
-#			for line in s1:
-#				myParser.validate(str(line))
-#				if myParser.err:
-#					pre = myParser.commentedLine(line)
-#				else:
-#					pre = line
-#				s.Add(pre)
-#			# s = s1
-#		elif File.Exists(globalvars.SAMPLEFILE):
-#			s = File.ReadAllLines(globalvars.SAMPLEFILE)
-			
-	# reading other file?
-#	else:
 	if File.Exists(theFile):
 		s = File.ReadAllLines(theFile)
 	else:
@@ -370,39 +412,3 @@ def readFile(theFile):
 	if len(s) == 0 and theFile == globalvars.LOGFILE:
 		tmp = 'Your criteria matched no book. No data was touched by the Data Manager.'
 	return tmp
-
-#def writeDataFile(theFile, theText):
-#	'''
-#	writes the context of the configurator window to a file
-#	'''
-#	s = str.split(str(theText),'\n')
-#	tmp = str('')
-#	errlines = 0
-#	myParser = parser()
-#	pre = ''
-#	
-#	s = [line for line in s if str.Trim(line) <> '']
-#
-#	for line in s:
-#		myParser.validate(str(line))
-#		print str(line)
-#		print str(myParser.error)
-#		print str(myParser.err)
-#		if myParser.err:
-#			# pre = '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (System.Environment.NewLine,myParser.error, System.Environment.NewLine, line, System.Environment.NewLine)
-#			pre = myParser.commentedLine(line)
-#			errlines += 1
-#		else:
-#			pre = str(line)
-#		tmp += '%s%s' % (pre, System.Environment.NewLine)
-#	if len(tmp) > 0:
-#		File.WriteAllText(theFile, tmp)
-#	else:
-#		MessageBox.Show('File not written (0 Byte size)')
-#	if errlines > 0:
-#			MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
-#
-#	if not File.Exists(globalvars.CHKFILE):
-#		File.Create(globalvars.CHKFILE)
-#		
-#	return errlines == 0
