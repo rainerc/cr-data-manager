@@ -52,6 +52,14 @@ change - first rudimentary GUI written (no functionality yet)
 r109
 change - ComicRack version check at start (min is 0.9.165)
 change - basic GUI functionality
+...
+r111
+change - new directive #@ GROUP
+change - added combobox to find group header in textbox
+change - textclips (like commentary line, group header etc. can be added via GUI)
+change - rule editor position set to CenterParent
+fixed - 'setvalue' was not recognized as a valid modifier
+fixed - exception if file in rule editor is not the DatFile and combobox group selector is selected
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -372,7 +380,7 @@ def parseString(s):
 				tmp2 = tmp[0]
 				myKey = tmp2
 				myModifier = ''
-				if String.find(tmp2,'.') > 0:
+				if String.find(tmp2,'.') > 0 and lower(String).find(tmp2,'setvalue') < 0:
 					tmp3 = String.split(tmp2,'.')
 					myKey = tmp3[0]
 					myModifier = tmp3[1]

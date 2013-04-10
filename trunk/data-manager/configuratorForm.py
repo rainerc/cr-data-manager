@@ -29,6 +29,13 @@ class configuratorForm(Form):
 			'variable',
 			'end of rules'
 			]
+		self.dictTextClips = {
+			'commentary line': '# ', 
+			'divider': '# %s' % ('-' * 30) , 
+			'group header': '#@ GROUP ',
+			'variable' : '#@ VAR ',
+			'end of rules' : '#@ END_RULES'
+		}
 		self.rulefile = rulefile
 		self.allowedKeys = rulefile.allowedKeys
 		self.allowedVals = rulefile.allowedVals
@@ -59,14 +66,16 @@ class configuratorForm(Form):
 		self._buttonAddValues = System.Windows.Forms.Button()
 		self._textBoxCriteria = System.Windows.Forms.TextBox()
 		self._textBoxValues = System.Windows.Forms.TextBox()
-		self._button3 = System.Windows.Forms.Button()
+		self._buttonAddTextClip = System.Windows.Forms.Button()
 		self._buttonFind = System.Windows.Forms.ToolStripButton()
 		self._comboCriteriaFields = System.Windows.Forms.ComboBox()
 		self._buttonAddRule = System.Windows.Forms.Button()
 		self._textBoxCompleteCriteria = System.Windows.Forms.TextBox()
 		self._textBoxCompleteValues = System.Windows.Forms.TextBox()
-		self._textBox2 = System.Windows.Forms.TextBox()
+		self._textBoxTextClips = System.Windows.Forms.TextBox()
 		self._textBoxCompleteRule = System.Windows.Forms.TextBox()
+		self._comboGroups = System.Windows.Forms.ToolStripComboBox()
+		self._labelComboGroups = System.Windows.Forms.ToolStripLabel()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
@@ -134,7 +143,9 @@ class configuratorForm(Form):
 		# 
 		self._toolStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
 			[self._textBoxSearch,
-			self._buttonFind]))
+			self._buttonFind,
+			self._labelComboGroups,
+			self._comboGroups]))
 		self._toolStrip1.Location = System.Drawing.Point(0, 0)
 		self._toolStrip1.Name = "toolStrip1"
 		self._toolStrip1.Size = System.Drawing.Size(784, 25)
@@ -183,12 +194,12 @@ class configuratorForm(Form):
 		# panelGUI
 		# 
 		self._panelGUI.Controls.Add(self._textBoxCompleteRule)
-		self._panelGUI.Controls.Add(self._textBox2)
+		self._panelGUI.Controls.Add(self._textBoxTextClips)
 		self._panelGUI.Controls.Add(self._textBoxCompleteValues)
 		self._panelGUI.Controls.Add(self._textBoxCompleteCriteria)
 		self._panelGUI.Controls.Add(self._buttonAddRule)
 		self._panelGUI.Controls.Add(self._comboCriteriaFields)
-		self._panelGUI.Controls.Add(self._button3)
+		self._panelGUI.Controls.Add(self._buttonAddTextClip)
 		self._panelGUI.Controls.Add(self._textBoxValues)
 		self._panelGUI.Controls.Add(self._textBoxCriteria)
 		self._panelGUI.Controls.Add(self._label3)
@@ -229,6 +240,7 @@ class configuratorForm(Form):
 		self._comboTextClips.Name = "comboTextClips"
 		self._comboTextClips.Size = System.Drawing.Size(159, 21)
 		self._comboTextClips.TabIndex = 32
+		self._comboTextClips.SelectedValueChanged += self.ComboTextClipsSelectedValueChanged
 		# 
 		# label1
 		# 
@@ -297,6 +309,7 @@ class configuratorForm(Form):
 		# 
 		# textBoxCriteria
 		# 
+		self._textBoxCriteria.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxCriteria.Location = System.Drawing.Point(374, 10)
 		self._textBoxCriteria.Name = "textBoxCriteria"
 		self._textBoxCriteria.Size = System.Drawing.Size(280, 20)
@@ -304,20 +317,21 @@ class configuratorForm(Form):
 		# 
 		# textBoxValues
 		# 
+		self._textBoxValues.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxValues.Location = System.Drawing.Point(374, 68)
 		self._textBoxValues.Name = "textBoxValues"
 		self._textBoxValues.Size = System.Drawing.Size(280, 20)
 		self._textBoxValues.TabIndex = 35
 		# 
-		# button3
+		# buttonAddTextClip
 		# 
-		self._button3.Enabled = False
-		self._button3.Location = System.Drawing.Point(660, 171)
-		self._button3.Name = "button3"
-		self._button3.Size = System.Drawing.Size(75, 23)
-		self._button3.TabIndex = 36
-		self._button3.Text = "Add"
-		self._button3.UseVisualStyleBackColor = True
+		self._buttonAddTextClip.Location = System.Drawing.Point(660, 171)
+		self._buttonAddTextClip.Name = "buttonAddTextClip"
+		self._buttonAddTextClip.Size = System.Drawing.Size(75, 23)
+		self._buttonAddTextClip.TabIndex = 36
+		self._buttonAddTextClip.Text = "Add"
+		self._buttonAddTextClip.UseVisualStyleBackColor = True
+		self._buttonAddTextClip.Click += self.ButtonAddTextClipClick
 		# 
 		# buttonFind
 		# 
@@ -351,6 +365,7 @@ class configuratorForm(Form):
 		# 
 		# textBoxCompleteCriteria
 		# 
+		self._textBoxCompleteCriteria.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxCompleteCriteria.Location = System.Drawing.Point(80, 37)
 		self._textBoxCompleteCriteria.Name = "textBoxCompleteCriteria"
 		self._textBoxCompleteCriteria.Size = System.Drawing.Size(574, 20)
@@ -359,18 +374,20 @@ class configuratorForm(Form):
 		# 
 		# textBoxCompleteValues
 		# 
+		self._textBoxCompleteValues.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxCompleteValues.Location = System.Drawing.Point(80, 98)
 		self._textBoxCompleteValues.Name = "textBoxCompleteValues"
 		self._textBoxCompleteValues.Size = System.Drawing.Size(574, 20)
 		self._textBoxCompleteValues.TabIndex = 40
 		self._textBoxCompleteValues.TextChanged += self.TextBoxCompleteValuesTextChanged
 		# 
-		# textBox2
+		# textBoxTextClips
 		# 
-		self._textBox2.Location = System.Drawing.Point(263, 171)
-		self._textBox2.Name = "textBox2"
-		self._textBox2.Size = System.Drawing.Size(391, 20)
-		self._textBox2.TabIndex = 41
+		self._textBoxTextClips.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
+		self._textBoxTextClips.Location = System.Drawing.Point(263, 171)
+		self._textBoxTextClips.Name = "textBoxTextClips"
+		self._textBoxTextClips.Size = System.Drawing.Size(391, 20)
+		self._textBoxTextClips.TabIndex = 41
 		# 
 		# textBoxCompleteRule
 		# 
@@ -381,6 +398,19 @@ class configuratorForm(Form):
 		self._textBoxCompleteRule.ReadOnly = True
 		self._textBoxCompleteRule.Size = System.Drawing.Size(574, 41)
 		self._textBoxCompleteRule.TabIndex = 42
+		# 
+		# comboGroups
+		# 
+		self._comboGroups.Name = "comboGroups"
+		self._comboGroups.Size = System.Drawing.Size(121, 25)
+		self._comboGroups.SelectedIndexChanged += self.ComboGroupsSelectedIndexChanged
+		# 
+		# labelComboGroups
+		# 
+		self._labelComboGroups.Name = "labelComboGroups"
+		self._labelComboGroups.Padding = System.Windows.Forms.Padding(20, 0, 0, 0)
+		self._labelComboGroups.Size = System.Drawing.Size(86, 22)
+		self._labelComboGroups.Text = "find group:"
 		# 
 		# configuratorForm
 		# 
@@ -395,6 +425,7 @@ class configuratorForm(Form):
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.MaximizeBox = False
 		self.Name = "configuratorForm"
+		self.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
 		self.Text = "Form1"
 		self.FormClosing += self.ConfiguratorFormFormClosing
 		self.Load += self.ConfiguratorFormLoad
@@ -523,7 +554,17 @@ class configuratorForm(Form):
 		self._comboValueFields.DataSource = sorted(self.allowedVals)
 		self._comboKeyModifiers.DataSource = sorted(self.allowedKeyModifiers)
 		self._comboValueModifiers.DataSource = self.allowedValModifiers
-		self._comboTextClips.DataSource = self.textClips
+		self._comboTextClips.DataSource = BindingSource(self.dictTextClips, None)
+#		self._comboTextClips.DataSource = self.dictTextClips
+#		self._comboTextClips.Items.Add("test1","test2")
+#		self._comboTextClips.DisplayMember = self.dictTextClips.keys()
+#		self._comboTextClips.ValueMember = self.dictTextClips.values()
+		self._labelComboGroups.Visible = self.theFile == globalvars.DATFILE
+		self._comboGroups.Visible = self.theFile == globalvars.DATFILE
+		groups = self.rulefile.groupHeaders()
+		for group in groups:
+			self._comboGroups.Items.Add(group)
+		
 
 	def ButtonSaveClick(self, sender, e):
 		self.writeRuleFile()
@@ -616,8 +657,7 @@ class configuratorForm(Form):
 		# todo: some syntax checking
 		
 		self.addRuleToRuleSet('%s => %s' % (self._textBoxCompleteCriteria.Text, self._textBoxCompleteValues.Text), False)
-		pass
-	
+
 	def addRuleToRuleSet(self,theText,overWriteSelection):
 		
 		parser = utils.parser()
@@ -625,7 +665,7 @@ class configuratorForm(Form):
 		if parser.err == True:
 			MessageBox.Show(parser.error)
 			return
-		
+		# todo: even if overwriteSelection is False the selection will be overwritten
 		if overWriteSelection == False:
 			line = self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
 
@@ -651,8 +691,8 @@ class configuratorForm(Form):
 			self._textBox1.SelectionStart = myPos
 			self._textBox1.SelectionLength = len(theText)
 			
-		self._textBox1.SelectionStart = myPos
-		self._textBox1.SelectionLength = len(theText)
+		self._textBox1.SelectionStart = myPos # + self._textBox1.SelectionLength 
+		self._textBox1.SelectionLength = len(theText) 
 		self._textBox1.Focus()
 		self._textBox1.ScrollToCaret()
 			
@@ -668,3 +708,28 @@ class configuratorForm(Form):
 	def PanelGUIEnter(self, sender, e):
 		if self._textBox1.SelectionLength == 0:
 			self._textBox1.SelectionLength = 1
+	
+	def getTextClipValue(self, myKey):
+		for key, value in self.dictTextClips.iteritems():
+			if key == myKey:
+				return value
+		return ''
+
+	def ButtonAddTextClipClick(self, sender, e):
+		myVal = self._textBoxTextClips.Text
+		self.addRuleToRuleSet(myVal, False)
+
+	def ComboTextClipsSelectedValueChanged(self, sender, e):
+		myVal = self._comboTextClips.SelectedValue
+		self._textBoxTextClips.Text = self.getTextClipValue(myVal)
+		
+
+	def ComboGroupsSelectedIndexChanged(self, sender, e):
+#		MessageBox.Show(str(self._comboGroups.SelectedItem))
+		theText = '#@ GROUP %s' % str(self._comboGroups.SelectedItem)
+		pos = self._textBox1.Text.find(theText)
+		self._textBox1.SelectionStart = pos
+		self._textBox1.SelectionLength = len(theText)
+		self._textBox1.Focus()
+		self._textBox1.ScrollToCaret()
+		pass
