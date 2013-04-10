@@ -388,7 +388,7 @@ def parseString(s):
 			
 			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
-			if str.lower(myModifier) = 'setvalue':
+			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
 				
 			if myModifier <> "":

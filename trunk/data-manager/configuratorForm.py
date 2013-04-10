@@ -22,7 +22,13 @@ class configuratorForm(Form):
 		self.searchLabelText = 'search ...'
 		self.textBoxHeight = 500
 		self.textBoxMinHeight = 260
-		
+		self.textClips = [
+			'commentary line',
+			'divider',
+			'group header',
+			'variable',
+			'end of rules'
+			]
 		self.rulefile = rulefile
 		self.allowedKeys = rulefile.allowedKeys
 		self.allowedVals = rulefile.allowedVals
@@ -43,7 +49,7 @@ class configuratorForm(Form):
 		self._textBoxSearch = System.Windows.Forms.ToolStripTextBox()
 		self._panelGUI = System.Windows.Forms.Panel()
 		self._label3 = System.Windows.Forms.Label()
-		self._comboBox7 = System.Windows.Forms.ComboBox()
+		self._comboTextClips = System.Windows.Forms.ComboBox()
 		self._label1 = System.Windows.Forms.Label()
 		self._comboKeyModifiers = System.Windows.Forms.ComboBox()
 		self._buttonAddCriteria = System.Windows.Forms.Button()
@@ -186,7 +192,7 @@ class configuratorForm(Form):
 		self._panelGUI.Controls.Add(self._textBoxValues)
 		self._panelGUI.Controls.Add(self._textBoxCriteria)
 		self._panelGUI.Controls.Add(self._label3)
-		self._panelGUI.Controls.Add(self._comboBox7)
+		self._panelGUI.Controls.Add(self._comboTextClips)
 		self._panelGUI.Controls.Add(self._label1)
 		self._panelGUI.Controls.Add(self._comboKeyModifiers)
 		self._panelGUI.Controls.Add(self._buttonAddCriteria)
@@ -211,18 +217,18 @@ class configuratorForm(Form):
 		self._label3.TabIndex = 33
 		self._label3.Text = "Others"
 		# 
-		# comboBox7
+		# comboTextClips
 		# 
-		self._comboBox7.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-		self._comboBox7.FormattingEnabled = True
-		self._comboBox7.Items.AddRange(System.Array[System.Object](
+		self._comboTextClips.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+		self._comboTextClips.FormattingEnabled = True
+		self._comboTextClips.Items.AddRange(System.Array[System.Object](
 			["=>",
 			"Commentary line",
 			"New empty line"]))
-		self._comboBox7.Location = System.Drawing.Point(80, 171)
-		self._comboBox7.Name = "comboBox7"
-		self._comboBox7.Size = System.Drawing.Size(159, 21)
-		self._comboBox7.TabIndex = 32
+		self._comboTextClips.Location = System.Drawing.Point(80, 171)
+		self._comboTextClips.Name = "comboTextClips"
+		self._comboTextClips.Size = System.Drawing.Size(159, 21)
+		self._comboTextClips.TabIndex = 32
 		# 
 		# label1
 		# 
@@ -305,6 +311,7 @@ class configuratorForm(Form):
 		# 
 		# button3
 		# 
+		self._button3.Enabled = False
 		self._button3.Location = System.Drawing.Point(660, 171)
 		self._button3.Name = "button3"
 		self._button3.Size = System.Drawing.Size(75, 23)
@@ -333,11 +340,12 @@ class configuratorForm(Form):
 		# 
 		# buttonAddRule
 		# 
+		self._buttonAddRule.Font = System.Drawing.Font("Microsoft Sans Serif", 8.25, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0)
 		self._buttonAddRule.Location = System.Drawing.Point(660, 122)
 		self._buttonAddRule.Name = "buttonAddRule"
-		self._buttonAddRule.Size = System.Drawing.Size(75, 23)
+		self._buttonAddRule.Size = System.Drawing.Size(75, 43)
 		self._buttonAddRule.TabIndex = 38
-		self._buttonAddRule.Text = "AddRule"
+		self._buttonAddRule.Text = "Add Rule"
 		self._buttonAddRule.UseVisualStyleBackColor = True
 		self._buttonAddRule.Click += self.ButtonAddRuleClick
 		# 
@@ -442,6 +450,8 @@ class configuratorForm(Form):
 		return
 	
 	def findString(self):
+		if str.Trim(self._textBoxSearch.Text) == '' or self._textBoxSearch.Text == self.searchLabelText:
+			return
 		myText = str.lower(self._textBox1.Text)
 		try:
 			result = True
@@ -504,11 +514,16 @@ class configuratorForm(Form):
 		self._textBoxSearch.Text = self.searchLabelText
 		self._textBox1.Height = self.textBoxHeight
 		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
+#		self._buttonAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+#		self._buttonAddCriteria.Text = ''
+#		self._buttonAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+#		self._buttonAddValues.Text = ''
 		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
 		self._comboCriteriaFields.DataSource = sorted(self.allowedKeys)
 		self._comboValueFields.DataSource = sorted(self.allowedVals)
 		self._comboKeyModifiers.DataSource = sorted(self.allowedKeyModifiers)
 		self._comboValueModifiers.DataSource = self.allowedValModifiers
+		self._comboTextClips.DataSource = self.textClips
 
 	def ButtonSaveClick(self, sender, e):
 		self.writeRuleFile()
@@ -563,13 +578,13 @@ class configuratorForm(Form):
 
 	def ComboCriteriaFieldsSelectedIndexChanged(self, sender, e):
 		myKey = self._comboCriteriaFields.SelectedValue
-		self._toolStripStatusLabel3.Text = myKey
+#		self._toolStripStatusLabel3.Text = myKey
 		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
 
 
 	def ComboValueFieldsSelectedIndexChanged(self, sender, e):
 		myKey = self._comboValueFields.SelectedValue
-		self._toolStripStatusLabel3.Text = myKey
+#		self._toolStripStatusLabel3.Text = myKey
 		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)
 
 	
