@@ -231,6 +231,27 @@ class ruleFile(object):
 		self.theFile = globalvars.DATFILE
 		self.editedByParser = False
 		
+		self.allowedKeys = [
+			'Series',
+			'Volume',
+			'Imprint',
+			'Publisher',
+			'Number',
+			'FileDirectory',
+			'SeriesGroup',
+			'Month',
+			'Year',
+			'MainCharacterOrTeam',
+			'Format',
+			'AlternateSeries',
+			'Count',
+			'FilePath',
+			'FileName',
+			'Genre',
+			'Tags',
+			'PageCount'
+			]
+			
 		self.numericalKeys = [
 			'Volume',
 			'Month',
@@ -264,38 +285,9 @@ class ruleFile(object):
 			'GreaterEq',
 			'Less',
 			'LessEq',
-			'ContainsAnyOf',
-			'NotContainsAnyOf',
-			'NotContains',
-			'ContainsAllOf'
 		]
 		
-		self.allowedValModifiers = [
-			'SetValue',
-			'Calc'
-		]
-		
-		self.allowedKeys = [
-			'Series',
-			'Volume',
-			'Imprint',
-			'Publisher',
-			'Number',
-			'FileDirectory',
-			'SeriesGroup',
-			'Month',
-			'Year',
-			'MainCharacterOrTeam',
-			'Format',
-			'AlternateSeries',
-			'Count',
-			'FilePath',
-			'FileName',
-			'Genre',
-			'Tags',
-			'PageCount'
-			]
-			
+	
 			
 		self.multiValueKeys = [
 			'Tags',
@@ -316,6 +308,18 @@ class ruleFile(object):
 			'Genre',
 			'Tags'
 			]
+			
+		self.allowedValModifiers = [
+			'SetValue',
+			'Calc'
+			]
+			
+		self.allowedValModifiersMulti = [
+			'SetValue',
+			'Add',
+			'Replace',
+			'Remove'
+			]	
 	
 	def read(self):
 		'''
@@ -397,7 +401,19 @@ class ruleFile(object):
 				return self.allowedKeyModifiers
 			return myModifierList
 		except Exception, err:
-			print str(err)					
+			print str(err)	
+
+	def getAllowedValModifiers(self,myKey):
+		myKey = str.lower(myKey)
+		try:
+			myModifierList = ['']
+			if myKey in [str.lower(x) for x in self.multiValueKeys]:
+				return self.allowedValModifiersMulti
+			else:
+				return self.allowedValModifiers
+		except Exception, err:
+			print str(err)
+		return ''
 	
 def readFile(theFile):
 	if File.Exists(theFile):

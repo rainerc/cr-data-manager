@@ -49,7 +49,9 @@ change - basic Search functionality in Configurator
 r106
 change - first rudimentary GUI written (no functionality yet)
 ...
+r109
 change - ComicRack version check at start (min is 0.9.165)
+change - basic GUI functionality
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -234,6 +236,8 @@ def parseString(s):
 				if myModifier <> "":
 					if str.lower(myModifier) == "range":
 						myOperator = "in range"
+					elif str.lower(myModifier) == 'is':
+						myOperator = '=='
 					elif str.lower(myModifier) == "not":
 						myOperator = "<>"
 					elif str.lower(myModifier) == "contains":
@@ -384,6 +388,9 @@ def parseString(s):
 			
 			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
+			if str.lower(myModifier) = 'setvalue':
+				myModifier = ''
+				
 			if myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					if myKey not in numericalKeys and myKey <> 'Number':
