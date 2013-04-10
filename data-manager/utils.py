@@ -216,11 +216,6 @@ class parser(object):
 
 class ruleFile(object):
 	
-
-	
-
-
-	
 	def __init__(self):
 		# some constants
 		self.NOERROR = 0
@@ -320,6 +315,19 @@ class ruleFile(object):
 			'Replace',
 			'Remove'
 			]	
+	
+	def groupHeaders(self, theFile = globalvars.DATFILE):
+		'''
+		returns a list of group headers in the rule set
+		'''
+		headers = []
+		if File.Exists(theFile):
+			s1 = File.ReadAllLines(theFile)
+			s1 = [line for line in s1 if String.StartsWith(line, '#@ GROUP')]
+			for line in s1:
+				headers.Add(String.Replace(line,'#@ GROUP ',''))
+							
+		return headers
 	
 	def read(self):
 		'''
