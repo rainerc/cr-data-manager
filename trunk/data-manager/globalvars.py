@@ -21,4 +21,4 @@ WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 
 COMPARE_CASE_INSENSITIVE = True
-VERSION = '0.1.15 r106'
+VERSION = '0.1.15 r109'
