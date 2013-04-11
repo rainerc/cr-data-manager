@@ -60,6 +60,12 @@ change - textclips (like commentary line, group header etc. can be added via GUI
 change - rule editor position set to CenterParent
 fixed - 'setvalue' was not recognized as a valid modifier
 fixed - exception if file in rule editor is not the DatFile and combobox group selector is selected
+...
+r11.
+fixed - sometimes selected text in rule set is overwritten by inserted rule (GUI)
+fixed - criterion or setvalue are not added to rule if already in there (GUI)
+change - buttons for deleting content of textboxes for criteria and setvalue (GUI)
+change - group names are checked if already used
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
