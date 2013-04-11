@@ -44,6 +44,7 @@ class configuratorForm(Form):
 		self.allowedValModifiers = rulefile.allowedValModifiers
 		
 	def InitializeComponent(self):
+		self._components = System.ComponentModel.Container()
 		self._textBox1 = System.Windows.Forms.TextBox()
 		self._buttonClose = System.Windows.Forms.Button()
 		self._statusStrip1 = System.Windows.Forms.StatusStrip()
@@ -76,9 +77,14 @@ class configuratorForm(Form):
 		self._textBoxCompleteRule = System.Windows.Forms.TextBox()
 		self._comboGroups = System.Windows.Forms.ToolStripComboBox()
 		self._labelComboGroups = System.Windows.Forms.ToolStripLabel()
+		self._pictureBoxTrashCriteria = System.Windows.Forms.PictureBox()
+		self._pictureBoxTrashValues = System.Windows.Forms.PictureBox()
+		self._toolTip1 = System.Windows.Forms.ToolTip(self._components)
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
+		self._pictureBoxTrashCriteria.BeginInit()
+		self._pictureBoxTrashValues.BeginInit()
 		self.SuspendLayout()
 		# 
 		# textBox1
@@ -193,6 +199,8 @@ class configuratorForm(Form):
 		# 
 		# panelGUI
 		# 
+		self._panelGUI.Controls.Add(self._pictureBoxTrashValues)
+		self._panelGUI.Controls.Add(self._pictureBoxTrashCriteria)
 		self._panelGUI.Controls.Add(self._textBoxCompleteRule)
 		self._panelGUI.Controls.Add(self._textBoxTextClips)
 		self._panelGUI.Controls.Add(self._textBoxCompleteValues)
@@ -211,9 +219,9 @@ class configuratorForm(Form):
 		self._panelGUI.Controls.Add(self._comboValueFields)
 		self._panelGUI.Controls.Add(self._comboValueModifiers)
 		self._panelGUI.Controls.Add(self._buttonAddValues)
-		self._panelGUI.Location = System.Drawing.Point(13, 309)
+		self._panelGUI.Location = System.Drawing.Point(13, 294)
 		self._panelGUI.Name = "panelGUI"
-		self._panelGUI.Size = System.Drawing.Size(759, 220)
+		self._panelGUI.Size = System.Drawing.Size(759, 235)
 		self._panelGUI.TabIndex = 22
 		self._panelGUI.Visible = False
 		self._panelGUI.Paint += self.Panel1Paint
@@ -222,7 +230,7 @@ class configuratorForm(Form):
 		# label3
 		# 
 		self._label3.AutoSize = True
-		self._label3.Location = System.Drawing.Point(13, 171)
+		self._label3.Location = System.Drawing.Point(13, 174)
 		self._label3.Name = "label3"
 		self._label3.Size = System.Drawing.Size(38, 13)
 		self._label3.TabIndex = 33
@@ -236,7 +244,7 @@ class configuratorForm(Form):
 			["=>",
 			"Commentary line",
 			"New empty line"]))
-		self._comboTextClips.Location = System.Drawing.Point(80, 171)
+		self._comboTextClips.Location = System.Drawing.Point(80, 174)
 		self._comboTextClips.Name = "comboTextClips"
 		self._comboTextClips.Size = System.Drawing.Size(159, 21)
 		self._comboTextClips.TabIndex = 32
@@ -325,7 +333,8 @@ class configuratorForm(Form):
 		# 
 		# buttonAddTextClip
 		# 
-		self._buttonAddTextClip.Location = System.Drawing.Point(660, 171)
+		self._buttonAddTextClip.Font = System.Drawing.Font("Microsoft Sans Serif", 8.25, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0)
+		self._buttonAddTextClip.Location = System.Drawing.Point(660, 174)
 		self._buttonAddTextClip.Name = "buttonAddTextClip"
 		self._buttonAddTextClip.Size = System.Drawing.Size(75, 23)
 		self._buttonAddTextClip.TabIndex = 36
@@ -355,7 +364,7 @@ class configuratorForm(Form):
 		# buttonAddRule
 		# 
 		self._buttonAddRule.Font = System.Drawing.Font("Microsoft Sans Serif", 8.25, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0)
-		self._buttonAddRule.Location = System.Drawing.Point(660, 122)
+		self._buttonAddRule.Location = System.Drawing.Point(660, 125)
 		self._buttonAddRule.Name = "buttonAddRule"
 		self._buttonAddRule.Size = System.Drawing.Size(75, 43)
 		self._buttonAddRule.TabIndex = 38
@@ -384,7 +393,7 @@ class configuratorForm(Form):
 		# textBoxTextClips
 		# 
 		self._textBoxTextClips.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
-		self._textBoxTextClips.Location = System.Drawing.Point(263, 171)
+		self._textBoxTextClips.Location = System.Drawing.Point(263, 174)
 		self._textBoxTextClips.Name = "textBoxTextClips"
 		self._textBoxTextClips.Size = System.Drawing.Size(391, 20)
 		self._textBoxTextClips.TabIndex = 41
@@ -392,7 +401,7 @@ class configuratorForm(Form):
 		# textBoxCompleteRule
 		# 
 		self._textBoxCompleteRule.Enabled = False
-		self._textBoxCompleteRule.Location = System.Drawing.Point(80, 124)
+		self._textBoxCompleteRule.Location = System.Drawing.Point(80, 127)
 		self._textBoxCompleteRule.Multiline = True
 		self._textBoxCompleteRule.Name = "textBoxCompleteRule"
 		self._textBoxCompleteRule.ReadOnly = True
@@ -401,6 +410,7 @@ class configuratorForm(Form):
 		# 
 		# comboGroups
 		# 
+		self._comboGroups.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
 		self._comboGroups.Name = "comboGroups"
 		self._comboGroups.Size = System.Drawing.Size(121, 25)
 		self._comboGroups.SelectedIndexChanged += self.ComboGroupsSelectedIndexChanged
@@ -411,6 +421,28 @@ class configuratorForm(Form):
 		self._labelComboGroups.Padding = System.Windows.Forms.Padding(20, 0, 0, 0)
 		self._labelComboGroups.Size = System.Drawing.Size(86, 22)
 		self._labelComboGroups.Text = "find group:"
+		# 
+		# pictureBoxTrashCriteria
+		# 
+		self._pictureBoxTrashCriteria.InitialImage = None
+		self._pictureBoxTrashCriteria.Location = System.Drawing.Point(54, 36)
+		self._pictureBoxTrashCriteria.Name = "pictureBoxTrashCriteria"
+		self._pictureBoxTrashCriteria.Size = System.Drawing.Size(25, 26)
+		self._pictureBoxTrashCriteria.TabIndex = 43
+		self._pictureBoxTrashCriteria.TabStop = False
+		self._toolTip1.SetToolTip(self._pictureBoxTrashCriteria, "delete")
+		self._pictureBoxTrashCriteria.Click += self.PictureBoxTrashCriteriaClick
+		# 
+		# pictureBoxTrashValues
+		# 
+		self._pictureBoxTrashValues.InitialImage = None
+		self._pictureBoxTrashValues.Location = System.Drawing.Point(54, 98)
+		self._pictureBoxTrashValues.Name = "pictureBoxTrashValues"
+		self._pictureBoxTrashValues.Size = System.Drawing.Size(25, 26)
+		self._pictureBoxTrashValues.TabIndex = 44
+		self._pictureBoxTrashValues.TabStop = False
+		self._toolTip1.SetToolTip(self._pictureBoxTrashValues, "delete")
+		self._pictureBoxTrashValues.Click += self.PictureBoxTrashValuesClick
 		# 
 		# configuratorForm
 		# 
@@ -435,6 +467,8 @@ class configuratorForm(Form):
 		self._toolStrip1.PerformLayout()
 		self._panelGUI.ResumeLayout(False)
 		self._panelGUI.PerformLayout()
+		self._pictureBoxTrashCriteria.EndInit()
+		self._pictureBoxTrashValues.EndInit()
 		self.ResumeLayout(False)
 		self.PerformLayout()
 		
@@ -545,6 +579,8 @@ class configuratorForm(Form):
 		self._textBoxSearch.Text = self.searchLabelText
 		self._textBox1.Height = self.textBoxHeight
 		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
+		self._pictureBoxTrashCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._pictureBoxTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
 #		self._buttonAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
 #		self._buttonAddCriteria.Text = ''
 #		self._buttonAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
@@ -561,13 +597,19 @@ class configuratorForm(Form):
 #		self._comboTextClips.ValueMember = self.dictTextClips.values()
 		self._labelComboGroups.Visible = self.theFile == globalvars.DATFILE
 		self._comboGroups.Visible = self.theFile == globalvars.DATFILE
-		groups = self.rulefile.groupHeaders()
-		for group in groups:
-			self._comboGroups.Items.Add(group)
+		self.loadGroups()
 		
+
+	def loadGroups(self, sortAlpha = False):
+		groups = self.rulefile.groupHeaders()
+		self._comboGroups.Items.Clear()
+		if not sortAlpha:
+			for group in groups:
+				self._comboGroups.Items.Add(group)
 
 	def ButtonSaveClick(self, sender, e):
 		self.writeRuleFile()
+		self.loadGroups()
 
 	def writeRuleFile(self):
 		self.Cursor = Cursors.WaitCursor
@@ -635,7 +677,9 @@ class configuratorForm(Form):
 			self._comboKeyModifiers.SelectedValue,
 			self._textBoxCriteria.Text
 			)
-		self._textBoxCompleteCriteria.Text += theText
+		# check if criterion already in rule
+		if self._textBoxCompleteCriteria.Text.find(theText) < 0:
+			self._textBoxCompleteCriteria.Text += theText
 	
 	def ButtonAddValuesClick(self, sender, e):
 		theText = '<<%s.%s:%s>> ' % (
@@ -643,7 +687,9 @@ class configuratorForm(Form):
 			self._comboValueModifiers.SelectedValue,
 			self._textBoxValues.Text
 			)
-		self._textBoxCompleteValues.Text += theText
+		# check if setValue already in rule
+		if self._textBoxCompleteValues.Text.find(theText) < 0:
+			self._textBoxCompleteValues.Text += theText
 	
 	
 	def TextBoxCompleteCriteriaTextChanged(self, sender, e):
@@ -665,20 +711,38 @@ class configuratorForm(Form):
 		if parser.err == True:
 			MessageBox.Show(parser.error)
 			return
-		# todo: even if overwriteSelection is False the selection will be overwritten
+		
+		myPos = self._textBox1.SelectionStart
+		myLen = self._textBox1.SelectionLength
+		
 		if overWriteSelection == False:
+			# in which line is the caret?
 			line = self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
-
+			
+			# create list out of textbox content
 			tmp = self._textBox1.Text.split(System.Environment.NewLine)
-			myLine = tmp[line]
-			myPos = self._textBox1.GetFirstCharIndexFromLine(line) + len(myLine)
-			hash = self._textBox1.Text
-			hashlist = list(hash)
-			hashlist.insert(myPos,'%s%s\n' % (System.Environment.NewLine, theText))
-			self._textBox1.Text = ''.join(hashlist)
+			
+			# insert new rule at line + 1
+			tmp.insert(line + 1, theText)
+			
+			# write list back to textbox content
+			newline = System.Environment.NewLine
+			self._textBox1.Text = newline.join(tmp)
+			
+			# highlight inserted rule
+			self._textBox1.SelectionStart = self._textBox1.GetFirstCharIndexFromLine(line + 1)
+			self._textBox1.SelectionLength = len(theText) - 1
+			
+			self._textBox1.Focus()
+			self._textBox1.ScrollToCaret()
+			
+			self.setLineInfo()
+			
+			return
+			
 		else:
-			myPos = self._textBox1.SelectionStart
-			myLen = self._textBox1.SelectionLength
+#			myPos = self._textBox1.SelectionStart
+#			myLen = self._textBox1.SelectionLength
 			hash = self._textBox1.Text
 			hashlist = list(hash)
 			i = myPos
@@ -691,10 +755,12 @@ class configuratorForm(Form):
 			self._textBox1.SelectionStart = myPos
 			self._textBox1.SelectionLength = len(theText)
 			
-		self._textBox1.SelectionStart = myPos # + self._textBox1.SelectionLength 
-		self._textBox1.SelectionLength = len(theText) 
-		self._textBox1.Focus()
-		self._textBox1.ScrollToCaret()
+			self._textBox1.SelectionStart = myPos # + self._textBox1.SelectionLength 
+			self._textBox1.SelectionLength = len(theText) 
+			self._textBox1.Focus()
+			self._textBox1.ScrollToCaret()
+			
+		return
 			
 
 	def TextBox1MouseDown(self, sender, e):
@@ -717,6 +783,19 @@ class configuratorForm(Form):
 
 	def ButtonAddTextClipClick(self, sender, e):
 		myVal = self._textBoxTextClips.Text
+		# check group header
+		if myVal.StartsWith('#@ GROUP'):
+			groupName = str.lower(str.Replace(myVal,'#@ GROUP',''))
+			if str.Trim(groupName) == '':
+				MessageBox.Show('Please add a name for the group','Data Manager for ComicRack %s' % globalvars.VERSION)
+				return
+			else:
+				s = self._textBox1.Text.splitlines()
+				for line in [line for line in s if str.lower(line) == str.lower(myVal)]:
+					MessageBox.Show('Group name is already used','Data Manager for ComicRack %s' % globalvars.VERSION)
+					return				 
+			
+			
 		self.addRuleToRuleSet(myVal, False)
 
 	def ComboTextClipsSelectedValueChanged(self, sender, e):
@@ -727,9 +806,25 @@ class configuratorForm(Form):
 	def ComboGroupsSelectedIndexChanged(self, sender, e):
 #		MessageBox.Show(str(self._comboGroups.SelectedItem))
 		theText = '#@ GROUP %s' % str(self._comboGroups.SelectedItem)
-		pos = self._textBox1.Text.find(theText)
+		s = self._textBox1.Text.splitlines()
+		myLine = -1
+		i = -1
+		for line in s:
+			i += 1
+			if str.lower(line) == str.lower(theText):
+				myLine = i
+				break
+		pos = self._textBox1.GetFirstCharIndexFromLine(i)
 		self._textBox1.SelectionStart = pos
 		self._textBox1.SelectionLength = len(theText)
 		self._textBox1.Focus()
 		self._textBox1.ScrollToCaret()
 		pass
+
+	def PictureBoxTrashCriteriaClick(self, sender, e):
+		self._textBoxCompleteCriteria.Text = ''
+		
+	def PictureBoxTrashValuesClick(self, sender, e):
+		self._textBoxCompleteValues.Text = ''
+		
+
