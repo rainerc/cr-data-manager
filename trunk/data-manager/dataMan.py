@@ -32,7 +32,7 @@ fix - missing references to globalvars added
 change - PageCount added to allowed keys
 change - new modifier ContainsAnyOf (issue 28)
 change - new modifier ContainsNot (may used as well as NotContains)
-change - new modifier ContainsAllOf
+change - new modifier ContainsAllOf (issue 40)
 change - if no value was modified by the DM, only "book xxx was touched" is written to logfile
 change - new modifier NotContainsAnyOf
 change - new modifier StartsWithAnyOf
@@ -61,7 +61,7 @@ change - rule editor position set to CenterParent
 fixed - 'setvalue' was not recognized as a valid modifier
 fixed - exception if file in rule editor is not the DatFile and combobox group selector is selected
 ...
-r11.
+r113
 fixed - sometimes selected text in rule set is overwritten by inserted rule (GUI)
 fixed - criterion or setvalue are not added to rule if already in there (GUI)
 change - buttons for deleting content of textboxes for criteria and setvalue (GUI)
@@ -70,7 +70,11 @@ fixed - Contains... methods in class parser rewritten (unexpected results when l
         or trailing blanks where attached to values)
 fixed - exception when a criterion with apostrophe or quotation mark was written to the log file
         (issue 36)
-
+...
+r114
+change - save and close added to configurator menustrip
+change - option to backup and restore the rule set (issue 30)
+change - DMProc is no longer added to Tags but written as a custom value (issue 33)
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -115,6 +119,8 @@ from aboutForm import aboutForm
 from progressForm import progressForm
 from configuratorForm import configuratorForm
 from utils import ruleFile
+
+from time import localtime, strftime
 
 sys.path.append(globalvars.FOLDER)
 
@@ -438,7 +444,8 @@ def parseString(s):
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
 			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
-			writeCode('book.Tags = multiValueAdd(book.Tags,"DMProc")', 3, True)
+			writeCode("book.SetCustomValue(\'Data Manager processed\',strftime(\'%Y-%m-%d\', localtime()))", 3, True)
+			
 			writeCode("else:", 2, True)
 			writeCode("pass",3,True)
 			# writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
@@ -507,9 +514,10 @@ def replaceData(books):
 	writeCode('try:', 0, True)
 	
 	progBar = progressForm()
-	progBar.Show()
+	progBar.Show(ComicRack.MainWindow)
 	writeCode('import System',1,True)
 	writeCode('from System.Windows.Forms import MessageBox',1,True)
+	writeCode('from time import localtime, strftime',1,True)
 	writeCode('from globalvars import *',1,True)
 	writeCode('from utils import *',1,True)
 	writeCode('comp = comparer()',1,True)
