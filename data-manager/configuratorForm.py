@@ -1,6 +1,10 @@
 ﻿
 import System.Drawing
 import System.Windows.Forms
+from System.Windows.Forms import OpenFileDialog, SaveFileDialog
+
+import System.IO
+from System.IO import File
 
 from System.Drawing import *
 from System.Windows.Forms import *
@@ -22,13 +26,13 @@ class configuratorForm(Form):
 		self.searchLabelText = 'search ...'
 		self.textBoxHeight = 500
 		self.textBoxMinHeight = 260
-		self.textClips = [
-			'commentary line',
-			'divider',
-			'group header',
-			'variable',
-			'end of rules'
-			]
+#		self.textClips = [
+#			'commentary line',
+#			'divider',
+#			'group header',
+#			'variable',
+#			'end of rules'
+#			]
 		self.dictTextClips = {
 			'commentary line': '# ', 
 			'divider': '# %s' % ('-' * 30) , 
@@ -47,12 +51,10 @@ class configuratorForm(Form):
 	def InitializeComponent(self):
 		self._components = System.ComponentModel.Container()
 		self._textBox1 = System.Windows.Forms.TextBox()
-		self._buttonClose = System.Windows.Forms.Button()
 		self._statusStrip1 = System.Windows.Forms.StatusStrip()
 		self._toolStripStatusLabel1 = System.Windows.Forms.ToolStripStatusLabel()
 		self._toolStripStatusLabel2 = System.Windows.Forms.ToolStripStatusLabel()
 		self._toolStrip1 = System.Windows.Forms.ToolStrip()
-		self._buttonSave = System.Windows.Forms.Button()
 		self._toolStripStatusLabel3 = System.Windows.Forms.ToolStripStatusLabel()
 		self._buttonPlus = System.Windows.Forms.Button()
 		self._textBoxSearch = System.Windows.Forms.ToolStripTextBox()
@@ -84,6 +86,14 @@ class configuratorForm(Form):
 		self._pictureBoxTrashCriteriaFirst = System.Windows.Forms.PictureBox()
 		self._pictureBoxTrashValuesFirst = System.Windows.Forms.PictureBox()
 		self._checkBoxClearValuesAfterAdding = System.Windows.Forms.CheckBox()
+		self._menuStrip1 = System.Windows.Forms.MenuStrip()
+		self._fileToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._saveToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._saveAsToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._toolStripSeparator1 = System.Windows.Forms.ToolStripSeparator()
+		self._closeToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._toolStripSeparator2 = System.Windows.Forms.ToolStripSeparator()
+		self._restorelStripMenuItem1 = System.Windows.Forms.ToolStripMenuItem()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
@@ -91,6 +101,7 @@ class configuratorForm(Form):
 		self._pictureBoxTrashValues.BeginInit()
 		self._pictureBoxTrashCriteriaFirst.BeginInit()
 		self._pictureBoxTrashValuesFirst.BeginInit()
+		self._menuStrip1.SuspendLayout()
 		self.SuspendLayout()
 		# 
 		# textBox1
@@ -99,7 +110,7 @@ class configuratorForm(Form):
 		self._textBox1.AcceptsTab = True
 		self._textBox1.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBox1.HideSelection = False
-		self._textBox1.Location = System.Drawing.Point(12, 28)
+		self._textBox1.Location = System.Drawing.Point(12, 52)
 		self._textBox1.Multiline = True
 		self._textBox1.Name = "textBox1"
 		self._textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
@@ -112,23 +123,13 @@ class configuratorForm(Form):
 		self._textBox1.KeyUp += self.TextBox1KeyUp
 		self._textBox1.MouseDown += self.TextBox1MouseDown
 		# 
-		# buttonClose
-		# 
-		self._buttonClose.DialogResult = System.Windows.Forms.DialogResult.Cancel
-		self._buttonClose.Location = System.Drawing.Point(687, 537)
-		self._buttonClose.Name = "buttonClose"
-		self._buttonClose.Size = System.Drawing.Size(75, 23)
-		self._buttonClose.TabIndex = 1
-		self._buttonClose.Text = "Close"
-		self._buttonClose.UseVisualStyleBackColor = True
-		# 
 		# statusStrip1
 		# 
 		self._statusStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
 			[self._toolStripStatusLabel1,
 			self._toolStripStatusLabel2,
 			self._toolStripStatusLabel3]))
-		self._statusStrip1.Location = System.Drawing.Point(0, 532)
+		self._statusStrip1.Location = System.Drawing.Point(0, 569)
 		self._statusStrip1.Name = "statusStrip1"
 		self._statusStrip1.Size = System.Drawing.Size(784, 30)
 		self._statusStrip1.TabIndex = 2
@@ -158,21 +159,11 @@ class configuratorForm(Form):
 			self._buttonFind,
 			self._labelComboGroups,
 			self._comboGroups]))
-		self._toolStrip1.Location = System.Drawing.Point(0, 0)
+		self._toolStrip1.Location = System.Drawing.Point(0, 24)
 		self._toolStrip1.Name = "toolStrip1"
 		self._toolStrip1.Size = System.Drawing.Size(784, 25)
 		self._toolStrip1.TabIndex = 3
 		self._toolStrip1.Text = "toolStrip1"
-		# 
-		# buttonSave
-		# 
-		self._buttonSave.Location = System.Drawing.Point(596, 537)
-		self._buttonSave.Name = "buttonSave"
-		self._buttonSave.Size = System.Drawing.Size(75, 23)
-		self._buttonSave.TabIndex = 4
-		self._buttonSave.Text = "Save"
-		self._buttonSave.UseVisualStyleBackColor = True
-		self._buttonSave.Click += self.ButtonSaveClick
 		# 
 		# toolStripStatusLabel3
 		# 
@@ -184,11 +175,11 @@ class configuratorForm(Form):
 		# 
 		# buttonPlus
 		# 
-		self._buttonPlus.Location = System.Drawing.Point(333, 537)
+		self._buttonPlus.Location = System.Drawing.Point(697, 0)
 		self._buttonPlus.Name = "buttonPlus"
 		self._buttonPlus.Size = System.Drawing.Size(75, 23)
 		self._buttonPlus.TabIndex = 5
-		self._buttonPlus.Text = "GUI"
+		self._buttonPlus.Text = "open GUI"
 		self._buttonPlus.UseVisualStyleBackColor = True
 		self._buttonPlus.Click += self.ButtonPlusClick
 		# 
@@ -228,7 +219,7 @@ class configuratorForm(Form):
 		self._panelGUI.Controls.Add(self._comboValueFields)
 		self._panelGUI.Controls.Add(self._comboValueModifiers)
 		self._panelGUI.Controls.Add(self._buttonAddValues)
-		self._panelGUI.Location = System.Drawing.Point(13, 294)
+		self._panelGUI.Location = System.Drawing.Point(13, 322)
 		self._panelGUI.Name = "panelGUI"
 		self._panelGUI.Size = System.Drawing.Size(759, 235)
 		self._panelGUI.TabIndex = 22
@@ -484,17 +475,78 @@ class configuratorForm(Form):
 		self._checkBoxClearValuesAfterAdding.UseVisualStyleBackColor = True
 		self._checkBoxClearValuesAfterAdding.CheckedChanged += self.CheckBoxClearValuesAfterAddingCheckedChanged
 		# 
+		# menuStrip1
+		# 
+		self._menuStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+			[self._fileToolStripMenuItem]))
+		self._menuStrip1.Location = System.Drawing.Point(0, 0)
+		self._menuStrip1.Name = "menuStrip1"
+		self._menuStrip1.Size = System.Drawing.Size(784, 24)
+		self._menuStrip1.TabIndex = 23
+		self._menuStrip1.Text = "menuStrip1"
+		# 
+		# fileToolStripMenuItem
+		# 
+		self._fileToolStripMenuItem.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+			[self._saveToolStripMenuItem,
+			self._toolStripSeparator2,
+			self._saveAsToolStripMenuItem,
+			self._restorelStripMenuItem1,
+			self._toolStripSeparator1,
+			self._closeToolStripMenuItem]))
+		self._fileToolStripMenuItem.Name = "fileToolStripMenuItem"
+		self._fileToolStripMenuItem.Size = System.Drawing.Size(37, 20)
+		self._fileToolStripMenuItem.Text = "File"
+		# 
+		# saveToolStripMenuItem
+		# 
+		self._saveToolStripMenuItem.Name = "saveToolStripMenuItem"
+		self._saveToolStripMenuItem.Size = System.Drawing.Size(167, 22)
+		self._saveToolStripMenuItem.Text = "Save"
+		self._saveToolStripMenuItem.Click += self.SaveToolStripMenuItemClick
+		# 
+		# saveAsToolStripMenuItem
+		# 
+		self._saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem"
+		self._saveAsToolStripMenuItem.Size = System.Drawing.Size(167, 22)
+		self._saveAsToolStripMenuItem.Text = "Backup ..."
+		self._saveAsToolStripMenuItem.Click += self.SaveAsToolStripMenuItemClick
+		# 
+		# toolStripSeparator1
+		# 
+		self._toolStripSeparator1.Name = "toolStripSeparator1"
+		self._toolStripSeparator1.Size = System.Drawing.Size(164, 6)
+		# 
+		# closeToolStripMenuItem
+		# 
+		self._closeToolStripMenuItem.Name = "closeToolStripMenuItem"
+		self._closeToolStripMenuItem.Size = System.Drawing.Size(167, 22)
+		self._closeToolStripMenuItem.Text = "Close"
+		self._closeToolStripMenuItem.Click += self.CloseToolStripMenuItemClick
+		# 
+		# toolStripSeparator2
+		# 
+		self._toolStripSeparator2.Name = "toolStripSeparator2"
+		self._toolStripSeparator2.Size = System.Drawing.Size(164, 6)
+		# 
+		# restorelStripMenuItem1
+		# 
+		self._restorelStripMenuItem1.Name = "restorelStripMenuItem1"
+		self._restorelStripMenuItem1.Size = System.Drawing.Size(167, 22)
+		self._restorelStripMenuItem1.Text = "Restore Backup ..."
+		self._restorelStripMenuItem1.Click += self.RestorelStripMenuItem1Click
+		# 
 		# configuratorForm
 		# 
-		self.ClientSize = System.Drawing.Size(784, 562)
+		self.ClientSize = System.Drawing.Size(784, 599)
 		self.Controls.Add(self._panelGUI)
 		self.Controls.Add(self._buttonPlus)
-		self.Controls.Add(self._buttonSave)
 		self.Controls.Add(self._toolStrip1)
-		self.Controls.Add(self._buttonClose)
 		self.Controls.Add(self._textBox1)
 		self.Controls.Add(self._statusStrip1)
+		self.Controls.Add(self._menuStrip1)
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.MainMenuStrip = self._menuStrip1
 		self.MaximizeBox = False
 		self.Name = "configuratorForm"
 		self.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
@@ -511,6 +563,8 @@ class configuratorForm(Form):
 		self._pictureBoxTrashValues.EndInit()
 		self._pictureBoxTrashCriteriaFirst.EndInit()
 		self._pictureBoxTrashValuesFirst.EndInit()
+		self._menuStrip1.ResumeLayout(False)
+		self._menuStrip1.PerformLayout()
 		self.ResumeLayout(False)
 		self.PerformLayout()
 		
@@ -596,7 +650,8 @@ class configuratorForm(Form):
 		self._textBox1.TextChanged += self.textChanged
 		self.setLineInfo()
 		if self.theFile <> globalvars.DATFILE:
-			self._buttonSave.Visible = False
+#			self._buttonSave.Visible = False
+			self._fileToolStripMenuItem.Enabled = False
 		return
 
 	# Search textbox events	
@@ -746,10 +801,10 @@ class configuratorForm(Form):
 		
 		self.addRuleToRuleSet('%s => %s' % (self._textBoxCompleteCriteria.Text, self._textBoxCompleteValues.Text), False)
 		if self.clearValuesAfterAdding == True:
+			self._textBoxCriteria.Text = ''
+			self._textBoxValues.Text = ''
 			self._textBoxCompleteCriteria.Text = ''
 			self._textBoxCompleteValues.Text = ''
-			self._textBoxCompleteCriteriaFirst.Text = ''
-			self._textBoxCompleteValuesFirst.Text = ''
 		return
 			
 
@@ -884,3 +939,40 @@ class configuratorForm(Form):
 
 	def CheckBoxClearValuesAfterAddingCheckedChanged(self, sender, e):
 		self.clearValuesAfterAdding = self._checkBoxClearValuesAfterAdding.Checked
+
+	def SaveToolStripMenuItemClick(self, sender, e):
+		self.writeRuleFile()
+		self.loadGroups()
+
+	def ButtonCloseClick(self, sender, e):
+		self.Close()
+	
+	def CloseToolStripMenuItemClick(self, sender, e):
+		self.Close()
+
+	def SaveAsToolStripMenuItemClick(self, sender, e):
+		saveAsDialog = SaveFileDialog()
+		saveAsDialog.Filter = 'Data Manager rule set (*.dat)|*.dat'
+		if saveAsDialog.ShowDialog() == DialogResult.OK:
+			self.writeRuleFile()
+			self.loadGroups()
+			try:
+				File.Copy(globalvars.DATFILE,saveAsDialog.FileName)
+			except Exception, err:
+				MessageBox.Show('Could not save file.\n%s' % str(err), 'Data Manager for ComicRack %s' % globalvars.VERSION)
+		return
+
+	def RestorelStripMenuItem1Click(self, sender, e):
+		openFileDialog = OpenFileDialog()
+		openFileDialog.Filter = 'Data Manager rule set (*.dat)|*.dat'
+		if openFileDialog.ShowDialog() == DialogResult.OK:
+			self.writeRuleFile()
+			self.loadGroups()
+			try:
+				File.Copy(globalvars.DATFILE,globalvars.BAKFILE,True)
+				File.Copy(openFileDialog.FileName, globalvars.DATFILE, True)
+				self.showTheFile()
+			except Exception, err:
+				MessageBox.Show('Could not restore file.\n%s' % str(err), 'Data Manager for ComicRack %s' % globalvars.VERSION)
+			
+		pass
