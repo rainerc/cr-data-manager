@@ -66,6 +66,10 @@ fixed - sometimes selected text in rule set is overwritten by inserted rule (GUI
 fixed - criterion or setvalue are not added to rule if already in there (GUI)
 change - buttons for deleting content of textboxes for criteria and setvalue (GUI)
 change - group names are checked if already used
+fixed - Contains... methods in class parser rewritten (unexpected results when leading
+        or trailing blanks where attached to values)
+fixed - exception when a criterion with apostrophe or quotation mark was written to the log file
+        (issue 36)
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -114,55 +118,10 @@ from utils import ruleFile
 
 sys.path.append(globalvars.FOLDER)
 
-#allowedKeys = [
-#	'Series',
-#	'Volume',
-#	'Imprint',
-#	'Publisher',
-#	'Number',
-#	'FileDirectory',
-#	'SeriesGroup',
-#	'Month',
-#	'Year',
-#	'MainCharacterOrTeam',
-#	'Format',
-#	'AlternateSeries',
-#	'Count',
-#	'FilePath',
-#	'FileName',
-#	'Genre',
-#	'Tags',
-#	'PageCount'
-#	]
-
-#numericalKeys = [
-#	'Volume',
-#	'Month',
-#	'Year',
-#	'Count',
-#	'PageCount'
-#	]
-
-#multiValueKeys = [
-#	'Tags',
-#	'Genre'
-#	]
-	
-#allowedVals = [
-#	'Series',
-#	'Volume',
-#	'Imprint',
-#	'Publisher',
-#	'Number',
-#	'SeriesGroup',
-#	'MainCharacterOrTeam',
-#	'Format',
-#	'AlternateSeries',
-#	'Count',
-#	'Genre',
-#	'Tags'
-#	]
-
+def debug (s):
+	if DEBUG__ == True:
+		print str(s)
+	return
 
 def writeCode(s, level, linebreak):
 	''' 
@@ -210,9 +169,15 @@ def parseString(s):
 		return 0
 	
 	a = String.split(s,"=>")
-	i = len(a[0])
+
+	# some preparation for the criteria part:
 	a[0] = String.Trim(a[0])
-	i = len(a[0])
+	#if quotation marks were already escaped by '\' remove them:
+	a[0] = a[0].replace(r"\'", r"'")
+	a[0] = a[0].replace(r'\"', r'"')
+	# now escape all quotation marks with '\'
+	a[0] = a[0].replace('\'', '\\\'')
+	a[0] = a[0].replace('\"', '\\\"')
 	
 	# split the string and retrieve the criteria (left part) and newValues (right part) 
 	# store those in lists
@@ -285,8 +250,7 @@ def parseString(s):
 				return
 
 			myVal = tmp[1]
-			myVal = String.replace(myVal,"\"","\\\"")
-			
+#			myVal = String.replace(myVal,"\"","\\\"")
 			if myOperator == "in range":
 				tmp = String.Split(myVal,",")
 				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
@@ -375,26 +339,31 @@ def parseString(s):
 			
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
+
 	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched \\t(%s)\\n')" % a[0], 2, True)
 	
 	# iterate through each of the newValues
-	for n in newValues:
+	for n in [n for n in newValues if n.strip() <> '']:
 		if len(n) > 0:
 			n = String.Trim(String.replace(n,"<<",""))
+			debug('n: %s' % n)
+			str.lower(n).replace('.getvalue','')
 			if String.find(n,':') > 0:
+				# get key part (substring before ':')
 				tmp = String.split(n,":",1)
-				tmp2 = tmp[0]
-				myKey = tmp2
+				debug('tmp %s' % tmp)
+				myKey = tmp[0]
+				debug('myKey %s' % tmp2)
 				myModifier = ''
-				if String.find(tmp2,'.') > 0 and lower(String).find(tmp2,'setvalue') < 0:
-					tmp3 = String.split(tmp2,'.')
+				if String.find(myKey,'.') > 0:
+					tmp3 = String.split(myKey,'.')
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
 			else:
-				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))			
+				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
 			if not (myKey in allowedVals):
-				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)353\nline: %s)" % (myKey, s))
 				return 0
 			# to do: handling if function is appended to field
 				
@@ -547,7 +516,6 @@ def replaceData(books):
 	
 	try:
 		s = File.ReadAllLines(globalvars.DATFILE)
-#		print s
 		i = 0
 		s = [line for line in s if str.Trim(line) <> '']
 		for line in s:
@@ -560,10 +528,11 @@ def replaceData(books):
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
 					break
-			if String.StartsWith(line,'#@ end rules'):
+			if String.StartsWith(line,'#@ END_RULES'):
 				break
 			
 	except Exception, err:
+		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %' % globalvars.VERSION)
 		print 'getCode: ', str(err)
 
 	progBar.Dispose()

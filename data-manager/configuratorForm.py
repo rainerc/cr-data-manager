@@ -36,6 +36,7 @@ class configuratorForm(Form):
 			'variable' : '#@ VAR ',
 			'end of rules' : '#@ END_RULES'
 		}
+		self.clearValuesAfterAdding = False
 		self.rulefile = rulefile
 		self.allowedKeys = rulefile.allowedKeys
 		self.allowedVals = rulefile.allowedVals
@@ -80,11 +81,16 @@ class configuratorForm(Form):
 		self._pictureBoxTrashCriteria = System.Windows.Forms.PictureBox()
 		self._pictureBoxTrashValues = System.Windows.Forms.PictureBox()
 		self._toolTip1 = System.Windows.Forms.ToolTip(self._components)
+		self._pictureBoxTrashCriteriaFirst = System.Windows.Forms.PictureBox()
+		self._pictureBoxTrashValuesFirst = System.Windows.Forms.PictureBox()
+		self._checkBoxClearValuesAfterAdding = System.Windows.Forms.CheckBox()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
 		self._pictureBoxTrashCriteria.BeginInit()
 		self._pictureBoxTrashValues.BeginInit()
+		self._pictureBoxTrashCriteriaFirst.BeginInit()
+		self._pictureBoxTrashValuesFirst.BeginInit()
 		self.SuspendLayout()
 		# 
 		# textBox1
@@ -199,6 +205,9 @@ class configuratorForm(Form):
 		# 
 		# panelGUI
 		# 
+		self._panelGUI.Controls.Add(self._checkBoxClearValuesAfterAdding)
+		self._panelGUI.Controls.Add(self._pictureBoxTrashValuesFirst)
+		self._panelGUI.Controls.Add(self._pictureBoxTrashCriteriaFirst)
 		self._panelGUI.Controls.Add(self._pictureBoxTrashValues)
 		self._panelGUI.Controls.Add(self._pictureBoxTrashCriteria)
 		self._panelGUI.Controls.Add(self._textBoxCompleteRule)
@@ -271,7 +280,7 @@ class configuratorForm(Form):
 		# 
 		self._buttonAddCriteria.Location = System.Drawing.Point(660, 10)
 		self._buttonAddCriteria.Name = "buttonAddCriteria"
-		self._buttonAddCriteria.Size = System.Drawing.Size(75, 23)
+		self._buttonAddCriteria.Size = System.Drawing.Size(56, 23)
 		self._buttonAddCriteria.TabIndex = 26
 		self._buttonAddCriteria.Text = "Create"
 		self._buttonAddCriteria.UseVisualStyleBackColor = True
@@ -309,7 +318,7 @@ class configuratorForm(Form):
 		# 
 		self._buttonAddValues.Location = System.Drawing.Point(660, 68)
 		self._buttonAddValues.Name = "buttonAddValues"
-		self._buttonAddValues.Size = System.Drawing.Size(75, 23)
+		self._buttonAddValues.Size = System.Drawing.Size(56, 23)
 		self._buttonAddValues.TabIndex = 31
 		self._buttonAddValues.Text = "Create"
 		self._buttonAddValues.UseVisualStyleBackColor = True
@@ -411,8 +420,9 @@ class configuratorForm(Form):
 		# comboGroups
 		# 
 		self._comboGroups.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+		self._comboGroups.MaxDropDownItems = 16
 		self._comboGroups.Name = "comboGroups"
-		self._comboGroups.Size = System.Drawing.Size(121, 25)
+		self._comboGroups.Size = System.Drawing.Size(200, 25)
 		self._comboGroups.SelectedIndexChanged += self.ComboGroupsSelectedIndexChanged
 		# 
 		# labelComboGroups
@@ -444,6 +454,36 @@ class configuratorForm(Form):
 		self._toolTip1.SetToolTip(self._pictureBoxTrashValues, "delete")
 		self._pictureBoxTrashValues.Click += self.PictureBoxTrashValuesClick
 		# 
+		# pictureBoxTrashCriteriaFirst
+		# 
+		self._pictureBoxTrashCriteriaFirst.InitialImage = None
+		self._pictureBoxTrashCriteriaFirst.Location = System.Drawing.Point(727, 10)
+		self._pictureBoxTrashCriteriaFirst.Name = "pictureBoxTrashCriteriaFirst"
+		self._pictureBoxTrashCriteriaFirst.Size = System.Drawing.Size(25, 26)
+		self._pictureBoxTrashCriteriaFirst.TabIndex = 45
+		self._pictureBoxTrashCriteriaFirst.TabStop = False
+		self._pictureBoxTrashCriteriaFirst.Click += self.PictureBoxTrashCriteriaFirstClick
+		# 
+		# pictureBoxTrashValuesFirst
+		# 
+		self._pictureBoxTrashValuesFirst.InitialImage = None
+		self._pictureBoxTrashValuesFirst.Location = System.Drawing.Point(727, 68)
+		self._pictureBoxTrashValuesFirst.Name = "pictureBoxTrashValuesFirst"
+		self._pictureBoxTrashValuesFirst.Size = System.Drawing.Size(25, 26)
+		self._pictureBoxTrashValuesFirst.TabIndex = 46
+		self._pictureBoxTrashValuesFirst.TabStop = False
+		self._pictureBoxTrashValuesFirst.Click += self.PictureBoxTrashValuesFirstClick
+		# 
+		# checkBoxClearValuesAfterAdding
+		# 
+		self._checkBoxClearValuesAfterAdding.Location = System.Drawing.Point(13, 206)
+		self._checkBoxClearValuesAfterAdding.Name = "checkBoxClearValuesAfterAdding"
+		self._checkBoxClearValuesAfterAdding.Size = System.Drawing.Size(185, 24)
+		self._checkBoxClearValuesAfterAdding.TabIndex = 47
+		self._checkBoxClearValuesAfterAdding.Text = "clear values after adding a rule"
+		self._checkBoxClearValuesAfterAdding.UseVisualStyleBackColor = True
+		self._checkBoxClearValuesAfterAdding.CheckedChanged += self.CheckBoxClearValuesAfterAddingCheckedChanged
+		# 
 		# configuratorForm
 		# 
 		self.ClientSize = System.Drawing.Size(784, 562)
@@ -469,6 +509,8 @@ class configuratorForm(Form):
 		self._panelGUI.PerformLayout()
 		self._pictureBoxTrashCriteria.EndInit()
 		self._pictureBoxTrashValues.EndInit()
+		self._pictureBoxTrashCriteriaFirst.EndInit()
+		self._pictureBoxTrashValuesFirst.EndInit()
 		self.ResumeLayout(False)
 		self.PerformLayout()
 		
@@ -581,7 +623,9 @@ class configuratorForm(Form):
 		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
 		self._pictureBoxTrashCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
 		self._pictureBoxTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
-#		self._buttonAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+		self._pictureBoxTrashCriteriaFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._pictureBoxTrashValuesFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		#		self._buttonAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
 #		self._buttonAddCriteria.Text = ''
 #		self._buttonAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
 #		self._buttonAddValues.Text = ''
@@ -661,13 +705,11 @@ class configuratorForm(Form):
 
 	def ComboCriteriaFieldsSelectedIndexChanged(self, sender, e):
 		myKey = self._comboCriteriaFields.SelectedValue
-#		self._toolStripStatusLabel3.Text = myKey
 		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
 
 
 	def ComboValueFieldsSelectedIndexChanged(self, sender, e):
 		myKey = self._comboValueFields.SelectedValue
-#		self._toolStripStatusLabel3.Text = myKey
 		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)
 
 	
@@ -703,6 +745,13 @@ class configuratorForm(Form):
 		# todo: some syntax checking
 		
 		self.addRuleToRuleSet('%s => %s' % (self._textBoxCompleteCriteria.Text, self._textBoxCompleteValues.Text), False)
+		if self.clearValuesAfterAdding == True:
+			self._textBoxCompleteCriteria.Text = ''
+			self._textBoxCompleteValues.Text = ''
+			self._textBoxCompleteCriteriaFirst.Text = ''
+			self._textBoxCompleteValuesFirst.Text = ''
+		return
+			
 
 	def addRuleToRuleSet(self,theText,overWriteSelection):
 		
@@ -804,7 +853,6 @@ class configuratorForm(Form):
 		
 
 	def ComboGroupsSelectedIndexChanged(self, sender, e):
-#		MessageBox.Show(str(self._comboGroups.SelectedItem))
 		theText = '#@ GROUP %s' % str(self._comboGroups.SelectedItem)
 		s = self._textBox1.Text.splitlines()
 		myLine = -1
@@ -827,4 +875,12 @@ class configuratorForm(Form):
 	def PictureBoxTrashValuesClick(self, sender, e):
 		self._textBoxCompleteValues.Text = ''
 		
+	def PictureBoxTrashCriteriaFirstClick(self, sender, e):
+		self._textBoxCriteria.Text = ''
 
+	def PictureBoxTrashValuesFirstClick(self, sender, e):
+		self._textBoxValues.Text = ''
+		
+
+	def CheckBoxClearValuesAfterAddingCheckedChanged(self, sender, e):
+		self.clearValuesAfterAdding = self._checkBoxClearValuesAfterAdding.Checked

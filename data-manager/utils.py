@@ -18,70 +18,91 @@ class comparer(object):
 			if String.Trim(word) == String.Trim(myString): return True
 		return False
 
-	def containsAnyOf(self, myString, myVals,caseInsensitive):
+	def startsWithAnyOf(self, myString, myVals, caseInsensitive):
+		myString = myString.strip()
 		theVals = myVals.strip(',').split(',')
 		for word in theVals:
 			if caseInsensitive == True:
-				if str.find(str.lower(myString),str.lower(word)) >= 0: return True
+				if myString.lower().StartsWith(word.strip().lower()):
+					return True
 			else:
-				if str.find(myString,word) >= 0: return True
+				if myString.StartsWith(word.strip()):
+					return True
 		return False
+
+
+	def containsAnyOf(self, myString, myVals,caseInsensitive):
+		# example <<myString.containsAnyOf:val1,val2,val3>> 
+		# or: <<The Adventures of Batman.ContainsAnyOf:Batman,Robin,Joker>>
+
+		myString = myString.strip()
+		if caseInsensitive:
+			myVals = myVals.lower()
+			myString = myString.lower()
+		theVals = myVals.strip(',').split(',')
 	
-	def notContainsAnyOf(myString,myVal,caseInsensitive):
-		theVals = myVal.strip(',').split(',')
-		myString = String.Trim(myString)
 		for word in theVals:
-			word = String.Trim(word)
-			if caseInsensitive == True:
-				if str.find(str.lower(myString),str.lower(word)) >= 0: return False
-			else:
-				if str.find(myString,word) >= 0: return False
+			if word.strip() in myString: return True
+		return False
+
+	def notContainsAnyOf(self, myString,myVals,caseInsensitive):
+		myString = myString.strip()
+		if caseInsensitive:
+			myVals = myVals.lower()
+			myString = myString.lower()
+		theVals = myVals.strip(',').split(',')
+
+		for word in theVals:
+			if word.strip() in myString: return False
 		return True
 
 	def containsAllOf(self, myString, myVals,caseInsensitive):
+		# example <<myString.containsAllOf:val1,val2,val3>> 
+		# or: <<The Adventures of Batman.ContainsAllOf:Batman,Robin,Joker>>
+
+		myString = myString.strip()
+		if caseInsensitive:
+			myVals = myVals.lower()
+			myString = myString.lower()
 		theVals = myVals.strip(',').split(',')
+		
 		for word in theVals:
-			if caseInsensitive == True:
-				if str.find(str.lower(myString),str.lower(word)) < 0: return False
-			else:
-				if str.find(myString,word) < 0: return False
-		return True
+			if not word.strip() in myString: return False
+		return True			
 
 	def contains(self, myString, myVal, caseInsensitive):
-		if caseInsensitive == True:
-			myString = str.lower(myString)
-			myVal = str.lower(myVal)
-		return str.find(myString,myVal) >= 0
+		try:
+			print 'myString: %s' % myString
+			print 'myVal: %s' % myVal
+			if caseInsensitive == True:
+				myString = str.lower(myString)
+				myVal = str.lower(myVal)
+			print 'myString: %s' % myString
+			print 'myVal: %s' % myVal
+				
+			return myVal.strip() in myString
+		except Exception, err:
+			print 'Error in contains %s' % str(err)
+		# return str.find(myString,myVal) >= 0
 	
-	def containsNot(self, myString, myVal, caseInsensitive):#
+	def containsNot(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
-			myVal = str.lower(myVal)		
-		return str.find(myString,myVal) < 0
+			myVal = str.lower(myVal)	
+		return myVal.strip() not in myString			
+		# return str.find(myString,myVal) < 0
 	
 	def equals(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
-		return myString == myVal
+		return myString.strip() == myVal.strip()
 
 	def startsWith(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
-		return myString.startswith(myVal)
-	
-	def startsWithAnyOf(self, myString, myVals, caseInsensitive):
-		theVals = myVals.strip(',').split(',')
-		for word in theVals:
-			if caseInsensitive == True:
-				if String.StartsWith(lower(myString),lower(word)):
-					return True
-			else:
-				if String.StartsWith(myString,word):
-					return True
-		return False
-		
+		return myString.startswith(myVal.strip())
 	
 	def less(self,myString,myVal,caseInsensitive):
 		if caseInsensitive == True:
@@ -264,7 +285,7 @@ class ruleFile(object):
 			'GreaterEq',
 			'Less',
 			'LessEq',
-			'Startswith',
+			'StartsWith',
 			'StartsWithAnyOf',
 			'ContainsAnyOf',
 			'NotContainsAnyOf',
