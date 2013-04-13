@@ -265,7 +265,9 @@ class ruleFile(object):
 			'FileName',
 			'Genre',
 			'Tags',
-			'PageCount'
+			'PageCount',
+			'AlternateNumber',
+			'AlternateCount'
 			]
 			
 		self.numericalKeys = [
@@ -273,7 +275,8 @@ class ruleFile(object):
 			'Month',
 			'Year',
 			'Count',
-			'PageCount'
+			'PageCount',
+			'AlternateCount'
 			]
 
 		self.allowedKeyModifiers = [
@@ -322,7 +325,9 @@ class ruleFile(object):
 			'AlternateSeries',
 			'Count',
 			'Genre',
-			'Tags'
+			'Tags',
+			'AlternateNumber',
+			'AlternateCount'
 			]
 			
 		self.allowedValModifiers = [
@@ -424,7 +429,7 @@ class ruleFile(object):
 		myKey = str.lower(myKey)
 		try:
 			myModifierList = ['']
-			if myKey == 'number' or myKey in [str.lower(x) for x in self.numericalKeys]:
+			if myKey == 'number' or myKey == 'alternatenumber' or myKey in [str.lower(x) for x in self.numericalKeys]:
 				return self.allowedKeyModifiersNumeric
 			if myKey not in [str.lower(x) for x in self.numericalKeys]:
 				return self.allowedKeyModifiers

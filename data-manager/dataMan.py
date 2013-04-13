@@ -75,12 +75,16 @@ r114
 change - save and close added to configurator menustrip
 change - option to backup and restore the rule set (issue 30)
 change - DMProc is no longer added to Tags but written as a custom value (issue 33)
+..
+r115
+change - new allowed fields: alternateNumber and alternateCount (issue 44)
+fixed - comboModifiers does not match comboCriteria and comboValues (issue 48)
+change - option to select line by line number (issue 49)
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
 issues:
 exclude duplicate lines from parsing
-marker in books if handled by the dataman (tags or notes?)
 todo: modifier Before
 todo: modifier After
 todo: use In as modifier in keys
@@ -268,14 +272,14 @@ def parseString(s):
 			# ---------------------------------------------------------------------------
 			# now begins the interesting part for field Number which is stored as 
 			# a string but treated as a numerical value
-			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey == 'Number':
+			elif myOperator in ('==', '>', '>=', '<', '<=') and (myKey == 'Number' or myKey == 'AlternateNumber'):
 				if str.Trim(myVal) == '':
 					# fix issue 31
-					myCrit = myCrit + ('str(book.Number) %s \'\' and ' % (myOperator))
+					myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
 				else:
 					# if the current value of book.Number is Null it has to be converted to
 					# 0 before it can be converted to float
-					myCrit = myCrit + ('float(nullToZero(book.Number)) %s float(nullToZero(%s)) and ' % (myOperator, myVal))
+					myCrit = myCrit + ('float(nullToZero(book.%s)) %s float(nullToZero(%s)) and ' % (myKey, myOperator, myVal))
 			# end of extra handling of Number field
 			# ----------------------------------------------------------------------------
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:

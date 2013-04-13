@@ -15,6 +15,9 @@ from utils import readFile
 from utils import ruleFile
 from utils import parser
 
+import aboutForm
+from aboutForm import aboutForm
+
 rulefile = utils.ruleFile()
 #parser = utils.parser()
 
@@ -94,6 +97,11 @@ class configuratorForm(Form):
 		self._closeToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
 		self._toolStripSeparator2 = System.Windows.Forms.ToolStripSeparator()
 		self._restorelStripMenuItem1 = System.Windows.Forms.ToolStripMenuItem()
+		self._helpToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._aboutTheDataManagerToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._toolStripLabel1 = System.Windows.Forms.ToolStripLabel()
+		self._textBoxSelectLine = System.Windows.Forms.ToolStripTextBox()
+		self._buttonGotoLine = System.Windows.Forms.ToolStripButton()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
@@ -121,6 +129,7 @@ class configuratorForm(Form):
 		self._textBox1.Click += self.TextBox1Click
 		self._textBox1.KeyPress += self.TextBox1KeyPress
 		self._textBox1.KeyUp += self.TextBox1KeyUp
+		self._textBox1.Leave += self.TextBox1Leave
 		self._textBox1.MouseDown += self.TextBox1MouseDown
 		# 
 		# statusStrip1
@@ -158,7 +167,10 @@ class configuratorForm(Form):
 			[self._textBoxSearch,
 			self._buttonFind,
 			self._labelComboGroups,
-			self._comboGroups]))
+			self._comboGroups,
+			self._toolStripLabel1,
+			self._textBoxSelectLine,
+			self._buttonGotoLine]))
 		self._toolStrip1.Location = System.Drawing.Point(0, 24)
 		self._toolStrip1.Name = "toolStrip1"
 		self._toolStrip1.Size = System.Drawing.Size(784, 25)
@@ -478,7 +490,8 @@ class configuratorForm(Form):
 		# menuStrip1
 		# 
 		self._menuStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
-			[self._fileToolStripMenuItem]))
+			[self._fileToolStripMenuItem,
+			self._helpToolStripMenuItem]))
 		self._menuStrip1.Location = System.Drawing.Point(0, 0)
 		self._menuStrip1.Name = "menuStrip1"
 		self._menuStrip1.Size = System.Drawing.Size(784, 24)
@@ -535,6 +548,41 @@ class configuratorForm(Form):
 		self._restorelStripMenuItem1.Size = System.Drawing.Size(167, 22)
 		self._restorelStripMenuItem1.Text = "Restore Backup ..."
 		self._restorelStripMenuItem1.Click += self.RestorelStripMenuItem1Click
+		# 
+		# helpToolStripMenuItem
+		# 
+		self._helpToolStripMenuItem.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+			[self._aboutTheDataManagerToolStripMenuItem]))
+		self._helpToolStripMenuItem.Name = "helpToolStripMenuItem"
+		self._helpToolStripMenuItem.Size = System.Drawing.Size(44, 20)
+		self._helpToolStripMenuItem.Text = "Help"
+		# 
+		# aboutTheDataManagerToolStripMenuItem
+		# 
+		self._aboutTheDataManagerToolStripMenuItem.Name = "aboutTheDataManagerToolStripMenuItem"
+		self._aboutTheDataManagerToolStripMenuItem.Size = System.Drawing.Size(204, 22)
+		self._aboutTheDataManagerToolStripMenuItem.Text = "About the Data Manager"
+		self._aboutTheDataManagerToolStripMenuItem.Click += self.AboutTheDataManagerToolStripMenuItemClick
+		# 
+		# toolStripLabel1
+		# 
+		self._toolStripLabel1.Name = "toolStripLabel1"
+		self._toolStripLabel1.Size = System.Drawing.Size(57, 22)
+		self._toolStripLabel1.Text = "goto line:"
+		# 
+		# textBoxSelectLine
+		# 
+		self._textBoxSelectLine.Name = "textBoxSelectLine"
+		self._textBoxSelectLine.Size = System.Drawing.Size(40, 25)
+		# 
+		# buttonGotoLine
+		# 
+		self._buttonGotoLine.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
+		self._buttonGotoLine.ImageTransparentColor = System.Drawing.Color.Magenta
+		self._buttonGotoLine.Name = "buttonGotoLine"
+		self._buttonGotoLine.Size = System.Drawing.Size(25, 22)
+		self._buttonGotoLine.Text = "go"
+		self._buttonGotoLine.Click += self.ButtonGotoLineClick
 		# 
 		# configuratorForm
 		# 
@@ -675,7 +723,10 @@ class configuratorForm(Form):
 		self._textBox1.SelectionLength = 0
 		self._textBoxSearch.Text = self.searchLabelText
 		self._textBox1.Height = self.textBoxHeight
+		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
 		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
+		self._buttonGotoLine.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+		self._buttonGotoLine.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
 		self._pictureBoxTrashCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
 		self._pictureBoxTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
 		self._pictureBoxTrashCriteriaFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
@@ -684,7 +735,7 @@ class configuratorForm(Form):
 #		self._buttonAddCriteria.Text = ''
 #		self._buttonAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
 #		self._buttonAddValues.Text = ''
-		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+
 		self._comboCriteriaFields.DataSource = sorted(self.allowedKeys)
 		self._comboValueFields.DataSource = sorted(self.allowedVals)
 		self._comboKeyModifiers.DataSource = sorted(self.allowedKeyModifiers)
@@ -696,6 +747,7 @@ class configuratorForm(Form):
 #		self._comboTextClips.ValueMember = self.dictTextClips.values()
 		self._labelComboGroups.Visible = self.theFile == globalvars.DATFILE
 		self._comboGroups.Visible = self.theFile == globalvars.DATFILE
+		self.setComboModifiers()
 		self.loadGroups()
 		
 
@@ -759,15 +811,22 @@ class configuratorForm(Form):
 		pass
 
 	def ComboCriteriaFieldsSelectedIndexChanged(self, sender, e):
-		myKey = self._comboCriteriaFields.SelectedValue
-		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
+		self.setComboModifiers()
+#		myKey = self._comboCriteriaFields.SelectedValue
+#		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
 
 
 	def ComboValueFieldsSelectedIndexChanged(self, sender, e):
-		myKey = self._comboValueFields.SelectedValue
-		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)
+		self.setComboModifiers()
+#		myKey = self._comboValueFields.SelectedValue
+#		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)
 
-	
+	def setComboModifiers(self):
+		myKey = self._comboCriteriaFields.SelectedValue
+		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))	
+		myKey = self._comboValueFields.SelectedValue
+		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)		
+		
 	def ButtonAddCriteriaClick(self, sender, e):
 		theText = '<<%s.%s:%s>> ' % (
 			self._comboCriteriaFields.SelectedValue,
@@ -976,3 +1035,33 @@ class configuratorForm(Form):
 				MessageBox.Show('Could not restore file.\n%s' % str(err), 'Data Manager for ComicRack %s' % globalvars.VERSION)
 			
 		pass
+
+	def AboutTheDataManagerToolStripMenuItemClick(self, sender, e):
+		theForm = aboutForm()
+		theForm.ShowDialog()
+		theForm.Dispose()
+
+	def TextBox1Leave(self, sender, e):
+		if self._textBox1.SelectionLength == 0:
+			self._textBox1.SelectionLength = 1
+			
+	def selectLine(self,line):
+		'''
+		highlights the line 'line'
+		attention: lines start with index 0
+		'''
+		
+		line = int(line) 
+		
+		tmp = self._textBox1.Text.split(System.Environment.NewLine)
+		if line > len(tmp) - 1:
+			line = len(tmp) - 1
+#		MessageBox.Show(tmp[line])
+		myLength = len(tmp[line])
+		self._textBox1.SelectionStart = self._textBox1.GetFirstCharIndexFromLine(line)
+		self._textBox1.SelectionLength = myLength
+		self._textBox1.ScrollToCaret()
+
+	def ButtonGotoLineClick(self, sender, e):
+		self.selectLine(int(self._textBoxSelectLine.Text) - 1)
+		self.setLineInfo()
