@@ -80,6 +80,12 @@ r115
 change - new allowed fields: alternateNumber and alternateCount (issue 44)
 fixed - comboModifiers does not match comboCriteria and comboValues (issue 48)
 change - option to select line by line number (issue 49)
+...
+r117
+change - GUI: delete rule from rule set
+change - GUI: re-engineer rule
+change - menu strip upgraded
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -182,10 +188,10 @@ def parseString(s):
 
 	# some preparation for the criteria part:
 	a[0] = String.Trim(a[0])
-	#if quotation marks were already escaped by '\' remove them:
+	#if apostrophes were already escaped by '\' remove the escaping \:
 	a[0] = a[0].replace(r"\'", r"'")
 	a[0] = a[0].replace(r'\"', r'"')
-	# now escape all quotation marks with '\'
+	# now escape all apostrophes with '\'
 	a[0] = a[0].replace('\'', '\\\'')
 	a[0] = a[0].replace('\"', '\\\"')
 	

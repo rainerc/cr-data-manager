@@ -29,6 +29,8 @@ class configuratorForm(Form):
 		self.searchLabelText = 'search ...'
 		self.textBoxHeight = 500
 		self.textBoxMinHeight = 260
+		self.textBoxWidth = 760
+		self.textBoxMinWidth = 717
 #		self.textClips = [
 #			'commentary line',
 #			'divider',
@@ -43,6 +45,9 @@ class configuratorForm(Form):
 			'variable' : '#@ VAR ',
 			'end of rules' : '#@ END_RULES'
 		}
+		self.EDITOR_MODE_GUI = 0
+		self.EDITOR_MODE_TEXT = 1
+		self.editormode = self.EDITOR_MODE_GUI
 		self.clearValuesAfterAdding = False
 		self.rulefile = rulefile
 		self.allowedKeys = rulefile.allowedKeys
@@ -59,18 +64,17 @@ class configuratorForm(Form):
 		self._toolStripStatusLabel2 = System.Windows.Forms.ToolStripStatusLabel()
 		self._toolStrip1 = System.Windows.Forms.ToolStrip()
 		self._toolStripStatusLabel3 = System.Windows.Forms.ToolStripStatusLabel()
-		self._buttonPlus = System.Windows.Forms.Button()
 		self._textBoxSearch = System.Windows.Forms.ToolStripTextBox()
 		self._panelGUI = System.Windows.Forms.Panel()
 		self._label3 = System.Windows.Forms.Label()
 		self._comboTextClips = System.Windows.Forms.ComboBox()
 		self._label1 = System.Windows.Forms.Label()
 		self._comboKeyModifiers = System.Windows.Forms.ComboBox()
-		self._buttonAddCriteria = System.Windows.Forms.Button()
+		self._cmdAddCriteria = System.Windows.Forms.Button()
 		self._label2 = System.Windows.Forms.Label()
 		self._comboValueFields = System.Windows.Forms.ComboBox()
 		self._comboValueModifiers = System.Windows.Forms.ComboBox()
-		self._buttonAddValues = System.Windows.Forms.Button()
+		self._cmdAddValues = System.Windows.Forms.Button()
 		self._textBoxCriteria = System.Windows.Forms.TextBox()
 		self._textBoxValues = System.Windows.Forms.TextBox()
 		self._buttonAddTextClip = System.Windows.Forms.Button()
@@ -83,14 +87,10 @@ class configuratorForm(Form):
 		self._textBoxCompleteRule = System.Windows.Forms.TextBox()
 		self._comboGroups = System.Windows.Forms.ToolStripComboBox()
 		self._labelComboGroups = System.Windows.Forms.ToolStripLabel()
-		self._pictureBoxTrashCriteria = System.Windows.Forms.PictureBox()
-		self._pictureBoxTrashValues = System.Windows.Forms.PictureBox()
 		self._toolTip1 = System.Windows.Forms.ToolTip(self._components)
-		self._pictureBoxTrashCriteriaFirst = System.Windows.Forms.PictureBox()
-		self._pictureBoxTrashValuesFirst = System.Windows.Forms.PictureBox()
 		self._checkBoxClearValuesAfterAdding = System.Windows.Forms.CheckBox()
 		self._menuStrip1 = System.Windows.Forms.MenuStrip()
-		self._fileToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._mnuFile = System.Windows.Forms.ToolStripMenuItem()
 		self._saveToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
 		self._saveAsToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
 		self._toolStripSeparator1 = System.Windows.Forms.ToolStripSeparator()
@@ -102,13 +102,19 @@ class configuratorForm(Form):
 		self._toolStripLabel1 = System.Windows.Forms.ToolStripLabel()
 		self._textBoxSelectLine = System.Windows.Forms.ToolStripTextBox()
 		self._buttonGotoLine = System.Windows.Forms.ToolStripButton()
+		self._cmdLineToGui = System.Windows.Forms.Button()
+		self._cmdTrashCriteria = System.Windows.Forms.Button()
+		self._cmdTrashValues = System.Windows.Forms.Button()
+		self._cmdRemoveLine = System.Windows.Forms.Button()
+		self._mnuEdit = System.Windows.Forms.ToolStripMenuItem()
+		self._copyCurrentLineToVisualEditorToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._removeCurrentLineToolStripMenuItem = System.Windows.Forms.ToolStripMenuItem()
+		self._mnuView = System.Windows.Forms.ToolStripMenuItem()
+		self._mnuTextEditor = System.Windows.Forms.ToolStripMenuItem()
+		self._mnuGuiEditor = System.Windows.Forms.ToolStripMenuItem()
 		self._statusStrip1.SuspendLayout()
 		self._toolStrip1.SuspendLayout()
 		self._panelGUI.SuspendLayout()
-		self._pictureBoxTrashCriteria.BeginInit()
-		self._pictureBoxTrashValues.BeginInit()
-		self._pictureBoxTrashCriteriaFirst.BeginInit()
-		self._pictureBoxTrashValuesFirst.BeginInit()
 		self._menuStrip1.SuspendLayout()
 		self.SuspendLayout()
 		# 
@@ -122,7 +128,7 @@ class configuratorForm(Form):
 		self._textBox1.Multiline = True
 		self._textBox1.Name = "textBox1"
 		self._textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
-		self._textBox1.Size = System.Drawing.Size(760, 260)
+		self._textBox1.Size = System.Drawing.Size(722, 260)
 		self._textBox1.TabIndex = 0
 		self._textBox1.TabStop = False
 		self._textBox1.WordWrap = False
@@ -185,16 +191,6 @@ class configuratorForm(Form):
 		self._toolStripStatusLabel3.Name = "toolStripStatusLabel3"
 		self._toolStripStatusLabel3.Size = System.Drawing.Size(100, 25)
 		# 
-		# buttonPlus
-		# 
-		self._buttonPlus.Location = System.Drawing.Point(697, 0)
-		self._buttonPlus.Name = "buttonPlus"
-		self._buttonPlus.Size = System.Drawing.Size(75, 23)
-		self._buttonPlus.TabIndex = 5
-		self._buttonPlus.Text = "open GUI"
-		self._buttonPlus.UseVisualStyleBackColor = True
-		self._buttonPlus.Click += self.ButtonPlusClick
-		# 
 		# textBoxSearch
 		# 
 		self._textBoxSearch.ForeColor = System.Drawing.SystemColors.InactiveCaption
@@ -208,11 +204,9 @@ class configuratorForm(Form):
 		# 
 		# panelGUI
 		# 
+		self._panelGUI.Controls.Add(self._cmdTrashValues)
+		self._panelGUI.Controls.Add(self._cmdTrashCriteria)
 		self._panelGUI.Controls.Add(self._checkBoxClearValuesAfterAdding)
-		self._panelGUI.Controls.Add(self._pictureBoxTrashValuesFirst)
-		self._panelGUI.Controls.Add(self._pictureBoxTrashCriteriaFirst)
-		self._panelGUI.Controls.Add(self._pictureBoxTrashValues)
-		self._panelGUI.Controls.Add(self._pictureBoxTrashCriteria)
 		self._panelGUI.Controls.Add(self._textBoxCompleteRule)
 		self._panelGUI.Controls.Add(self._textBoxTextClips)
 		self._panelGUI.Controls.Add(self._textBoxCompleteValues)
@@ -226,11 +220,11 @@ class configuratorForm(Form):
 		self._panelGUI.Controls.Add(self._comboTextClips)
 		self._panelGUI.Controls.Add(self._label1)
 		self._panelGUI.Controls.Add(self._comboKeyModifiers)
-		self._panelGUI.Controls.Add(self._buttonAddCriteria)
+		self._panelGUI.Controls.Add(self._cmdAddCriteria)
 		self._panelGUI.Controls.Add(self._label2)
 		self._panelGUI.Controls.Add(self._comboValueFields)
 		self._panelGUI.Controls.Add(self._comboValueModifiers)
-		self._panelGUI.Controls.Add(self._buttonAddValues)
+		self._panelGUI.Controls.Add(self._cmdAddValues)
 		self._panelGUI.Location = System.Drawing.Point(13, 322)
 		self._panelGUI.Name = "panelGUI"
 		self._panelGUI.Size = System.Drawing.Size(759, 235)
@@ -244,9 +238,9 @@ class configuratorForm(Form):
 		self._label3.AutoSize = True
 		self._label3.Location = System.Drawing.Point(13, 174)
 		self._label3.Name = "label3"
-		self._label3.Size = System.Drawing.Size(38, 13)
+		self._label3.Size = System.Drawing.Size(29, 13)
 		self._label3.TabIndex = 33
-		self._label3.Text = "Others"
+		self._label3.Text = "Clips"
 		# 
 		# comboTextClips
 		# 
@@ -279,15 +273,15 @@ class configuratorForm(Form):
 		self._comboKeyModifiers.Size = System.Drawing.Size(121, 21)
 		self._comboKeyModifiers.TabIndex = 23
 		# 
-		# buttonAddCriteria
+		# cmdAddCriteria
 		# 
-		self._buttonAddCriteria.Location = System.Drawing.Point(660, 10)
-		self._buttonAddCriteria.Name = "buttonAddCriteria"
-		self._buttonAddCriteria.Size = System.Drawing.Size(56, 23)
-		self._buttonAddCriteria.TabIndex = 26
-		self._buttonAddCriteria.Text = "Create"
-		self._buttonAddCriteria.UseVisualStyleBackColor = True
-		self._buttonAddCriteria.Click += self.ButtonAddCriteriaClick
+		self._cmdAddCriteria.Location = System.Drawing.Point(727, 6)
+		self._cmdAddCriteria.Name = "cmdAddCriteria"
+		self._cmdAddCriteria.Size = System.Drawing.Size(27, 27)
+		self._cmdAddCriteria.TabIndex = 26
+		self._toolTip1.SetToolTip(self._cmdAddCriteria, "create criteria tuple")
+		self._cmdAddCriteria.UseVisualStyleBackColor = True
+		self._cmdAddCriteria.Click += self.ButtonAddCriteriaClick
 		# 
 		# label2
 		# 
@@ -317,22 +311,22 @@ class configuratorForm(Form):
 		self._comboValueModifiers.Size = System.Drawing.Size(121, 21)
 		self._comboValueModifiers.TabIndex = 29
 		# 
-		# buttonAddValues
+		# cmdAddValues
 		# 
-		self._buttonAddValues.Location = System.Drawing.Point(660, 68)
-		self._buttonAddValues.Name = "buttonAddValues"
-		self._buttonAddValues.Size = System.Drawing.Size(56, 23)
-		self._buttonAddValues.TabIndex = 31
-		self._buttonAddValues.Text = "Create"
-		self._buttonAddValues.UseVisualStyleBackColor = True
-		self._buttonAddValues.Click += self.ButtonAddValuesClick
+		self._cmdAddValues.Location = System.Drawing.Point(727, 65)
+		self._cmdAddValues.Name = "cmdAddValues"
+		self._cmdAddValues.Size = System.Drawing.Size(27, 27)
+		self._cmdAddValues.TabIndex = 31
+		self._toolTip1.SetToolTip(self._cmdAddValues, "create new value tuple")
+		self._cmdAddValues.UseVisualStyleBackColor = True
+		self._cmdAddValues.Click += self.ButtonAddValuesClick
 		# 
 		# textBoxCriteria
 		# 
 		self._textBoxCriteria.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxCriteria.Location = System.Drawing.Point(374, 10)
 		self._textBoxCriteria.Name = "textBoxCriteria"
-		self._textBoxCriteria.Size = System.Drawing.Size(280, 20)
+		self._textBoxCriteria.Size = System.Drawing.Size(347, 20)
 		self._textBoxCriteria.TabIndex = 34
 		# 
 		# textBoxValues
@@ -340,7 +334,7 @@ class configuratorForm(Form):
 		self._textBoxValues.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxValues.Location = System.Drawing.Point(374, 68)
 		self._textBoxValues.Name = "textBoxValues"
-		self._textBoxValues.Size = System.Drawing.Size(280, 20)
+		self._textBoxValues.Size = System.Drawing.Size(347, 20)
 		self._textBoxValues.TabIndex = 35
 		# 
 		# buttonAddTextClip
@@ -348,9 +342,9 @@ class configuratorForm(Form):
 		self._buttonAddTextClip.Font = System.Drawing.Font("Microsoft Sans Serif", 8.25, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0)
 		self._buttonAddTextClip.Location = System.Drawing.Point(660, 174)
 		self._buttonAddTextClip.Name = "buttonAddTextClip"
-		self._buttonAddTextClip.Size = System.Drawing.Size(75, 23)
+		self._buttonAddTextClip.Size = System.Drawing.Size(94, 23)
 		self._buttonAddTextClip.TabIndex = 36
-		self._buttonAddTextClip.Text = "Add"
+		self._buttonAddTextClip.Text = "Add clip"
 		self._buttonAddTextClip.UseVisualStyleBackColor = True
 		self._buttonAddTextClip.Click += self.ButtonAddTextClipClick
 		# 
@@ -378,7 +372,7 @@ class configuratorForm(Form):
 		self._buttonAddRule.Font = System.Drawing.Font("Microsoft Sans Serif", 8.25, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0)
 		self._buttonAddRule.Location = System.Drawing.Point(660, 125)
 		self._buttonAddRule.Name = "buttonAddRule"
-		self._buttonAddRule.Size = System.Drawing.Size(75, 43)
+		self._buttonAddRule.Size = System.Drawing.Size(94, 43)
 		self._buttonAddRule.TabIndex = 38
 		self._buttonAddRule.Text = "Add Rule"
 		self._buttonAddRule.UseVisualStyleBackColor = True
@@ -387,9 +381,9 @@ class configuratorForm(Form):
 		# textBoxCompleteCriteria
 		# 
 		self._textBoxCompleteCriteria.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
-		self._textBoxCompleteCriteria.Location = System.Drawing.Point(80, 37)
+		self._textBoxCompleteCriteria.Location = System.Drawing.Point(80, 39)
 		self._textBoxCompleteCriteria.Name = "textBoxCompleteCriteria"
-		self._textBoxCompleteCriteria.Size = System.Drawing.Size(574, 20)
+		self._textBoxCompleteCriteria.Size = System.Drawing.Size(641, 20)
 		self._textBoxCompleteCriteria.TabIndex = 39
 		self._textBoxCompleteCriteria.TextChanged += self.TextBoxCompleteCriteriaTextChanged
 		# 
@@ -398,7 +392,7 @@ class configuratorForm(Form):
 		self._textBoxCompleteValues.Font = System.Drawing.Font("Courier New", 8.25, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0)
 		self._textBoxCompleteValues.Location = System.Drawing.Point(80, 98)
 		self._textBoxCompleteValues.Name = "textBoxCompleteValues"
-		self._textBoxCompleteValues.Size = System.Drawing.Size(574, 20)
+		self._textBoxCompleteValues.Size = System.Drawing.Size(641, 20)
 		self._textBoxCompleteValues.TabIndex = 40
 		self._textBoxCompleteValues.TextChanged += self.TextBoxCompleteValuesTextChanged
 		# 
@@ -430,52 +424,10 @@ class configuratorForm(Form):
 		# 
 		# labelComboGroups
 		# 
+		self._labelComboGroups.Margin = System.Windows.Forms.Padding(20, 1, 0, 2)
 		self._labelComboGroups.Name = "labelComboGroups"
-		self._labelComboGroups.Padding = System.Windows.Forms.Padding(20, 0, 0, 0)
-		self._labelComboGroups.Size = System.Drawing.Size(86, 22)
+		self._labelComboGroups.Size = System.Drawing.Size(66, 22)
 		self._labelComboGroups.Text = "find group:"
-		# 
-		# pictureBoxTrashCriteria
-		# 
-		self._pictureBoxTrashCriteria.InitialImage = None
-		self._pictureBoxTrashCriteria.Location = System.Drawing.Point(54, 36)
-		self._pictureBoxTrashCriteria.Name = "pictureBoxTrashCriteria"
-		self._pictureBoxTrashCriteria.Size = System.Drawing.Size(25, 26)
-		self._pictureBoxTrashCriteria.TabIndex = 43
-		self._pictureBoxTrashCriteria.TabStop = False
-		self._toolTip1.SetToolTip(self._pictureBoxTrashCriteria, "delete")
-		self._pictureBoxTrashCriteria.Click += self.PictureBoxTrashCriteriaClick
-		# 
-		# pictureBoxTrashValues
-		# 
-		self._pictureBoxTrashValues.InitialImage = None
-		self._pictureBoxTrashValues.Location = System.Drawing.Point(54, 98)
-		self._pictureBoxTrashValues.Name = "pictureBoxTrashValues"
-		self._pictureBoxTrashValues.Size = System.Drawing.Size(25, 26)
-		self._pictureBoxTrashValues.TabIndex = 44
-		self._pictureBoxTrashValues.TabStop = False
-		self._toolTip1.SetToolTip(self._pictureBoxTrashValues, "delete")
-		self._pictureBoxTrashValues.Click += self.PictureBoxTrashValuesClick
-		# 
-		# pictureBoxTrashCriteriaFirst
-		# 
-		self._pictureBoxTrashCriteriaFirst.InitialImage = None
-		self._pictureBoxTrashCriteriaFirst.Location = System.Drawing.Point(727, 10)
-		self._pictureBoxTrashCriteriaFirst.Name = "pictureBoxTrashCriteriaFirst"
-		self._pictureBoxTrashCriteriaFirst.Size = System.Drawing.Size(25, 26)
-		self._pictureBoxTrashCriteriaFirst.TabIndex = 45
-		self._pictureBoxTrashCriteriaFirst.TabStop = False
-		self._pictureBoxTrashCriteriaFirst.Click += self.PictureBoxTrashCriteriaFirstClick
-		# 
-		# pictureBoxTrashValuesFirst
-		# 
-		self._pictureBoxTrashValuesFirst.InitialImage = None
-		self._pictureBoxTrashValuesFirst.Location = System.Drawing.Point(727, 68)
-		self._pictureBoxTrashValuesFirst.Name = "pictureBoxTrashValuesFirst"
-		self._pictureBoxTrashValuesFirst.Size = System.Drawing.Size(25, 26)
-		self._pictureBoxTrashValuesFirst.TabIndex = 46
-		self._pictureBoxTrashValuesFirst.TabStop = False
-		self._pictureBoxTrashValuesFirst.Click += self.PictureBoxTrashValuesFirstClick
 		# 
 		# checkBoxClearValuesAfterAdding
 		# 
@@ -490,7 +442,9 @@ class configuratorForm(Form):
 		# menuStrip1
 		# 
 		self._menuStrip1.Items.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
-			[self._fileToolStripMenuItem,
+			[self._mnuFile,
+			self._mnuEdit,
+			self._mnuView,
 			self._helpToolStripMenuItem]))
 		self._menuStrip1.Location = System.Drawing.Point(0, 0)
 		self._menuStrip1.Name = "menuStrip1"
@@ -498,18 +452,18 @@ class configuratorForm(Form):
 		self._menuStrip1.TabIndex = 23
 		self._menuStrip1.Text = "menuStrip1"
 		# 
-		# fileToolStripMenuItem
+		# mnuFile
 		# 
-		self._fileToolStripMenuItem.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+		self._mnuFile.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
 			[self._saveToolStripMenuItem,
 			self._toolStripSeparator2,
 			self._saveAsToolStripMenuItem,
 			self._restorelStripMenuItem1,
 			self._toolStripSeparator1,
 			self._closeToolStripMenuItem]))
-		self._fileToolStripMenuItem.Name = "fileToolStripMenuItem"
-		self._fileToolStripMenuItem.Size = System.Drawing.Size(37, 20)
-		self._fileToolStripMenuItem.Text = "File"
+		self._mnuFile.Name = "mnuFile"
+		self._mnuFile.Size = System.Drawing.Size(37, 20)
+		self._mnuFile.Text = "&File"
 		# 
 		# saveToolStripMenuItem
 		# 
@@ -555,7 +509,7 @@ class configuratorForm(Form):
 			[self._aboutTheDataManagerToolStripMenuItem]))
 		self._helpToolStripMenuItem.Name = "helpToolStripMenuItem"
 		self._helpToolStripMenuItem.Size = System.Drawing.Size(44, 20)
-		self._helpToolStripMenuItem.Text = "Help"
+		self._helpToolStripMenuItem.Text = "&Help"
 		# 
 		# aboutTheDataManagerToolStripMenuItem
 		# 
@@ -566,6 +520,7 @@ class configuratorForm(Form):
 		# 
 		# toolStripLabel1
 		# 
+		self._toolStripLabel1.Margin = System.Windows.Forms.Padding(20, 1, 0, 2)
 		self._toolStripLabel1.Name = "toolStripLabel1"
 		self._toolStripLabel1.Size = System.Drawing.Size(57, 22)
 		self._toolStripLabel1.Text = "goto line:"
@@ -584,15 +539,102 @@ class configuratorForm(Form):
 		self._buttonGotoLine.Text = "go"
 		self._buttonGotoLine.Click += self.ButtonGotoLineClick
 		# 
+		# cmdLineToGui
+		# 
+		self._cmdLineToGui.Location = System.Drawing.Point(740, 285)
+		self._cmdLineToGui.Name = "cmdLineToGui"
+		self._cmdLineToGui.Size = System.Drawing.Size(27, 27)
+		self._cmdLineToGui.TabIndex = 47
+		self._toolTip1.SetToolTip(self._cmdLineToGui, """copy current line
+to visual editor""")
+		self._cmdLineToGui.UseVisualStyleBackColor = True
+		self._cmdLineToGui.Click += self.CmdLineToGuiClick
+		# 
+		# cmdTrashCriteria
+		# 
+		self._cmdTrashCriteria.Location = System.Drawing.Point(727, 34)
+		self._cmdTrashCriteria.Name = "cmdTrashCriteria"
+		self._cmdTrashCriteria.Size = System.Drawing.Size(27, 27)
+		self._cmdTrashCriteria.TabIndex = 49
+		self._toolTip1.SetToolTip(self._cmdTrashCriteria, "remove criteria tuple")
+		self._cmdTrashCriteria.UseVisualStyleBackColor = True
+		self._cmdTrashCriteria.Click += self.CmdTrashCriteriaClick
+		# 
+		# cmdTrashValues
+		# 
+		self._cmdTrashValues.Location = System.Drawing.Point(727, 94)
+		self._cmdTrashValues.Name = "cmdTrashValues"
+		self._cmdTrashValues.Size = System.Drawing.Size(27, 27)
+		self._cmdTrashValues.TabIndex = 50
+		self._toolTip1.SetToolTip(self._cmdTrashValues, "remove value tuple")
+		self._cmdTrashValues.UseVisualStyleBackColor = True
+		self._cmdTrashValues.Click += self.CmdTrashValuesClick
+		# 
+		# cmdRemoveLine
+		# 
+		self._cmdRemoveLine.Location = System.Drawing.Point(740, 255)
+		self._cmdRemoveLine.Name = "cmdRemoveLine"
+		self._cmdRemoveLine.Size = System.Drawing.Size(27, 27)
+		self._cmdRemoveLine.TabIndex = 48
+		self._toolTip1.SetToolTip(self._cmdRemoveLine, "remove current line from rule set")
+		self._cmdRemoveLine.UseVisualStyleBackColor = True
+		self._cmdRemoveLine.Click += self.CmdRemoveLineClick
+		# 
+		# mnuEdit
+		# 
+		self._mnuEdit.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+			[self._copyCurrentLineToVisualEditorToolStripMenuItem,
+			self._removeCurrentLineToolStripMenuItem]))
+		self._mnuEdit.Name = "mnuEdit"
+		self._mnuEdit.Size = System.Drawing.Size(39, 20)
+		self._mnuEdit.Text = "&Edit"
+		# 
+		# copyCurrentLineToVisualEditorToolStripMenuItem
+		# 
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Name = "copyCurrentLineToVisualEditorToolStripMenuItem"
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Size = System.Drawing.Size(246, 22)
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Text = "Copy current line to visual editor"
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Click += self.CmdLineToGuiClick
+		# 
+		# removeCurrentLineToolStripMenuItem
+		# 
+		self._removeCurrentLineToolStripMenuItem.Name = "removeCurrentLineToolStripMenuItem"
+		self._removeCurrentLineToolStripMenuItem.Size = System.Drawing.Size(246, 22)
+		self._removeCurrentLineToolStripMenuItem.Text = "Remove current line"
+		# 
+		# mnuView
+		# 
+		self._mnuView.DropDownItems.AddRange(System.Array[System.Windows.Forms.ToolStripItem](
+			[self._mnuTextEditor,
+			self._mnuGuiEditor]))
+		self._mnuView.Name = "mnuView"
+		self._mnuView.Size = System.Drawing.Size(44, 20)
+		self._mnuView.Text = "&View"
+		# 
+		# mnuTextEditor
+		# 
+		self._mnuTextEditor.Name = "mnuTextEditor"
+		self._mnuTextEditor.Size = System.Drawing.Size(148, 22)
+		self._mnuTextEditor.Text = "text editor"
+		self._mnuTextEditor.Click += self.MnuTextEditorClick
+		# 
+		# mnuGuiEditor
+		# 
+		self._mnuGuiEditor.Name = "mnuGuiEditor"
+		self._mnuGuiEditor.Size = System.Drawing.Size(148, 22)
+		self._mnuGuiEditor.Text = "graphic editor"
+		self._mnuGuiEditor.Click += self.MnuGuiEditorClick
+		# 
 		# configuratorForm
 		# 
 		self.ClientSize = System.Drawing.Size(784, 599)
-		self.Controls.Add(self._panelGUI)
-		self.Controls.Add(self._buttonPlus)
-		self.Controls.Add(self._toolStrip1)
 		self.Controls.Add(self._textBox1)
+		self.Controls.Add(self._panelGUI)
+		self.Controls.Add(self._toolStrip1)
 		self.Controls.Add(self._statusStrip1)
 		self.Controls.Add(self._menuStrip1)
+		self.Controls.Add(self._cmdLineToGui)
+		self.Controls.Add(self._cmdRemoveLine)
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
 		self.MainMenuStrip = self._menuStrip1
 		self.MaximizeBox = False
@@ -607,10 +649,6 @@ class configuratorForm(Form):
 		self._toolStrip1.PerformLayout()
 		self._panelGUI.ResumeLayout(False)
 		self._panelGUI.PerformLayout()
-		self._pictureBoxTrashCriteria.EndInit()
-		self._pictureBoxTrashValues.EndInit()
-		self._pictureBoxTrashCriteriaFirst.EndInit()
-		self._pictureBoxTrashValuesFirst.EndInit()
 		self._menuStrip1.ResumeLayout(False)
 		self._menuStrip1.PerformLayout()
 		self.ResumeLayout(False)
@@ -622,9 +660,13 @@ class configuratorForm(Form):
 		self.setLineInfo()
 		
 	def setLineInfo(self):
-		line = self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
+		line = self.currentLine()
 		col = self._textBox1.SelectionStart - self._textBox1.GetFirstCharIndexFromLine(line);
-		self._toolStripStatusLabel1.Text = 'Line %d - Col %d' % (line + 1, col + 1)	
+		self._toolStripStatusLabel1.Text = 'Line %d - Col %d' % (line + 1, col + 1)
+		validRule = self.lineContent(line).startswith('<<')
+#		MessageBox.Show(str(validRule))
+		self._cmdLineToGui.Enabled = validRule
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Enabled = validRule
 
 	def TextBox1KeyPress(self, sender, e):
 		self.setLineInfo()
@@ -635,29 +677,51 @@ class configuratorForm(Form):
 	def statusText(self, s):
 		if self.theFile == globalvars.DATFILE:
 			self._toolStripStatusLabel3.Text = s
+#
+#	def ButtonPlusClick(self, sender, e):
+#		currentLine = self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
+#		currentPos = self._textBox1.SelectionStart
+#		currentLen = self._textBox1.SelectionLength
+#		self.setLineInfo()
+#		self._textBox1.SelectionStart = currentPos
+#		self._textBox1.ScrollToCaret()
+#		self._textBox1.SelectionLength = currentLen
+#		self.setEditorMode(not self.editormode)
 
-	def ButtonPlusClick(self, sender, e):
-		currentLine = self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
-		currentPos = self._textBox1.SelectionStart
-		currentLen = self._textBox1.SelectionLength
-		self.setLineInfo()
+#						
+#		if self._textBox1.Height == self.textBoxHeight:
+#			self._textBox1.Height = self.textBoxMinHeight
+#			self._textBox1.Width = self.textBoxMinWidth
+#			self._buttonPlus.Text = 'Editor'
+#			self._panelGUI.Visible = True
+#		else:
+#			self._textBox1.Height = self.textBoxHeight
+#			self._textBox1.Width = self.textBoxWidth
+#			self._buttonPlus.Text = 'GUI'
+#			self._panelGUI.Visible = False
 
-			
-		if self._textBox1.Height == self.textBoxHeight:
-			self._textBox1.Height = self.textBoxMinHeight
-			self._buttonPlus.Text = 'Editor'
-			self._panelGUI.Visible = True
-		else:
-			self._textBox1.Height = self.textBoxHeight
-			self._buttonPlus.Text = 'GUI'
-			self._panelGUI.Visible = False
-		self._textBox1.SelectionStart = currentPos
-		self._textBox1.ScrollToCaret()
-		self._textBox1.SelectionLength = currentLen
 
 		i = 0
 		return
 	
+	def setEditorMode(self,editormode):
+		if editormode == self.EDITOR_MODE_TEXT:
+			self._textBox1.Height = self.textBoxHeight
+			self._textBox1.Width = self.textBoxWidth
+			self._mnuEdit.Enabled = False
+			self._panelGUI.Visible = False
+			self._mnuTextEditor.Enabled = False
+			self._mnuGuiEditor.Enabled = True
+			self.editormode = self.EDITOR_MODE_TEXT
+		else:
+			self._textBox1.Height = self.textBoxMinHeight
+			self._textBox1.Width = self.textBoxMinWidth
+			self._mnuEdit.Enabled = True
+			self._panelGUI.Visible = True
+			self._mnuTextEditor.Enabled = True
+			self._mnuGuiEditor.Enabled = False
+			self.editormode = self.EDITOR_MODE_GUI
+			
 	def findString(self):
 		if str.Trim(self._textBoxSearch.Text) == '' or self._textBoxSearch.Text == self.searchLabelText:
 			return
@@ -685,7 +749,9 @@ class configuratorForm(Form):
 					MessageBox.Show('Your rules contained %d syntax errors. Those were marked with \"# invalid expression\"' % errlines)
 	
 			else:
-				self._buttonPlus.Visible = False						
+				self._mnuView.Enabled = False
+				self._mnuFile.Enabled = False	
+				self._mnuEdit.Enabled = False				
 				self._textBox1.Text = readFile(self.theFile)
 				
 	def textChanged(self, sender, event):
@@ -722,16 +788,22 @@ class configuratorForm(Form):
 		self._textBox1.SelectionStart = 1
 		self._textBox1.SelectionLength = 0
 		self._textBoxSearch.Text = self.searchLabelText
-		self._textBox1.Height = self.textBoxHeight
 		self._buttonFind.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
 		self._buttonFind.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
 		self._buttonGotoLine.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
 		self._buttonGotoLine.Image = System.Drawing.Image.FromFile(globalvars.IMAGESEARCH)
-		self._pictureBoxTrashCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
-		self._pictureBoxTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
-		self._pictureBoxTrashCriteriaFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
-		self._pictureBoxTrashValuesFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
-		#		self._buttonAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+#		self._pictureBoxTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+#		self._pictureBoxTrashCriteriaFirst.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._cmdLineToGui.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDOWN)
+		self._cmdAddCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+		self._cmdTrashCriteria.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._cmdAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
+		self._cmdTrashValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._cmdRemoveLine.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._copyCurrentLineToVisualEditorToolStripMenuItem.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDOWN)
+		self._removeCurrentLineToolStripMenuItem.Image = System.Drawing.Image.FromFile(globalvars.IMAGEDELETE_SMALL)
+		self._mnuTextEditor.Image = System.Drawing.Image.FromFile(globalvars.IMAGETEXT)
+		self._mnuGuiEditor.Image = System.Drawing.Image.FromFile(globalvars.IMAGELIGHTNING)
 #		self._buttonAddCriteria.Text = ''
 #		self._buttonAddValues.Image = System.Drawing.Image.FromFile(globalvars.IMAGEADD)
 #		self._buttonAddValues.Text = ''
@@ -749,7 +821,14 @@ class configuratorForm(Form):
 		self._comboGroups.Visible = self.theFile == globalvars.DATFILE
 		self.setComboModifiers()
 		self.loadGroups()
+		self._textBox1.SelectionStart = 0
+		self._textBox1.SelectionStart = 1
+
+		self.setEditorMode(self.editormode)
 		
+		self.setLineInfo()
+
+
 
 	def loadGroups(self, sortAlpha = False):
 		groups = self.rulefile.groupHeaders()
@@ -981,21 +1060,9 @@ class configuratorForm(Form):
 		self._textBox1.SelectionLength = len(theText)
 		self._textBox1.Focus()
 		self._textBox1.ScrollToCaret()
-		pass
 
-	def PictureBoxTrashCriteriaClick(self, sender, e):
-		self._textBoxCompleteCriteria.Text = ''
-		
-	def PictureBoxTrashValuesClick(self, sender, e):
-		self._textBoxCompleteValues.Text = ''
-		
-	def PictureBoxTrashCriteriaFirstClick(self, sender, e):
-		self._textBoxCriteria.Text = ''
 
-	def PictureBoxTrashValuesFirstClick(self, sender, e):
-		self._textBoxValues.Text = ''
 		
-
 	def CheckBoxClearValuesAfterAddingCheckedChanged(self, sender, e):
 		self.clearValuesAfterAdding = self._checkBoxClearValuesAfterAdding.Checked
 
@@ -1045,23 +1112,97 @@ class configuratorForm(Form):
 		if self._textBox1.SelectionLength == 0:
 			self._textBox1.SelectionLength = 1
 			
+	def ButtonGotoLineClick(self, sender, e):
+		self.selectLine(int(self._textBoxSelectLine.Text) - 1)
+		self.setLineInfo()
+
+	def CmdTrashCriteriaClick(self, sender, e):
+		self._textBoxCompleteCriteria.Text = ''
+
+	def CmdTrashValuesClick(self, sender, e):
+		self._textBoxCompleteValues.Text = ''
+
+	def CmdLineToGuiClick(self, sender, e):
+		if self._textBoxCompleteCriteria.Text + self._textBoxCompleteValues.Text == '':
+			self.copyLineToGui()
+		else:
+			if MessageBox.Show('Do you want to replace the current content in the visual editor?','Data Manager for ComicRack %s' % globalvars.VERSION,MessageBoxButtons.YesNo) <> System.Windows.Forms.DialogResult.No:
+				self.copyLineToGui()
+		return
+	
+	def copyLineToGui(self):
+#		MessageBox.Show(str(self.currentLine()))
+		myLine = self.lineContent(self.currentLine())
+		tmp = myLine.split('=>')
+		self._textBoxCompleteCriteria.Text = tmp[0].strip()
+		self._textBoxCompleteValues.Text = tmp[1].strip()
+	
+	def removeLine(self,line, askConfirm = True):
+		# removes line 'line' from buffer
+		# note: lines start with index 0
+		# if askConfirm is set to True it will ask for confirmation first
+		self.selectLine(self.currentLine())
+		if askConfirm == True:
+			if MessageBox.Show('Are you sure you want to delete this line?\nYou cannot undo this.', 
+				'Data Manger for ComicRack %s' % globalvars.VERSION, 
+				MessageBoxButtons.YesNo) == DialogResult.No:
+				return
+		line = int(line)
+		myBuffer = self._textBox1.Text.split(System.Environment.NewLine)
+		if line > len(myBuffer) - 1: return False
+		tmp = []
+		i = 0
+		for l in myBuffer:
+			if i <> line: tmp.Add(l)
+			i += 1
+		newBuffer = System.Environment.NewLine.join(tmp)
+		self._textBox1.Text = newBuffer	
+		self.selectLine(line)	
+		return True
+		
+	def currentLine(self):
+		return self._textBox1.GetLineFromCharIndex(self._textBox1.SelectionStart)
+	
+	def lineLength(self, line):
+		# returns the length of line 'line'
+		# returns 0 if line out of index
+		# note: lines start with index 0
+		line = int(line)
+		tmp = self._textBox1.Text.split(System.Environment.NewLine)
+		if line > len(tmp) - 1: return 0		
+		return len(tmp[line])
+	
+	def lineContent(self,line):
+		# returns the texxt of line 'line'
+		# returns '' if line out of index
+		# note: lines start with index 0
+		line = int(line)
+		tmp = self._textBox1.Text.split(System.Environment.NewLine)
+		if line > len(tmp) - 1: return 0
+		return tmp[line]
+		
+		
 	def selectLine(self,line):
 		'''
 		highlights the line 'line'
 		attention: lines start with index 0
 		'''
-		
 		line = int(line) 
-		
-		tmp = self._textBox1.Text.split(System.Environment.NewLine)
-		if line > len(tmp) - 1:
-			line = len(tmp) - 1
+#		tmp = self._textBox1.Text.split(System.Environment.NewLine)
+
 #		MessageBox.Show(tmp[line])
-		myLength = len(tmp[line])
+#		myLength = len(tmp[line])
 		self._textBox1.SelectionStart = self._textBox1.GetFirstCharIndexFromLine(line)
-		self._textBox1.SelectionLength = myLength
+		self._textBox1.SelectionLength = self.lineLength(line)
 		self._textBox1.ScrollToCaret()
 
-	def ButtonGotoLineClick(self, sender, e):
-		self.selectLine(int(self._textBoxSelectLine.Text) - 1)
-		self.setLineInfo()
+
+	def CmdRemoveLineClick(self, sender, e):
+		self.removeLine(self.currentLine(), True)
+
+
+	def MnuTextEditorClick(self, sender, e):
+		self.setEditorMode(self.EDITOR_MODE_TEXT)
+
+	def MnuGuiEditorClick(self, sender, e):
+		self.setEditorMode(self.EDITOR_MODE_GUI)

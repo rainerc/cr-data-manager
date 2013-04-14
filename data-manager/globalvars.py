@@ -16,13 +16,16 @@ ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
 IMAGE = Path.Combine(FOLDER, 'dataMan.png')
 IMAGESEARCH = Path.Combine(FOLDER, 'search.png')
-IMAGEADD = Path.Combine(FOLDER, 'add.png')
+IMAGEADD = Path.Combine(FOLDER, 'yes.png')
 IMAGEAPPLY = Path.Combine(FOLDER, 'Apply.png')
 IMAGETRASH = Path.Combine(FOLDER, 'Trash.png')
 IMAGEDELETE_SMALL = Path.Combine(FOLDER, 'erase.png')
+IMAGEDOWN = Path.Combine(FOLDER, 'down.png')
+IMAGELIGHTNING = Path.Combine(FOLDER, 'lightning.png')
+IMAGETEXT = Path.Combine(FOLDER, 'text.png')
 DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UQ7JZY366R85S'
 WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 
 COMPARE_CASE_INSENSITIVE = True
-VERSION = '0.1.15 r115'
+VERSION = '0.1.15 r117'
