@@ -72,13 +72,13 @@ class comparer(object):
 
 	def contains(self, myString, myVal, caseInsensitive):
 		try:
-			print 'myString: %s' % myString
-			print 'myVal: %s' % myVal
+#			print 'myString: %s' % myString
+#			print 'myVal: %s' % myVal
 			if caseInsensitive == True:
 				myString = str.lower(myString)
 				myVal = str.lower(myVal)
-			print 'myString: %s' % myString
-			print 'myVal: %s' % myVal
+#			print 'myString: %s' % myString
+#			print 'myVal: %s' % myVal
 				
 			return myVal.strip() in myString
 		except Exception, err:
