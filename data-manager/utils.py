@@ -267,7 +267,8 @@ class ruleFile(object):
 			'Tags',
 			'PageCount',
 			'AlternateNumber',
-			'AlternateCount'
+			'AlternateCount',
+			'Title'
 			]
 			
 		self.numericalKeys = [
@@ -327,7 +328,8 @@ class ruleFile(object):
 			'Genre',
 			'Tags',
 			'AlternateNumber',
-			'AlternateCount'
+			'AlternateCount',
+			'Title'
 			]
 			
 		self.allowedValModifiers = [

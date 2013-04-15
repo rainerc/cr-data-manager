@@ -279,7 +279,7 @@ class configuratorForm(Form):
 		self._cmdAddCriteria.Name = "cmdAddCriteria"
 		self._cmdAddCriteria.Size = System.Drawing.Size(27, 27)
 		self._cmdAddCriteria.TabIndex = 26
-		self._toolTip1.SetToolTip(self._cmdAddCriteria, "create criteria tuple")
+		self._toolTip1.SetToolTip(self._cmdAddCriteria, "create criteria element")
 		self._cmdAddCriteria.UseVisualStyleBackColor = True
 		self._cmdAddCriteria.Click += self.ButtonAddCriteriaClick
 		# 
@@ -317,7 +317,7 @@ class configuratorForm(Form):
 		self._cmdAddValues.Name = "cmdAddValues"
 		self._cmdAddValues.Size = System.Drawing.Size(27, 27)
 		self._cmdAddValues.TabIndex = 31
-		self._toolTip1.SetToolTip(self._cmdAddValues, "create new value tuple")
+		self._toolTip1.SetToolTip(self._cmdAddValues, "create new value element")
 		self._cmdAddValues.UseVisualStyleBackColor = True
 		self._cmdAddValues.Click += self.ButtonAddValuesClick
 		# 
@@ -542,6 +542,7 @@ class configuratorForm(Form):
 		# 
 		# cmdLineToGui
 		# 
+		self._cmdLineToGui.AutoSize = True
 		self._cmdLineToGui.Location = System.Drawing.Point(740, 285)
 		self._cmdLineToGui.Name = "cmdLineToGui"
 		self._cmdLineToGui.Size = System.Drawing.Size(27, 27)
@@ -557,7 +558,7 @@ to visual editor""")
 		self._cmdTrashCriteria.Name = "cmdTrashCriteria"
 		self._cmdTrashCriteria.Size = System.Drawing.Size(27, 27)
 		self._cmdTrashCriteria.TabIndex = 49
-		self._toolTip1.SetToolTip(self._cmdTrashCriteria, "remove criteria tuple")
+		self._toolTip1.SetToolTip(self._cmdTrashCriteria, "remove criteria element")
 		self._cmdTrashCriteria.UseVisualStyleBackColor = True
 		self._cmdTrashCriteria.Click += self.CmdTrashCriteriaClick
 		# 
@@ -567,12 +568,13 @@ to visual editor""")
 		self._cmdTrashValues.Name = "cmdTrashValues"
 		self._cmdTrashValues.Size = System.Drawing.Size(27, 27)
 		self._cmdTrashValues.TabIndex = 50
-		self._toolTip1.SetToolTip(self._cmdTrashValues, "remove value tuple")
+		self._toolTip1.SetToolTip(self._cmdTrashValues, "remove value element")
 		self._cmdTrashValues.UseVisualStyleBackColor = True
 		self._cmdTrashValues.Click += self.CmdTrashValuesClick
 		# 
 		# cmdRemoveLine
 		# 
+		self._cmdRemoveLine.AutoSize = True
 		self._cmdRemoveLine.Location = System.Drawing.Point(740, 255)
 		self._cmdRemoveLine.Name = "cmdRemoveLine"
 		self._cmdRemoveLine.Size = System.Drawing.Size(27, 27)
