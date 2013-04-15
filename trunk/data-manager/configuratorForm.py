@@ -417,7 +417,8 @@ class configuratorForm(Form):
 		# comboGroups
 		# 
 		self._comboGroups.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-		self._comboGroups.MaxDropDownItems = 16
+		self._comboGroups.IntegralHeight = False
+		self._comboGroups.MaxDropDownItems = 30
 		self._comboGroups.Name = "comboGroups"
 		self._comboGroups.Size = System.Drawing.Size(200, 25)
 		self._comboGroups.SelectedIndexChanged += self.ComboGroupsSelectedIndexChanged
@@ -765,7 +766,13 @@ to visual editor""")
 		self.setLineInfo()
 		if self.theFile <> globalvars.DATFILE:
 #			self._buttonSave.Visible = False
-			self._fileToolStripMenuItem.Enabled = False
+#			self._mnuFile.Enabled = False
+			self._saveToolStripMenuItem.Enabled = False
+			self._saveAsToolStripMenuItem.Enabled = False
+			self._restorelStripMenuItem1.Enabled = False
+			self._mnuEdit.Enabled = False
+			self._mnuView.Enabled = False
+			self.editormode = self.EDITOR_MODE_TEXT
 		return
 
 	# Search textbox events	

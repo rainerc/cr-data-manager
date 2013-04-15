@@ -116,7 +116,7 @@ from System.Drawing import *
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = True
+DEBUG__ = False
 
 import globalvars
 import utils
