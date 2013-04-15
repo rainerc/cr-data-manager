@@ -85,6 +85,9 @@ r117
 change - GUI: delete rule from rule set
 change - GUI: re-engineer rule
 change - menu strip upgraded
+...
+r1..
+change - new allowed fields: Title
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
