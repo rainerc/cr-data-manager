@@ -775,6 +775,8 @@ to visual editor""")
 			self._mnuEdit.Enabled = False
 			self._mnuView.Enabled = False
 			self.editormode = self.EDITOR_MODE_TEXT
+		else:
+			self.loadGroups()
 		return
 
 	# Search textbox events	

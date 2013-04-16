@@ -1,10 +1,11 @@
+# the utils module
+
 import System
 from System import String
 from System.IO import File
 from System.Windows.Forms import MessageBox
 import re
 import globalvars
-#import str
 
 class comparer(object):
 	"""description of class"""
@@ -71,26 +72,17 @@ class comparer(object):
 		return True			
 
 	def contains(self, myString, myVal, caseInsensitive):
-		try:
-#			print 'myString: %s' % myString
-#			print 'myVal: %s' % myVal
-			if caseInsensitive == True:
-				myString = str.lower(myString)
-				myVal = str.lower(myVal)
-#			print 'myString: %s' % myString
-#			print 'myVal: %s' % myVal
-				
-			return myVal.strip() in myString
-		except Exception, err:
-			print 'Error in contains %s' % str(err)
-		# return str.find(myString,myVal) >= 0
+		if caseInsensitive == True:
+			myString = str.lower(myString)
+			myVal = str.lower(myVal)
+		return myVal.strip() in myString
+
 	
 	def containsNot(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)	
 		return myVal.strip() not in myString			
-		# return str.find(myString,myVal) < 0
 	
 	def equals(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
@@ -135,10 +127,11 @@ class comparer(object):
 		return myString <> myVal
 
 def nullToZero(s):
-	if String.Trim(str(s)) == '':
-		return 0
+	if String.Trim(str(s)) == '': return 0
 	return s
 
+
+		
 def multiValueAdd(myList, myVal):
 	myVal = str.Trim(str(myVal))
 	newList = []
@@ -191,7 +184,6 @@ class parser(object):
 	
 		'''
 		s = String.Trim(s)
-#		print s
 		if not len(s) > 0:
 			self.err = False
 		# check if line is comment
@@ -282,7 +274,6 @@ class ruleFile(object):
 
 		self.allowedKeyModifiers = [
 			'Is',
-			'Range',
 			'Not',
 			'Contains',
 			'Greater',
