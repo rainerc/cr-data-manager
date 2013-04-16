@@ -92,12 +92,12 @@ fixed - unexpected behavior with book numbers like '5AU', 'Minus 1', '¼', fixed
         function 'stringToFloat'
 change - rule editor is now dropdown option in CR toolbar (form MainForm is obsolete)
 change - range modifier is not selectable for string fields anymore in GUI
+fixed - group header combo box was not updated when backup of rule set was loaded
 ...
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
-issues:
-exclude duplicate lines from parsing
+ideas:
 todo: modifier Before
 todo: modifier After
 todo: use In as modifier in keys
