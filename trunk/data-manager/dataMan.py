@@ -86,9 +86,13 @@ change - GUI: delete rule from rule set
 change - GUI: re-engineer rule
 change - menu strip upgraded
 ...
-r1..
+r121
 change - new allowed fields: Title
-
+fixed - unexpected behavior with book numbers like '5AU', 'Minus 1', '¼', fixed with
+        function 'stringToFloat'
+change - rule editor is now dropdown option in CR toolbar (form MainForm is obsolete)
+change - range modifier is not selectable for string fields anymore in GUI
+...
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -119,14 +123,15 @@ from System.Drawing import *
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = False
+DEBUG__ = True
 
 import globalvars
 import utils
-from utils import parser
-from utils import comparer
-from utils import nullToZero
-from mainform import mainForm
+#from utils import parser
+#from utils import comparer
+#from utils import nullToZero
+from utils import *
+#from mainform import mainForm
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
 from progressForm import progressForm
@@ -165,6 +170,8 @@ def writeCode(s, level, linebreak):
 #		return File.ReadAllText(globalvars.TMPFILE)
 #	except Exception, err:
 #		print "Error in function parsedCode: ", str(err)
+
+
 		
 def parseString(s):
 	# todo: this belongs in class ruleFile
@@ -269,18 +276,24 @@ def parseString(s):
 				return
 
 			myVal = tmp[1]
-#			myVal = String.replace(myVal,"\"","\\\"")
-			if myOperator == "in range":
-				tmp = String.Split(myVal,",")
-				myVal = "%d, %d" % (float(tmp[0]), float(tmp[1]) + 1)
-				if myKey in numericalKeys:
-					myCrit = myCrit + ("book.%s %s (%s) and " % (myKey, myOperator, myVal))
-				else:
-					myCrit = myCrit + ("float(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
 
+			if myOperator == "in range":		# must only be used with numerical keys
+				
+				tmp = String.Split(myVal,",")
+				val1 = int(nullToZero(stringToFloat(tmp[0])))
+				print 'val1 %s' % str(val1)
+				val2 = int(nullToZero(stringToFloat(tmp[1])))
+				print 'val2 %s' % str(val2)
+				myVal = "%d, %d" % (val1, val2 + 1)
+				if myKey in numericalKeys or myKey in ('Number','AlternateNumber'):
+					myCrit = myCrit + ("int(StringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
+				else:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "Range modifier cannot be used in %s field" % (myKey))
+					return 0
 			# ---------------------------------------------------------------------------
-			# now begins the interesting part for field Number which is stored as 
-			# a string but treated as a numerical value
+			# now begins the interesting part for fields Number/Autonumber which is stored as 
+			# a string but should be treated like a numerical value
 			elif myOperator in ('==', '>', '>=', '<', '<=') and (myKey == 'Number' or myKey == 'AlternateNumber'):
 				if str.Trim(myVal) == '':
 					# fix issue 31
@@ -288,14 +301,20 @@ def parseString(s):
 				else:
 					# if the current value of book.Number is Null it has to be converted to
 					# 0 before it can be converted to float
-					myCrit = myCrit + ('float(nullToZero(book.%s)) %s float(nullToZero(%s)) and ' % (myKey, myOperator, myVal))
+					if myOperator == '==':
+						# if operator is == then we need an exact compare
+						myVal = str(nullToZero(myVal))
+						myCrit += 'nullToZero(book.%s) %s \'%s\' and ' % (myKey, myOperator, myVal)
+					else:
+						# if operator is <, > and so forth we have to simulate those
+						# values as numeric, so we use stringToFloat
+						myVal = nullToZero(stringToFloat(myVal))
+						myCrit = myCrit + ('nullToZero(stringToFloat(book.%s)) %s %s and ' % (myKey, myOperator, myVal))
+					pass
 			# end of extra handling of Number field
 			# ----------------------------------------------------------------------------
 			elif str.lower(myModifier) == "contains" and myKey not in numericalKeys:
 				myCrit = myCrit + 'comp.contains(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-				#MessageBox.Show(myCrit)
-				#myCrit = myCrit + ("comp.contains
-				# myCrit = myCrit + ("String.find(book.%s,\"%s\") >= 0 and " % (myKey,myVal)) 
 			
 			elif str.lower(myModifier) == "containsanyof": # and myKey not in numericalKeys:
 				if myKey not in numericalKeys:
@@ -359,7 +378,7 @@ def parseString(s):
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
 
-	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number + ' was touched \\t(%s)\\n')" % a[0], 2, True)
+	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % a[0], 2, True)
 	
 	# iterate through each of the newValues
 	for n in [n for n in newValues if n.strip() <> '']:
@@ -474,39 +493,55 @@ def dmConfig():
 	form.Dispose()
 
 def crVersion():
-	minVersion = '0.9.164'
+	minVersion = '0.9.164'		# we need CR 0.9.164 minimum (for custom values)
 	vMin = 0 + 9000 + 164
-	myVersion = ComicRack.App.ProductVersion
+	myVersion = ComicRack.App.ProductVersion	# get the installed CR version number
 	v = str.Split(myVersion,'.')
 	vMyVersion = (int(v[0]) * 1000000) + (int(v[1]) * 1000) + int(v[2])
-	if vMyVersion < vMin:
+	if vMyVersion < vMin:		# if actual version is lower than minimum version: return False
 		MessageBox.Show(
 		'You have only CR version %s installed.\nPlease install at least version %s of ComicRack first!' % (myVersion,minVersion),
 		'Data Manger for ComicRack %s' % globalvars.VERSION)
 		return False
 	return True
 
+def addALotOfBooks():
+	i = 1001
+	while True:
+		theBook = ComicRack.App.AddNewBook(False)
+		theBook.Series = 'Automatic Series'
+		theBook.Number = str(i)
+		if i == 5000:
+			break
+		i += 1
+	return
+
+# ============================================================================      
+# hook to run the configScript
+#@Key    data-manager
+#@Hook   ConfigScript
+# ============================================================================      
+def dataManagerConfig():
+	dmConfig()
+
+# ============================================================================ 
+# hook to run the main dataManager loop
 #@Name	Data Manager
 #@Image dataMan16.png
+#@Key	data-manager
 #@Hook	Books
+# ============================================================================     
 
 def replaceData(books):
+
+
+	#for book in [book for book in books if book.GetCustomValue('my_Val') <> None]: # works
+	#for book in [book for book in books if book.GetCustomValue('my_Val') < '2']: # works strange if used with pseudo numbers
 
 	ERROR_LEVEL = 0
 
 	if not crVersion():
 		return
-	form = mainForm()
-	form.ShowDialog(ComicRack.MainWindow)
-	form.Dispose()
-
-	if form.DialogResult == DialogResult.No:
-		dmConfig()
-		return
-	elif form.DialogResult <> DialogResult.OK:
-		return
-	else:
-		pass
 	
 	try:
 		File.Delete(globalvars.TMPFILE)
@@ -541,20 +576,21 @@ def replaceData(books):
 		s = [line for line in s if str.Trim(line) <> '']
 		for line in s:
 			i += 1
-#			if String.find(line," => ") and line[0] <> "#":
-			if not line.StartsWith('#'):
 
-				if not parseString(line):
+			if not line.StartsWith('#'):	# don't run this on commentary lines
+											# todo: handle parser directives starting with #@
+
+				if not parseString(line):	# syntax error found, break parsing the rule set
 					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
 					break
-			if String.StartsWith(line,'#@ END_RULES'):
+			if line.startswith('#@ END_RULES'):
+#			if String.StartsWith(line,'#@ END_RULES'):
 				break
 			
 	except Exception, err:
 		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %' % globalvars.VERSION)
-		print 'getCode: ', str(err)
 
 	progBar.Dispose()
 
@@ -564,8 +600,7 @@ def replaceData(books):
 	if ERROR_LEVEL == 0:
 		# theCode = parsedCode()	# read generated code from file
 		theCode = File.ReadAllText(globalvars.TMPFILE)
-		if DEBUG__:
-			print "code generated by CR Data Manager: \n%s" % theCode   # remove in first stable release!
+		debug("code generated by CR Data Manager: \n%s" % theCode)   # remove in first stable release!
 			
 		progBar = progressForm()
 		progBar.Show()
@@ -609,3 +644,40 @@ def replaceData(books):
 		pass
 	
 
+def stringToFloat(myVal):
+	# tries to convert a string myVal to float
+	# returns None if not possible or string myVal is empty
+
+	print 'at stringToFloat1'
+	try:
+		return float(myVal)
+	except Exception, err:
+		pass
+
+	print 'at stringToFloat2'
+	
+	s = ''
+	s = str(myVal).lower().strip()
+	
+	print 'at stringToFloat3'
+	if s == '': return None
+
+	s = s.replace(chr(188),'.25')
+	s = s.replace(chr(189),'.5')
+	if s.startswith('minus'): s = s.replace('minus','-')
+
+	try:
+		return float(s)
+	except Exception, err:
+		tmp = ''
+		for c in s:
+			if c in ('.','-') or c.isdigit():
+				tmp += c
+			else:
+				break
+		try:
+			return float(tmp)
+		except Exception, err:
+			return None
+
+		
