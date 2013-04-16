@@ -1,0 +1,101 @@
+#summary Revisions since latest public release 0.1.14
+#labels Deprecated
+
+Status: 0.1.15 r121
+= Major changes and fixes relevant to GUI =
+
+v 0.1.15
+<PRE>
+change - PageCount added to allowed keys
+change - new modifier ContainsAnyOf (issue 28)
+change - new modifier ContainsNot 
+change - new modifier ContainsAllOf (issue 40)
+change - new modifier NotContainsAnyOf
+change - new modifier StartsWithAnyOf
+change - new directive "#@ END_RULES"
+change - new directive #@ GROUP
+change - new allowed fields: alternateNumber and alternateCount (issue 44)
+change - new allowed fields: Title
+change - range modifier is not selectable for string fields anymore in GUI
+</pre>
+
+== Complete listing of revisions ==
+<pre>
+v 0.1.15
+fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
+        (issue 34) (set ComicRack.Window  as parent window handle for all forms)
+change - modular rewriting of forms
+change - Contains compares now case insensitive
+change - StartsWith compares now case insensitive
+change - comparison for equality (==) is now case insensitive
+change - comparison for less (<) is now case insensitive
+change - comparison for lessEqual (<=) is now case insensitive
+change - comparison for greater (>) is now case insensitive
+change - comparison for greaterEq (>=) is now case insensitive
+change - comparison for not equal (<>) is now case insensitive
+fix - missing references to globalvars added
+change - PageCount added to allowed keys
+change - new modifier ContainsAnyOf (issue 28)
+change - new modifier ContainsNot (may used as well as NotContains)
+change - new modifier ContainsAllOf (issue 40)
+change - if no value was modified by the DM, only "book xxx was touched" is written to logfile
+change - new modifier NotContainsAnyOf
+change - new modifier StartsWithAnyOf
+change - new directive "#@ END_RULES"
+change - new class "parser"
+change - new class "ruleFile" (encapsulated reading and writing the DATFILE)
+fix - exception when Null value was used in Range modifier
+change - when error was raised by compiling code a MessageBox will show the error
+...
+r105
+change - Configurator form re-written
+change - basic Search functionality in Configurator
+...
+r106
+change - first rudimentary GUI written (no functionality yet)
+...
+r109
+change - ComicRack version check at start (min is 0.9.165)
+change - basic GUI functionality
+...
+r111
+change - new directive #@ GROUP
+change - added combobox to find group header in textbox
+change - textclips (like commentary line, group header etc. can be added via GUI)
+change - rule editor position set to CenterParent
+fixed - 'setvalue' was not recognized as a valid modifier
+fixed - exception if file in rule editor is not the DatFile and combobox group selector is selected
+...
+r113
+fixed - sometimes selected text in rule set is overwritten by inserted rule (GUI)
+fixed - criterion or setvalue are not added to rule if already in there (GUI)
+change - buttons for deleting content of textboxes for criteria and setvalue (GUI)
+change - group names are checked if already used
+fixed - Contains... methods in class parser rewritten (unexpected results when leading
+        or trailing blanks where attached to values)
+fixed - exception when a criterion with apostrophe or quotation mark was written to the log file
+        (issue 36)
+...
+r114
+change - save and close added to configurator menustrip
+change - option to backup and restore the rule set (issue 30)
+change - DMProc is no longer added to Tags but written as a custom value (issue 33)
+..
+r115
+change - new allowed fields: alternateNumber and alternateCount (issue 44)
+fixed - comboModifiers does not match comboCriteria and comboValues (issue 48)
+change - option to select line by line number (issue 49)
+...
+r117
+change - GUI: delete rule from rule set
+change - GUI: re-engineer rule
+change - menu strip upgraded
+...
+r121
+change - new allowed fields: Title
+fixed - unexpected behavior with book numbers like '5AU', 'Minus 1', '¼', fixed with
+        function 'stringToFloat'
+change - rule editor is now dropdown option in CR toolbar (form MainForm is obsolete)
+change - range modifier is not selectable for string fields anymore in GUI
+fixed - group header combo box was not updated when backup of rule set was loaded
+</pre>
