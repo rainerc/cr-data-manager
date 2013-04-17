@@ -94,6 +94,14 @@ change - rule editor is now dropdown option in CR toolbar (form MainForm is obso
 change - range modifier is not selectable for string fields anymore in GUI
 fixed - group header combo box was not updated when backup of rule set was loaded
 ...
+r1..
+change - parser directive '#@ END_GROUP' added (issue 56)
+change - new list ruleFile.pseudoNumericalKeys (Number, AlternateNumber)
+change - new modifier Add for string type fields (non-multi value) (issue 32)
+change - new modifier Replace for string type fields (non-multi value) (issue 32)
+change - new modifier Remove for string type fields (non-multi value) (issue 32)
+fixed - range modifiers for multivalue keys are now restricted to the elements of ruleFile.allowedKeyModifiersMulti (issue 55)
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -186,6 +194,7 @@ def parseString(s):
 	allowedKeys = rules.allowedKeys
 	allowedVals = rules.allowedVals
 	numericalKeys = rules.numericalKeys
+	pseudoNumericalKeys = rules.pseudoNumericalKeys
 	multiValueKeys = rules.multiValueKeys
 	
 	myParser = utils.parser()
@@ -194,7 +203,7 @@ def parseString(s):
 		File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (%s)\nline: %s)" % (myParser.error, s))
 		return 0
 	
-	a = String.split(s,"=>")
+	a = s.split("=>")
 
 	# some preparation for the criteria part:
 	a[0] = String.Trim(a[0])
@@ -209,7 +218,7 @@ def parseString(s):
 	# store those in lists
 	try:		
 		criteria = a[0].split(">>")			
-		newValues = String.split(a[1],">>")
+		newValues = a[1].split(">>")
 	except Exception, err:
 		print str(err)
 	
@@ -220,8 +229,8 @@ def parseString(s):
 			c = String.Trim(String.replace(c,"<<",""))
 			myKey = ''  # only to reference it
 			if String.find(c,':') > 0:
-				tmp = String.split(c,":",1)
-				tmp2 = String.split(tmp[0],".",1)
+				tmp = c.split(":",1)
+				tmp2 = tmp[0].split(".",1)
 				myKey = tmp2[0]
 				try:
 					myModifier = tmp2[1]
@@ -231,7 +240,7 @@ def parseString(s):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
-			if c <> "" and not (myKey in allowedKeys):
+			if c <> "" and not (myKey in allowedKeys) and not myKey.startswith('CustomValue'):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			myOperator = "=="
@@ -279,13 +288,13 @@ def parseString(s):
 
 			if myOperator == "in range":		# must only be used with numerical keys
 				
-				tmp = String.Split(myVal,",")
+				tmp = myVal.split(",")
 				val1 = int(nullToZero(stringToFloat(tmp[0])))
 				print 'val1 %s' % str(val1)
 				val2 = int(nullToZero(stringToFloat(tmp[1])))
 				print 'val2 %s' % str(val2)
 				myVal = "%d, %d" % (val1, val2 + 1)
-				if myKey in numericalKeys or myKey in ('Number','AlternateNumber'):
+				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
 					myCrit = myCrit + ("int(StringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
 				else:
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
@@ -294,7 +303,7 @@ def parseString(s):
 			# ---------------------------------------------------------------------------
 			# now begins the interesting part for fields Number/Autonumber which is stored as 
 			# a string but should be treated like a numerical value
-			elif myOperator in ('==', '>', '>=', '<', '<=') and (myKey == 'Number' or myKey == 'AlternateNumber'):
+			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey in pseudoNumericalKeys:	# (myKey == 'Number' or myKey == 'AlternateNumber'):
 				if str.Trim(myVal) == '':
 					# fix issue 31
 					myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
@@ -388,20 +397,20 @@ def parseString(s):
 			str.lower(n).replace('.getvalue','')
 			if String.find(n,':') > 0:
 				# get key part (substring before ':')
-				tmp = String.split(n,":",1)
+				tmp = n.split(":",1)
 				debug('tmp %s' % tmp)
 				myKey = tmp[0]
 				debug('myKey %s' % tmp2)
 				myModifier = ''
 				if String.find(myKey,'.') > 0:
-					tmp3 = String.split(myKey,'.')
+					tmp3 = myKey.split('.')
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
 			else:
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
 			if not (myKey in allowedVals):
-				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)353\nline: %s)" % (myKey, s))
+				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			# to do: handling if function is appended to field
 				
@@ -414,52 +423,57 @@ def parseString(s):
 				
 			if myModifier <> "":
 				if str.lower(myModifier) == "calc":
-					if myKey not in numericalKeys and myKey <> 'Number':
+					if myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = String.replace(myVal,'{','str(book.')
 					else:
 						myVal = String.replace(myVal,'{','int(book.')
 					myVal = String.replace(myVal,'}',')')
-					if myKey == 'Number':
+					if myKey in pseudoNumericalKeys:	# == 'Number':
 						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
 				if str.lower(myModifier) == "add":
-					if myKey in numericalKeys or myKey == 'Number':
+					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Add modifier cannot be used in %s field" % (myKey))
 						return 0
-					elif myKey in multiValueKeys:
+					if myKey in multiValueKeys:
 						if len(String.Trim(myVal)) == 0:
 							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
+							File.AppendAllText(globalvars.ERRFILE, "Add modifier needs 1 argument")
 							return 0
 						else:
 							writeCode('book.%s = multiValueAdd(book.%s,"%s")' % (myKey, myKey, myVal), 2, True)
+					else: 				# myKey in allowedKeys
+						writeCode('book.%s = stringAdd(book.%s,"%s")' %  (myKey, myKey, myVal), 2, True)
 				if str.lower(myModifier) == "replace":
-					if myKey in numericalKeys or myKey == 'Number':
+					tmpVal = myVal.split(',')
+					if len(tmpVal) <= 1:
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Replace modifier needs 2 arguments")
+						return 0
+					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
 						return 0
 					elif myKey in multiValueKeys:
-						tmpVal = myVal.split(',')
-						if len(tmpVal) > 1:
-							writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
-						else:
-							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(globalvars.ERRFILE, "Replace modifier needs 2 arguments")
-							return 0
+						writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+					else:
+						writeCode('book.%s = stringReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+							
 				if str.lower(myModifier) == "remove":
-					if myKey in numericalKeys or myKey == 'Number':
+					if len(String.Trim(myVal)) == 0:
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
+						return 0
+					if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# == 'Number':
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
-					elif myKey in multiValueKeys:
-						if len(String.Trim(myVal)) == 0:
-							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
-							return 0
-						else:
-							writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+					if myKey in multiValueKeys:
+						writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+					else:
+						writeCode('book.%s = stringRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 
 			else:
 
@@ -496,7 +510,7 @@ def crVersion():
 	minVersion = '0.9.164'		# we need CR 0.9.164 minimum (for custom values)
 	vMin = 0 + 9000 + 164
 	myVersion = ComicRack.App.ProductVersion	# get the installed CR version number
-	v = str.Split(myVersion,'.')
+	v = myVersion.split('.')
 	vMyVersion = (int(v[0]) * 1000000) + (int(v[1]) * 1000) + int(v[2])
 	if vMyVersion < vMin:		# if actual version is lower than minimum version: return False
 		MessageBox.Show(
@@ -518,6 +532,7 @@ def addALotOfBooks():
 
 # ============================================================================      
 # hook to run the configScript
+#@Name	 Data Manager configuration
 #@Key    data-manager
 #@Hook   ConfigScript
 # ============================================================================      
