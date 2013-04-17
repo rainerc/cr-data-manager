@@ -131,6 +131,16 @@ def nullToZero(s):
 	return s
 
 
+def stringAdd(myKey, myVal):
+	return str(myKey) + str(myVal)
+
+def stringReplace(myKey,oldVal,newVal):
+	oldVal = oldVal.strip()
+	newVal = newVal.strip()
+	return myKey.replace(oldVal,newVal)
+
+def stringRemove(myKey,myVal):
+	return myKey.replace(myVal,'')
 		
 def multiValueAdd(myList, myVal):
 	myVal = str.Trim(str(myVal))
@@ -239,7 +249,7 @@ class ruleFile(object):
 		self.theFile = globalvars.DATFILE
 		self.editedByParser = False
 		
-		self.allowedKeys = [
+		self.allowedKeys = [		# every allowed key to be used in left part of rule
 			'Series',
 			'Volume',
 			'Imprint',
@@ -263,7 +273,7 @@ class ruleFile(object):
 			'Title'
 			]
 			
-		self.numericalKeys = [
+		self.numericalKeys = [			# every allowed numerical key to be used in left part of rule
 			'Volume',
 			'Month',
 			'Year',
@@ -271,8 +281,18 @@ class ruleFile(object):
 			'PageCount',
 			'AlternateCount'
 			]
+			
+		self.pseudoNumericalKeys = [	# every allowed pseudo-numerical key to be used in left part of rule
+			'Number',
+			'AlternateNumber'
+			]
 
-		self.allowedKeyModifiers = [
+		self.multiValueKeys = [			# every allowed multi-value key to be used in left part of rule
+			'Tags',
+			'Genre'
+			]
+			
+		self.allowedKeyModifiers = [	# every allowed modifier in left part of rule
 			'Is',
 			'Not',
 			'Contains',
@@ -288,7 +308,7 @@ class ruleFile(object):
 			'ContainsAllOf'
 		]
 		
-		self.allowedKeyModifiersNumeric = [
+		self.allowedKeyModifiersNumeric = [		# every allowed modifier for numeric fields in left part of rule
 			'Is',
 			'Range',
 			'Not',
@@ -298,14 +318,18 @@ class ruleFile(object):
 			'LessEq',
 		]
 		
-	
+		self.allowedKeyModifiersMulti = [		# every allowed modifier for multi-value fields in left part of rule
+			'Is',
+			'Not',
+			'Contains',
+			'ContainsAnyOf',
+			'NotContainsAnyOf',
+			'NotContains',
+			'ContainsAllOf'
+		]
+		
 			
-		self.multiValueKeys = [
-			'Tags',
-			'Genre'
-			]
-			
-		self.allowedVals = [
+		self.allowedVals = [					# every allowed key in right part of rule
 			'Series',
 			'Volume',
 			'Imprint',
@@ -323,12 +347,38 @@ class ruleFile(object):
 			'Title'
 			]
 			
-		self.allowedValModifiers = [
+		
+		# -------------------------------------------------------------------------------------------
+		# not sure if this is necessary
+		self.allowedValsNumeric = [				# every allowed numeric key in right part of rule
+			'Volume',
+			'Number',
+			'Count',
+			'AlternateNumber',
+			'AlternateCount',
+			]
+			
+		self.allowedValModifiersNumeric = [
 			'SetValue',
 			'Calc'
 			]
+		# -------------------------------------------------------------------------------------------
 			
-		self.allowedValModifiersMulti = [
+		self.allowedValsMulti = [				# every allowed multi-value key in right part of rule
+			'Tags',
+			'Genre'
+			]
+			
+		self.allowedValModifiers = [			# every allowed modifier in right part of rule
+			'SetValue',
+			'Calc',
+			'Add',
+			'Remove',
+			'Replace'
+			]
+			
+		
+		self.allowedValModifiersMulti = [		# every allowed modifier for multi-value fields in right part of rule
 			'SetValue',
 			'Add',
 			'Replace',
@@ -424,6 +474,8 @@ class ruleFile(object):
 			myModifierList = ['']
 			if myKey == 'number' or myKey == 'alternatenumber' or myKey in [str.lower(x) for x in self.numericalKeys]:
 				return self.allowedKeyModifiersNumeric
+			if myKey in [str.lower(x) for x in self.multiValueKeys]:
+				return self.allowedKeyModifiersMulti
 			if myKey not in [str.lower(x) for x in self.numericalKeys]:
 				return self.allowedKeyModifiers
 			return myModifierList

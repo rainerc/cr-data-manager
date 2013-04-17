@@ -43,7 +43,8 @@ class configuratorForm(Form):
 			'divider': '# %s' % ('-' * 30) , 
 			'group header': '#@ GROUP ',
 			'variable' : '#@ VAR ',
-			'end of rules' : '#@ END_RULES'
+			'end of rules' : '#@ END_RULES',
+			'end of group' : '#@ END_GROUP	'
 		}
 		self.EDITOR_MODE_GUI = 0
 		self.EDITOR_MODE_TEXT = 1
