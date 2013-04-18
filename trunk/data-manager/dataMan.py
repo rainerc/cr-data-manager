@@ -94,7 +94,7 @@ change - rule editor is now dropdown option in CR toolbar (form MainForm is obso
 change - range modifier is not selectable for string fields anymore in GUI
 fixed - group header combo box was not updated when backup of rule set was loaded
 ...
-r1..
+r125
 change - parser directive '#@ END_GROUP' added (issue 56)
 change - new list ruleFile.pseudoNumericalKeys (Number, AlternateNumber)
 change - new modifier Add for string type fields (non-multi value) (issue 32)
