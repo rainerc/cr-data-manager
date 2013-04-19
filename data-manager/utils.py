@@ -46,6 +46,7 @@ class comparer(object):
 			if word.strip() in myString: return True
 		return False
 
+	# todo: this is redundant
 	def notContainsAnyOf(self, myString,myVals,caseInsensitive):
 		myString = myString.strip()
 		if caseInsensitive:
@@ -78,6 +79,7 @@ class comparer(object):
 		return myVal.strip() in myString
 
 	
+	# todo: this is redundant
 	def containsNot(self, myString, myVal, caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
@@ -254,49 +256,123 @@ class ruleFile(object):
 		self.theFile = globalvars.DATFILE
 		self.editedByParser = False
 		
-		self.allowedKeys = [		# every allowed key to be used in left part of rule
-			'Series',
-			'Volume',
-			'Imprint',
-			'Publisher',
-			'Number',
-			'FileDirectory',
-			'SeriesGroup',
-			'Month',
-			'Year',
-			'MainCharacterOrTeam',
-			'Format',
+#		self.allowedKeys = [		# every allowed key to be used in left part of rule
+#			'AgeRating',
+#			'AlternateNumber',
+#			'AlternateCount',
+#			'Series',
+#			'Volume',
+#			'Imprint',
+#			'Publisher',
+#			'Number',
+#			'FileDirectory',
+#			'SeriesGroup',
+#			'Month',
+#			'Year',
+#			'MainCharacterOrTeam',
+#			'Format',
+#			'AlternateSeries',
+#			'Count',
+#			'FilePath',
+#			'FileName',
+#			'Genre',
+#			'Tags',
+#			'PageCount',
+#			'Title'
+#			]
+
+		self.allowedKeys = [
+			'AgeRating', #ATTN:docdoom Added String Key
+            'AlternateCount',
 			'AlternateSeries',
-			'Count',
-			'FilePath',
-			'FileName',
-			'Genre',
-			'Tags',
-			'PageCount',
 			'AlternateNumber',
-			'AlternateCount',
-			'Title'
-			]
-			
-		self.numericalKeys = [			# every allowed numerical key to be used in left part of rule
-			'Volume',
+			'BookNotes', #ATTN:docdoom Added String Key
+            'BookOwner', #ATTN:docdoom Added String Key
+			'BookStore', #ATTN:docdoom Added String Key
+            'Characters', #ATTN:docdoom Added Multi-value Key
+            'Colorist', #ATTN:docdoom Added Multi-value Key
+            'Count',
+			'CoverArtist', #ATTN:docdoom Added Multi-value Key
+            'Day', #ATTN:docdoom Added Numeric Key
+            'Editor', #ATTN:docdoom Added Multi-value Key
+            'FileDirectory',
+			'FileFormat',  #ATTN:docdoom Added String Key (Read-Only so not valid for values)
+            'FileName',
+			'FilePath',
+			'Format',
+			'Genre',
+			'Imprint',
+			'Inker', #ATTN:docdoom Added Multi-value Key (also included in multi-value below it was the only missing one)
+            'ISBN', #ATTN:docdoom Added String Key
+            'Letterer', #ATTN:docdoom Added Multi-value Key
+            'Locations', #ATTN:docdoom Added Multi-value Key
+			'MainCharacterOrTeam',
 			'Month',
-			'Year',
-			'Count',
+			'Notes', #ATTN:docdoom Added String Key
+            'Number',
 			'PageCount',
-			'AlternateCount'
+			'Penciller', #ATTN:docdoom Added Multi-value Key
+            'Publisher',
+			'Review', #ATTN:docdoom Added String Key
+            'ScanInformation', #ATTN:docdoom Added String Key
+            'Series',
+			'SeriesGroup',
+			'StoryArc', #ATTN:docdoom Added String Key
+            'Summary', #ATTN:docdoom Added String Key
+            'Tags',
+			'Teams', #ATTN:docdoom Added Multi-value Key
+            'Title',
+            'Volume',
+			'Web', #ATTN:docdoom Added String Key
+            'Writer', #ATTN:docdoom Added Multi-value Key
+            'Year'
+            ]
+
+#		self.numericalKeys = [			# every allowed numerical key to be used in left part of rule
+#			'Volume',
+#			'Month',
+#			'Year',
+#			'Count',
+#			'PageCount',
+#			'AlternateCount'
+#			]
+
+		self.numericalKeys = [
+			'AlternateCount',
+			'Count',
+			'Day', #ATTN:docdoom -added here and above
+            'Month',
+			'PageCount',
+			'Volume',
+			'Year',
 			]
-			
+
+
 		self.pseudoNumericalKeys = [	# every allowed pseudo-numerical key to be used in left part of rule
 			'Number',
 			'AlternateNumber'
 			]
 
-		self.multiValueKeys = [			# every allowed multi-value key to be used in left part of rule
-			'Tags',
-			'Genre'
-			]
-			
+#		self.multiValueKeys = [			# every allowed multi-value key to be used in left part of rule
+#			'Tags',
+#			'Genre'
+#			]
+
+		self.multiValueKeys = [
+			'Characters',
+            'Colorist',
+            'CoverArtist',
+            'Editor',
+            'Genre',
+            'Inker', #ATTN:docdoom added (Seems you already had most all these added even if not referenced in Allowed keys)
+			'Letterer',
+            'Locations',
+            'Penciller',
+            'Tags',
+			'Teams',
+            'Writer',
+            ]
+
 		self.allowedKeyModifiers = [	# every allowed modifier in left part of rule
 			'Is',
 			'Not',
@@ -336,22 +412,65 @@ class ruleFile(object):
 		]
 		
 			
-		self.allowedVals = [					# every allowed key in right part of rule
-			'Series',
-			'Volume',
-			'Imprint',
-			'Publisher',
-			'Number',
-			'SeriesGroup',
-			'MainCharacterOrTeam',
-			'Format',
+#		self.allowedVals = [					# every allowed key in right part of rule
+#			'Series',
+#			'Volume',
+#			'Imprint',
+#			'Publisher',
+#			'Number',
+#			'SeriesGroup',
+#			'MainCharacterOrTeam',
+#			'Format',
+#			'AlternateSeries',
+#			'Count',
+#			'Genre',
+#			'Tags',
+#			'AlternateNumber',
+#			'AlternateCount',
+#			'Title'
+#			]
+			
+		self.allowedVals = [
+			'AgeRating', #ATTN:docdoom Added String Key
+            'AlternateCount',
 			'AlternateSeries',
-			'Count',
-			'Genre',
-			'Tags',
 			'AlternateNumber',
-			'AlternateCount',
-			'Title'
+			'BookNotes', #ATTN:docdoom Added String Key
+            'BookOwner', #ATTN:docdoom Added String Key
+			'BookStore', #ATTN:docdoom Added String Key
+            'Characters', #ATTN:docdoom Added Multi-value Key
+            'Colorist', #ATTN:docdoom Added Multi-value Key
+            'Count',
+			'CoverArtist', #ATTN:docdoom Added Multi-value Key
+            'Day',#ATTN:docdoom Added Numeric Key
+            'Editor', #ATTN:docdoom Added Multi-value Key
+            'Format',
+			'Genre',
+			'Imprint',
+			'Inker', #ATTN:docdoom Added Multi-value Key (also included in multi-value below it was the only missing one)
+            'ISBN', #ATTN:docdoom Added String Key
+            'Letterer', #ATTN:docdoom Added Multi-value Key
+            'Locations', #ATTN:docdoom Added Multi-value Key
+			'MainCharacterOrTeam',
+			'Month',
+			'Notes', #ATTN:docdoom Added String Key
+            'Number',
+			'PageCount',
+			'Penciller', #ATTN:docdoom Added Multi-value Key
+            'Publisher',
+			'Review', #ATTN:docdoom Added String Key
+            'ScanInformation', #ATTN:docdoom Added String Key
+            'Series',
+			'SeriesGroup',
+			'StoryArc', #ATTN:docdoom Added String Key
+            'Summary', #ATTN:docdoom Added String Key
+            'Tags',
+			'Teams', #ATTN:docdoom Added Multi-value Key
+            'Title',
+            'Volume',
+			'Web', #ATTN:docdoom Added String Key
+            'Writer', #ATTN:docdoom Added Multi-value Key
+            'Year'
 			]
 			
 		

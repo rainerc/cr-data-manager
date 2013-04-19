@@ -31,21 +31,19 @@ class configuratorForm(Form):
 		self.textBoxMinHeight = 260
 		self.textBoxWidth = 760
 		self.textBoxMinWidth = 717
-#		self.textClips = [
-#			'commentary line',
-#			'divider',
-#			'group header',
-#			'variable',
-#			'end of rules'
-#			]
+
 		self.dictTextClips = {
 			'commentary line': '# ', 
 			'divider': '# %s' % ('-' * 30) , 
 			'group header': '#@ GROUP ',
 			'variable' : '#@ VAR ',
 			'end of rules' : '#@ END_RULES',
-			'end of group' : '#@ END_GROUP	'
+			'end of group' : '#@ END_GROUP	',
+			'author' : '#@ AUTHOR ',
+			'notes' : '#@ NOTES ',
+			'end of notes' : '#@ END_NOTES'
 		}
+		
 		self.EDITOR_MODE_GUI = 0
 		self.EDITOR_MODE_TEXT = 1
 		self.editormode = self.EDITOR_MODE_GUI
