@@ -85,6 +85,7 @@ class comparer(object):
 		return myVal.strip() not in myString			
 	
 	def equals(self, myString, myVal, caseInsensitive):
+
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
@@ -135,12 +136,16 @@ def stringAdd(myKey, myVal):
 	return str(myKey) + str(myVal)
 
 def stringReplace(myKey,oldVal,newVal):
-	oldVal = oldVal.strip()
-	newVal = newVal.strip()
 	return myKey.replace(oldVal,newVal)
 
 def stringRemove(myKey,myVal):
 	return myKey.replace(myVal,'')
+
+def stringRemoveLeading(myKey,myVal):
+#	myKey = myKey.strip()
+	if myKey.startswith(myVal):
+		myKey = myKey.replace(myVal,'',1)
+	return myKey
 		
 def multiValueAdd(myList, myVal):
 	myVal = str.Trim(str(myVal))
@@ -301,7 +306,9 @@ class ruleFile(object):
 			'Less',
 			'LessEq',
 			'StartsWith',
+			'NotStartsWith',
 			'StartsWithAnyOf',
+			'NotStartsWithAnyOf',
 			'ContainsAnyOf',
 			'NotContainsAnyOf',
 			'NotContains',
@@ -349,7 +356,7 @@ class ruleFile(object):
 			
 		
 		# -------------------------------------------------------------------------------------------
-		# not sure if this is necessary
+		# todo: not sure if this is necessary
 		self.allowedValsNumeric = [				# every allowed numeric key in right part of rule
 			'Volume',
 			'Number',
@@ -374,7 +381,8 @@ class ruleFile(object):
 			'Calc',
 			'Add',
 			'Remove',
-			'Replace'
+			'Replace',
+			'RemoveLeading'
 			]
 			
 		
