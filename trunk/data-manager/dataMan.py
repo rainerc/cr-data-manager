@@ -101,6 +101,12 @@ change - new modifier Add for string type fields (non-multi value) (issue 32)
 change - new modifier Replace for string type fields (non-multi value) (issue 32)
 change - new modifier Remove for string type fields (non-multi value) (issue 32)
 fixed - range modifiers for multivalue keys are now restricted to the elements of ruleFile.allowedKeyModifiersMulti (issue 55)
+...
+r1..
+change - new modifier NotStartsWith
+change - new modifier NotStartsWithAnyOf
+change - new value modifier RemoveLeading (leading and trailing blanks are respected)
+fixed - StringReplace modifier does not ignore leading or trailing blanks anymore
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -265,8 +271,12 @@ def parseString(s):
 					elif str.lower(myModifier) == "lesseq":
 						myOperator = "<="
 					elif str.lower(myModifier) == "startswith":
-						myOperator = "startswith"
+						myOperator = ""
+					elif str.lower(myModifier) == 'notstartswith':
+						myOperator = ''
 					elif str.lower(myModifier) == 'startswithanyof':
+						myOperator = ''
+					elif str.lower(myModifier) == 'notstartswithanyof':
 						myOperator = ''
 					elif str.lower(myModifier) == "containsanyof":
 						myOperator = ""
@@ -295,7 +305,7 @@ def parseString(s):
 				print 'val2 %s' % str(val2)
 				myVal = "%d, %d" % (val1, val2 + 1)
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
-					myCrit = myCrit + ("int(StringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
+					myCrit = myCrit + ("int(stringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
 				else:
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "Range modifier cannot be used in %s field" % (myKey))
@@ -354,16 +364,21 @@ def parseString(s):
 				else:
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "ContainsNot modifier cannot be used in %s field" % (myKey))
-					return 0															
-			elif myOperator == "startswith" and myKey not in numericalKeys:
+					return 0
+			elif myModifier.lower() == "notstartswith" and myKey not in numericalKeys:
+				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) == False and " % (myKey,myVal))
+			elif myModifier.lower() == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
 				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
-			elif str.lower(myModifier) == "startswithanyof": # and myKey not in numericalKeys:
+			elif str.lower(myModifier) == "startswithanyof" or myModifier.lower() == 'notstartswithanyof' : # and myKey not in numericalKeys:
 				if myKey not in numericalKeys:
-					myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+					if myModifier.lower() == 'startswithanyof':
+						myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
+					else:
+						myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == False and ' % (myKey, myVal)
 				else:
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf modifier cannot be used in %s field" % (myKey))
+					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf and NotStartsWithAnyOf modifiers cannot be used in %s field" % (myKey))
 					return 0
 			elif myOperator == '==' and myKey not in numericalKeys:
 				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
@@ -392,15 +407,12 @@ def parseString(s):
 	# iterate through each of the newValues
 	for n in [n for n in newValues if n.strip() <> '']:
 		if len(n) > 0:
-			n = String.Trim(String.replace(n,"<<",""))
-			debug('n: %s' % n)
-			str.lower(n).replace('.getvalue','')
+			n = n.replace('<<','').lstrip()
+			str.lower(n).replace('.setvalue','')		# SetValue is default
 			if String.find(n,':') > 0:
 				# get key part (substring before ':')
 				tmp = n.split(":",1)
-				debug('tmp %s' % tmp)
 				myKey = tmp[0]
-				debug('myKey %s' % tmp2)
 				myModifier = ''
 				if String.find(myKey,'.') > 0:
 					tmp3 = myKey.split('.')
@@ -415,7 +427,7 @@ def parseString(s):
 			# to do: handling if function is appended to field
 				
 			myVal = tmp[1]
-			
+			print '--%s--' % myVal
 			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
 			if str.lower(myModifier) == 'setvalue':
@@ -474,6 +486,16 @@ def parseString(s):
 						writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 					else:
 						writeCode('book.%s = stringRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+				if myModifier.lower() == 'removeleading':
+					if len(String.Trim(myVal)) == 0:
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "RemoveLeading modifier needs 1 argument")
+						return 0
+					if myKey in numericalKeys or myKey in (pseudoNumericalKeys + multiValueKeys):	# == 'Number':
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
+						return 0
+					writeCode('book.%s = stringRemoveLeading(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 
 			else:
 
