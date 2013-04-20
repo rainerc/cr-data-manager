@@ -8,7 +8,6 @@ copy displayResultsForm.py build
 copy configuratorForm.py build
 copy progressForm.py build
 copy datamanSample.dat build
-copy manual.pdf build
 copy *.ico build
 copy *.png build
 copy package.ini build
