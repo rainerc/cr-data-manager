@@ -527,7 +527,14 @@ def parseString(s):
 	
 
 def dmConfig():
+#	clr.AddReference('crdmcgui')
+#
+#	from crdmcgui import gui
+#	
+#	dmGUI = gui(globalvars.DATFILE)
+#	dmGUI.ShowDialog(ComicRack.MainWindow)
 
+	# old version:
 	form = configuratorForm()
 	form.setFile(globalvars.DATFILE)
 	form.Text = 'Data Manager Configurator %s' % globalvars.VERSION
@@ -566,6 +573,7 @@ def addALotOfBooks():
 # ============================================================================      
 def dataManagerConfig():
 	dmConfig()
+
 
 # ============================================================================ 
 # hook to run the main dataManager loop
