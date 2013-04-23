@@ -16,10 +16,10 @@ def testIni():
 def theDllCall():
 	FOLDER = FileInfo(__file__).DirectoryName + "\\"
 	
-	theDLL = Path.Combine(FOLDER, 'crdmcgui-0.9r23.dll')
+	theDLL = Path.Combine(FOLDER, 'crdmcgui.dll')
 	
 	#clr.AddReferenceToFileAndPath(theDLL)
-	clr.AddReference('crdmcgui-0.9r23.dll')
+	clr.AddReference('crdmcgui.dll')
 	
 	from crdmcgui import gui
 	
@@ -27,4 +27,4 @@ def theDllCall():
 	dmGUI = gui()
 	dmGUI.ShowDialog()
 	
-testIni()
+theDllCall()
