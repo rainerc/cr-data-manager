@@ -144,6 +144,7 @@ clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
 
+
 # this handles unicode encoding:
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
@@ -534,12 +535,23 @@ def parseString(s):
 	
 
 def dmConfig():
-#	clr.AddReference('crdmcgui')
+	
+	FOLDER = FileInfo(__file__).DirectoryName + "\\"
+	
+	theDLL = Path.Combine(FOLDER, 'crdmcgui.dll')
+	
+#	clr.AddReferenceToFileAndPath(theDLL)
+	clr.AddReference('crdmcgui-fm3ce.dll')
+#	from crdmcgui import gui	
+
+#	clr.AddReference('crdmcgui.dll')
 #
-#	from crdmcgui import gui
-#	
-#	dmGUI = gui(globalvars.DATFILE)
-#	dmGUI.ShowDialog(ComicRack.MainWindow)
+	from crdmcgui import *
+	
+	dmGUI = gui(globalvars.DATFILE)
+	dmGUI.ShowDialog(ComicRack.MainWindow)
+
+	return
 
 	# old version:
 	form = configuratorForm()
