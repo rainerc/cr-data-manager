@@ -115,6 +115,9 @@ change - when book was touched the process date is now written to CustomValue 'D
 r129
 fixed - comparer >= etc. did not work as expected with numerical values
 fixed - progressbar was hidden behind CR window when clicked (removed MainWindow handle, issue 52)
+...
+r133
+change - allowed vals and modifiers are read from dataman.ini
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -169,6 +172,10 @@ def debug (s):
 		print str(s)
 	return
 
+def writeVersion():
+	myIni = utils.iniFile()
+	myIni.write('Version','0.1.15 r133')
+	
 def writeCode(s, level, linebreak):
 	''' 
 	writes code to dataMan.tmp

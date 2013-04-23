@@ -11,3 +11,4 @@ copy datamanSample.dat build
 copy *.ico build
 copy *.png build
 copy package.ini build
+copy dataman.ini build
