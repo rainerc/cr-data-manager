@@ -54,6 +54,9 @@ class configuratorForm(Form):
 #		self.numericalKeys = rulefile.numericalKeys
 		self.allowedKeyModifiers = rulefile.allowedKeyModifiers
 		self.allowedValModifiers = rulefile.allowedValModifiers
+		self.MaximizeBox = False
+		self.MinimizeBox = False
+		self.Icon = Icon(globalvars.ICON_SMALL)
 		
 	def InitializeComponent(self):
 		self._components = System.ComponentModel.Container()
@@ -637,7 +640,7 @@ to visual editor""")
 		self.Controls.Add(self._menuStrip1)
 		self.Controls.Add(self._cmdLineToGui)
 		self.Controls.Add(self._cmdRemoveLine)
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
 		self.MainMenuStrip = self._menuStrip1
 		self.MaximizeBox = False
 		self.Name = "configuratorForm"

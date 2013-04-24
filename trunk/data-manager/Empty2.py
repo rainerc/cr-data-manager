@@ -1,8 +1,10 @@
 ﻿import clr
 import System
 clr.AddReference('System.Windows.Forms')
+clr.AddReference('System.Drawing')
 from System.IO import Path, FileInfo
 import globalvars
+from startupForm import startupForm
 
 def testIni():
 	import utils
@@ -27,4 +29,13 @@ def theDllCall():
 	dmGUI = gui()
 	dmGUI.ShowDialog()
 	
-theDllCall()
+def showStartup():
+	from displayResultsForm import displayResultsForm
+	from progressForm import progressForm
+	from configuratorForm import configuratorForm
+	from aboutForm import aboutForm
+	theForm = aboutForm()
+	theForm.ShowDialog()
+	pass
+	
+showStartup()

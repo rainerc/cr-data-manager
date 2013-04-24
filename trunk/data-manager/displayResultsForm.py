@@ -10,12 +10,15 @@ import globalvars
 class displayResultsForm(Form):
 
 	def __init__(self):
-		self.Width = 230
+		self.Width = 300
 		self.Height = 140
 		self.StartPosition = FormStartPosition.CenterScreen
-		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
+		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
+		self.Icon = Icon(globalvars.ICON_SMALL)
 		self.MaximizeBox = False
-		self.Text = 'CR Data Manager %s' % globalvars.VERSION
+		self.MinimizeBox = False
+		self.MaximizeBox = False
+		self.Text = 'Data Manager for ComicRack %s' % globalvars.VERSION
 
 		self.label = Label()
 		self.label.Location = Point(10, 20)
