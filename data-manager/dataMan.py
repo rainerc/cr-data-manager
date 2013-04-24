@@ -118,11 +118,17 @@ fixed - progressbar was hidden behind CR window when clicked (removed MainWindow
 ...
 r133
 change - allowed vals and modifiers are read from dataman.ini
+...
+r136
+change - integration of user.ini
+change - startup dialog asks user if he wants to start Data Manager running
+change - all dialog frames set to Fixed3D (fixes issue 13)
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
 ideas:
+replace globalvars with entries from dataman.ini
 todo: modifier Before
 todo: modifier After
 todo: use In as modifier in keys
@@ -143,6 +149,7 @@ clr.AddReference('System.Windows.Forms')
 clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
+from utils import iniFile
 
 
 # this handles unicode encoding:
@@ -161,8 +168,9 @@ from utils import *
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
 from progressForm import progressForm
+from startupForm import startupForm
 from configuratorForm import configuratorForm
-from utils import ruleFile
+#from utils import iniFile, ruleFile
 
 from time import localtime, strftime
 
@@ -175,7 +183,7 @@ def debug (s):
 
 def writeVersion():
 	myIni = utils.iniFile()
-	myIni.write('Version','0.1.15 r133')
+	myIni.write('Version',globalvars.VERSION)
 	
 def writeCode(s, level, linebreak):
 	''' 
@@ -536,22 +544,23 @@ def parseString(s):
 
 def dmConfig():
 	
-	FOLDER = FileInfo(__file__).DirectoryName + "\\"
+	if False:
+		FOLDER = FileInfo(__file__).DirectoryName + "\\"
+		
+		theDLL = Path.Combine(FOLDER, 'crdmcgui.dll')
+		
+	#	clr.AddReferenceToFileAndPath(theDLL)
+		clr.AddReference('crdmcgui-fm3ce.dll')
+	#	from crdmcgui import gui	
 	
-	theDLL = Path.Combine(FOLDER, 'crdmcgui.dll')
+	#	clr.AddReference('crdmcgui.dll')
+	#
+		from crdmcgui import *
+		
+		dmGUI = gui(globalvars.DATFILE)
+		dmGUI.ShowDialog(ComicRack.MainWindow)
 	
-#	clr.AddReferenceToFileAndPath(theDLL)
-	clr.AddReference('crdmcgui-fm3ce.dll')
-#	from crdmcgui import gui	
-
-#	clr.AddReference('crdmcgui.dll')
-#
-	from crdmcgui import *
-	
-	dmGUI = gui(globalvars.DATFILE)
-	dmGUI.ShowDialog(ComicRack.MainWindow)
-
-	return
+		return
 
 	# old version:
 	form = configuratorForm()
@@ -617,8 +626,24 @@ def replaceData(books):
 
 	ERROR_LEVEL = 0
 
-	if not crVersion():
-		return
+	if not crVersion():	return		# ComicRack version ok?
+	
+	
+	ini = utils.iniFile(globalvars.USERINI)
+	if ini.read('ShowStartupDialog') == 'False':
+		pass
+	else:
+		theForm = startupForm()
+		theForm.ShowDialog()
+		theForm.Dispose()
+
+		if theForm.DialogResult == DialogResult.Yes:
+			pass
+		elif theForm.DialogResult == DialogResult.Cancel:
+			return
+		elif theForm.DialogResult == DialogResult.Retry:
+			dmConfig()
+			return
 	
 	try:
 		File.Delete(globalvars.TMPFILE)

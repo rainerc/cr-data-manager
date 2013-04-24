@@ -7,6 +7,7 @@ FOLDER = FileInfo(__file__).DirectoryName + "\\"
 DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
 SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
 INIFILE = Path.Combine(FOLDER, 'dataMan.ini')
+USERINI = Path.Combine(FOLDER, 'user.ini')
 BAKFILE = Path.Combine(FOLDER, 'dataMan.bak')
 ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
 TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
@@ -29,4 +30,4 @@ WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 
 COMPARE_CASE_INSENSITIVE = True
-VERSION = '0.1.15 r133'
+VERSION = '0.1.15 r13&'
