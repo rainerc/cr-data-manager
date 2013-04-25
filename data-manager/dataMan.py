@@ -123,6 +123,9 @@ r136
 change - integration of user.ini
 change - startup dialog asks user if he wants to start Data Manager running
 change - all dialog frames set to Fixed3D (fixes issue 13)
+...
+r138 TEST RELEASE
+change - configure runs GUI exe
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -543,6 +546,12 @@ def parseString(s):
 	
 
 def dmConfig():
+	
+	import System.Diagnostics
+	from System.Diagnostics import Process
+	Process.Start(globalvars.GUIEXE)
+	return
+	
 	
 	if False:
 		FOLDER = FileInfo(__file__).DirectoryName + "\\"
