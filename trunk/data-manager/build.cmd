@@ -12,3 +12,5 @@ copy *.png build
 copy package.ini build
 copy dataman.ini build
 copy startupForm.py build
+
+copy crdmcgui.exe build
