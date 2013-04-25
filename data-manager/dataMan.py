@@ -126,6 +126,11 @@ change - all dialog frames set to Fixed3D (fixes issue 13)
 ...
 r138 TEST RELEASE
 change - configure runs GUI exe
+...
+r1..
+fixed - string condition for numerical field throws exception (issue 61)
+fixed - the progressbar form is not disposed if parser code raises error
+change - added argument FOLDER to gui call
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -276,6 +281,7 @@ def parseString(s):
 			if c <> "" and not (myKey in allowedKeys) and not myKey.startswith('CustomValue'):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
+			
 			myOperator = "=="
 			# handling if modifier is appended to field
 			# like Volume.Range:1961, 1963
@@ -322,6 +328,11 @@ def parseString(s):
 				return
 
 			myVal = tmp[1]
+			
+			if myKey in numericalKeys and stringToFloat(myVal) == None:
+				File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
+				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
+				return 0				
 
 			if myOperator == "in range":		# must only be used with numerical keys
 				
@@ -455,6 +466,11 @@ def parseString(s):
 			myVal = tmp[1]
 			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
 
+			if myKey in numericalKeys and stringToFloat(myVal) == None:
+				File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
+				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
+				return 0				
+
 			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
 				
@@ -556,7 +572,7 @@ def dmConfig():
 	if False:
 		FOLDER = FileInfo(__file__).DirectoryName + "\\"
 		
-		theDLL = Path.Combine(FOLDER, 'crdmcgui.dll')
+		theDLL = Path.Combine(FOLDER, 'crdmcgui.dll %s' % globalvars.FOLDER)
 		
 	#	clr.AddReferenceToFileAndPath(theDLL)
 		clr.AddReference('crdmcgui-fm3ce.dll')
@@ -697,6 +713,7 @@ def replaceData(books):
 					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
+					progBar.Dispose()
 					break
 			if line.startswith('#@ END_RULES'):
 				break
