@@ -13,7 +13,7 @@ ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
 TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
 CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
-GUIEXE = Path.Combine(FOLDER, 'crdmcgui.exe')
+GUIEXE = Path.Combine(FOLDER, 'crdmcgui-0.0.9r5.exe')
 
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
@@ -31,4 +31,4 @@ WIKI = 'http://code.google.com/p/cr-data-manager/'
 MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 
 COMPARE_CASE_INSENSITIVE = True
-VERSION = '0.1.15 r138'
+VERSION = '0.1.15 r140'

@@ -50,7 +50,7 @@ class iniFile:
 		if File.Exists(self.theFile):
 			myLines = File.ReadAllLines(self.theFile)
 			for line in myLines:
-				s = str.split(line,'=')
+				s = str.split(unicode(line),'=')
 				if str.Trim(s[0]) == myKey:
 					return str.Trim(s[1])
 		return ''
@@ -178,7 +178,13 @@ class comparer(object):
 		return myString <> myVal
 
 def nullToZero(s):
-	if String.Trim(str(s)) == '': return 0
+#	if String.Trim(str(s)) == '': return 0
+	try:
+		s = str(s).strip()
+	except Exception, err:
+		pass
+	if s == '' : 
+		return 0
 	return s
 
 
@@ -338,216 +344,6 @@ class ruleFile(object):
 		# -------------------------------------------------------------------------------------------
 	
 
-	def dummy():
-
-		self.allowedValModifiersMulti = [		# every allowed modifier for multi-value fields in right part of rule
-			'SetValue',
-			'Add',
-			'Replace',
-			'Remove'
-			]	
-					
-		self.allowedValModifiers = [			# every allowed modifier in right part of rule
-			'SetValue',
-			'Calc',
-			'Add',
-			'Remove',
-			'Replace',
-			'RemoveLeading'
-			]
-	
-		self.allowedValsMulti = [				# every allowed multi-value key in right part of rule
-			'Tags',
-			'Genre'
-			]
-		self.allowedVals = [
-			'AgeRating', #ATTN:docdoom Added String Key
-            'AlternateCount',
-			'AlternateSeries',
-			'AlternateNumber',
-			'BookNotes', #ATTN:docdoom Added String Key
-            'BookOwner', #ATTN:docdoom Added String Key
-			'BookStore', #ATTN:docdoom Added String Key
-            'Characters', #ATTN:docdoom Added Multi-value Key
-            'Colorist', #ATTN:docdoom Added Multi-value Key
-            'Count',
-			'CoverArtist', #ATTN:docdoom Added Multi-value Key
-            'Day',#ATTN:docdoom Added Numeric Key
-            'Editor', #ATTN:docdoom Added Multi-value Key
-            'Format',
-			'Genre',
-			'Imprint',
-			'Inker', #ATTN:docdoom Added Multi-value Key (also included in multi-value below it was the only missing one)
-            'ISBN', #ATTN:docdoom Added String Key
-            'Letterer', #ATTN:docdoom Added Multi-value Key
-            'Locations', #ATTN:docdoom Added Multi-value Key
-			'MainCharacterOrTeam',
-			'Month',
-			'Notes', #ATTN:docdoom Added String Key
-            'Number',
-			'PageCount',
-			'Penciller', #ATTN:docdoom Added Multi-value Key
-            'Publisher',
-			'Review', #ATTN:docdoom Added String Key
-            'ScanInformation', #ATTN:docdoom Added String Key
-            'Series',
-			'SeriesGroup',
-			'StoryArc', #ATTN:docdoom Added String Key
-            'Summary', #ATTN:docdoom Added String Key
-            'Tags',
-			'Teams', #ATTN:docdoom Added Multi-value Key
-            'Title',
-            'Volume',
-			'Web', #ATTN:docdoom Added String Key
-            'Writer', #ATTN:docdoom Added Multi-value Key
-            'Year'
-			]
-
-		self.allowedKeyModifiersMulti = [		# every allowed modifier for multi-value fields in left part of rule
-			'Is',
-			'Not',
-			'Contains',
-			'ContainsAnyOf',
-			'NotContainsAnyOf',
-			'NotContains',
-			'ContainsAllOf'
-		]
-	
-		self.allowedKeyModifiersNumeric = [		# every allowed modifier for numeric fields in left part of rule
-			'Is',
-			'Range',
-			'Not',
-			'Greater',
-			'GreaterEq',
-			'Less',
-			'LessEq',
-		]
-
-		self.allowedKeyModifiers = [	# every allowed modifier in left part of rule
-			'Is',
-			'Not',
-			'Contains',
-			'Greater',
-			'GreaterEq',
-			'Less',
-			'LessEq',
-			'StartsWith',
-			'NotStartsWith',
-			'StartsWithAnyOf',
-			'NotStartsWithAnyOf',
-			'ContainsAnyOf',
-			'NotContainsAnyOf',
-			'NotContains',
-			'ContainsAllOf'
-		]
-		
-		self.multiValueKeys = [
-			'Characters',
-            'Colorist',
-            'CoverArtist',
-            'Editor',
-            'Genre',
-            'Inker', #ATTN:docdoom added (Seems you already had most all these added even if not referenced in Allowed keys)
-			'Letterer',
-            'Locations',
-            'Penciller',
-            'Tags',
-			'Teams',
-            'Writer',
-            ]
-
-#		self.pseudoNumericalKeys = [	# every allowed pseudo-numerical key to be used in left part of rule
-#			'Number',
-#			'AlternateNumber'
-#			]
-
-
-#		allowedKeys = [		 # every allowed key to be used in left part of rule
-#			'AgeRating',
-#			'AlternateNumber',
-#			'AlternateCount',
-#			'Series',
-#			'Volume',
-#			'Imprint',
-#			'Publisher',
-#			'Number',
-#			'FileDirectory',
-#			'SeriesGroup',
-#			'Month',
-#			'Year',
-#			'MainCharacterOrTeam',
-#			'Format',
-#			'AlternateSeries',
-#			'Count',
-#			'FilePath',
-#			'FileName',
-#			'Genre',
-#			'Tags',
-#			'PageCount',
-#			'Title'
-#			]
-#						#		self.allowedKeys = [
-#			#			'AgeRating', #ATTN:docdoom Added String Key
-#			#            'AlternateCount',
-#			#			'AlternateSeries',
-#			#			'AlternateNumber',
-#			#			'BookNotes', #ATTN:docdoom Added String Key
-#			#            'BookOwner', #ATTN:docdoom Added String Key
-#			#			'BookStore', #ATTN:docdoom Added String Key
-#			#            'Characters', #ATTN:docdoom Added Multi-value Key
-#			#            'Colorist', #ATTN:docdoom Added Multi-value Key
-#			#            'Count',
-#			#			'CoverArtist', #ATTN:docdoom Added Multi-value Key
-#			#            'Day', #ATTN:docdoom Added Numeric Key
-#			#            'Editor', #ATTN:docdoom Added Multi-value Key
-#			#            'FileDirectory',
-#			#			'FileFormat',  #ATTN:docdoom Added String Key (Read-Only so not valid for values)
-#			#            'FileName',
-#			#			'FilePath',
-#			#			'Format',
-#			#			'Genre',
-#			#			'Imprint',
-#			#			'Inker', #ATTN:docdoom Added Multi-value Key (also included in multi-value below it was the only missing one)
-#			#            'ISBN', #ATTN:docdoom Added String Key
-#			#            'Letterer', #ATTN:docdoom Added Multi-value Key
-#			#            'Locations', #ATTN:docdoom Added Multi-value Key
-#			#			'MainCharacterOrTeam',
-#			#			'Month',
-#			#			'Notes', #ATTN:docdoom Added String Key
-#			#            'Number',
-#			#			'PageCount',
-#			#			'Penciller', #ATTN:docdoom Added Multi-value Key
-#			#            'Publisher',
-#			#			'Review', #ATTN:docdoom Added String Key
-#			#            'ScanInformation', #ATTN:docdoom Added String Key
-#			#            'Series',
-#			#			'SeriesGroup',
-#			#			'StoryArc', #ATTN:docdoom Added String Key
-#			#            'Summary', #ATTN:docdoom Added String Key
-#			#            'Tags',
-#			#			'Teams', #ATTN:docdoom Added Multi-value Key
-#			#            'Title',
-#			#            'Volume',
-#			#			'Web', #ATTN:docdoom Added String Key
-#			#            'Writer', #ATTN:docdoom Added Multi-value Key
-#			#            'Year'
-#			#            ]
-#
-#		self.numericalKeys = [
-#				'AlternateCount',
-#				'Count',
-#				'Day', #ATTN:docdoom -added here and above
-#	            'Month',
-#				'PageCount',
-#				'Volume',
-#				'Year'
-#				]
-#		return
-		pass
-	
-
-
-	
 	def groupHeaders(self, theFile = globalvars.DATFILE):
 		'''
 		returns a list of group headers in the rule set
@@ -577,7 +373,7 @@ class ruleFile(object):
 			s1 = File.ReadAllLines(self.theFile)
 			s1 = [line for line in s1 if str.Trim(line) <> '']
 			for line in s1:
-				myParser.validate(str(line))
+				myParser.validate(unicode(line))
 				if myParser.err:
 					self.editedByParser = True
 					pre = myParser.commentedLine(line)
@@ -601,7 +397,9 @@ class ruleFile(object):
 		set to True
 		'''
 		self.editedByParser = False
-		s = str.split(str(theText),'\n')
+		theText = unicode(theText)
+		s = String.Split(theText,'\n')
+		# s = str.split(str(theText),'\n')
 		tmp = str('')
 		errlines = 0
 		myParser = parser()
@@ -610,13 +408,13 @@ class ruleFile(object):
 		s = [line for line in s if str.Trim(line) <> '']
 	
 		for line in s:
-			myParser.validate(str(line))
+			myParser.validate(unicode(line))
 			if myParser.err:
 				pre = myParser.commentedLine(line)
 				errlines += 1
 				self.editedByParser = True
 			else:
-				pre = str(line)
+				pre = unicode(line)
 			tmp += '%s%s' % (pre, System.Environment.NewLine)
 		if len(tmp) > 0:
 			try:

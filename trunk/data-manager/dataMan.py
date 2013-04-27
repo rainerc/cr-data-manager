@@ -127,10 +127,13 @@ change - all dialog frames set to Fixed3D (fixes issue 13)
 r138 TEST RELEASE
 change - configure runs GUI exe
 ...
-r1..
+r140
 fixed - string condition for numerical field throws exception (issue 61)
 fixed - the progressbar form is not disposed if parser code raises error
 change - added argument FOLDER to gui call
+fixed - exception when infinite symbol is used with number (issue 63)
+fixed - various problems with infinite symbol
+fixed - reading and writing the configuration with unicode characters from old gui raised Exception
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -186,7 +189,10 @@ sys.path.append(globalvars.FOLDER)
 
 def debug (s):
 	if DEBUG__ == True:
-		print str(s)
+		try:
+			print str(s)
+		except Exception, err:
+			print s
 	return
 
 def writeVersion():
@@ -201,7 +207,11 @@ def writeCode(s, level, linebreak):
 	level - indentation level (int)
 	linebreak - add linebreak? (bool)
 	'''
-	s = str(s)
+	try:
+		s = str(s)      # this will raise an Exception if inifinite symbol is included
+	except Exception, err:
+		pass
+
 	prefix = '\t' * level
 	s = prefix + s
 	if linebreak == True: s += '\n'
@@ -228,6 +238,7 @@ def parseString(s):
 	myNewVal = ''			# this will later contain the new value (right part of rule)
 	myModifier = ''			# the modifier (like Contains, Range, Calc etc.)
 
+
 	rules = utils.ruleFile()
 	allowedKeys = rules.allowedKeys
 	allowedVals = rules.allowedVals
@@ -235,6 +246,7 @@ def parseString(s):
 	pseudoNumericalKeys = rules.pseudoNumericalKeys
 	multiValueKeys = rules.multiValueKeys
 	
+
 	myParser = utils.parser()
 	myParser.validate(s)
 	if myParser.err:
@@ -243,6 +255,8 @@ def parseString(s):
 	
 	a = s.split("=>")
 
+	# todo: checked up here
+	
 	# some preparation for the criteria part:
 	a[0] = String.Trim(a[0])
 	#if apostrophes were already escaped by '\' remove the escaping \:
@@ -259,6 +273,8 @@ def parseString(s):
 		newValues = a[1].split(">>")
 	except Exception, err:
 		print str(err)
+
+	# todo: checked up here
 	
 	# iterate through each of the criteria
 	for c in criteria:
@@ -281,6 +297,9 @@ def parseString(s):
 			if c <> "" and not (myKey in allowedKeys) and not myKey.startswith('CustomValue'):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
+
+
+			# todo: checked up here
 			
 			myOperator = "=="
 			# handling if modifier is appended to field
@@ -329,16 +348,31 @@ def parseString(s):
 
 			myVal = tmp[1]
 			
+			# todo: checked up here
+			
 			if myKey in numericalKeys and stringToFloat(myVal) == None:
 				File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
 				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
 				return 0				
 
+
+			# todo: checked up here
+
 			if myOperator == "in range":		# must only be used with numerical keys
 				
+				tmpVal = nullToZero('∞')
+				tmpVal = stringToFloat('∞')
+				tmpVal = nullToZero('∞')
 				tmp = myVal.split(",")
-				val1 = int(nullToZero(stringToFloat(tmp[0])))
-				val2 = int(nullToZero(stringToFloat(tmp[1])))
+				#val1 = stringToFloat(tmp[0])    # float
+				#val1 = nullToZero(val1)         # float or None
+				
+				val1 = float((nullToZero(stringToFloat(tmp[0]))))
+				# val1 = nullToZero(stringToFloat(tmp[0]))
+				# myVal1 = float(val1)
+				# val2 = int(nullToZero(stringToFloat(tmp[1])))
+				val2 = float(nullToZero(stringToFloat(tmp[1])))
+				
 				myVal = "%d, %d" % (val1, val2 + 1)
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
 					myCrit = myCrit + ("int(stringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
@@ -350,16 +384,25 @@ def parseString(s):
 			# now begins the interesting part for fields Number/Autonumber which is stored as 
 			# a string but should be treated like a numerical value
 			elif myOperator in ('==', '>', '>=', '<', '<=') and myKey in pseudoNumericalKeys:	# (myKey == 'Number' or myKey == 'AlternateNumber'):
+				
+				# todo: checked up here
+
+				
 				if str.Trim(myVal) == '':
 					# fix issue 31
-					myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
+					# myCrit = myCrit + ('str(book.%s) %s \'\' and ' % (myKey, myOperator))
+					# try this instead
+					myCrit = myCrit + ('book.%s %s \'\' and ' % (myKey, myOperator))
 				else:
 					# if the current value of book.Number is Null it has to be converted to
 					# 0 before it can be converted to float
 					if myOperator == '==':
 						# if operator is == then we need an exact compare
-						myVal = str(nullToZero(myVal))
+						myVal = nullToZero(myVal)
+						# myVal = str(myVal)    # this would raise Exception if myVal = ininite symbol
+						
 						myCrit += 'nullToZero(book.%s) %s \'%s\' and ' % (myKey, myOperator, myVal)
+						print myCrit
 					else:
 						# if operator is <, > and so forth we have to simulate those
 						# values as numeric, so we use stringToFloat
@@ -442,6 +485,9 @@ def parseString(s):
 	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % a[0], 2, True)
 	
 	# iterate through each of the newValues
+	
+	print 'criteria checked'
+	
 	for n in [n for n in newValues if n.strip() <> '']:
 		if len(n) > 0:
 			n = n.replace('<<','').lstrip()
@@ -563,36 +609,40 @@ def parseString(s):
 
 def dmConfig():
 	
-	import System.Diagnostics
-	from System.Diagnostics import Process
-	Process.Start(globalvars.GUIEXE)
-	return
+
 	
+	myIni = iniFile(globalvars.USERINI)
+	myGui = myIni.read('Gui')
 	
-	if False:
-		FOLDER = FileInfo(__file__).DirectoryName + "\\"
-		
-		theDLL = Path.Combine(FOLDER, 'crdmcgui.dll %s' % globalvars.FOLDER)
-		
-	#	clr.AddReferenceToFileAndPath(theDLL)
-		clr.AddReference('crdmcgui-fm3ce.dll')
-	#	from crdmcgui import gui	
-	
-	#	clr.AddReference('crdmcgui.dll')
-	#
-		from crdmcgui import *
-		
-		dmGUI = gui(globalvars.DATFILE)
-		dmGUI.ShowDialog(ComicRack.MainWindow)
-	
+	if myGui <> 'Old':
+
+		import System.Diagnostics
+		from System.Diagnostics import Process
+		Process.Start(globalvars.GUIEXE)
 		return
 
-	# old version:
-	form = configuratorForm()
-	form.setFile(globalvars.DATFILE)
-	form.Text = 'Data Manager Configurator %s' % globalvars.VERSION
-	form.ShowDialog(ComicRack.MainWindow)
-	form.Dispose()
+		#FOLDER = FileInfo(__file__).DirectoryName + "\\"
+		
+		#theDLL = Path.Combine(FOLDER, 'crdmcgui.dll %s' % globalvars.FOLDER)
+		
+	##	clr.AddReferenceToFileAndPath(theDLL)
+	#	clr.AddReference('crdmcgui-fm3ce.dll')
+	##	from crdmcgui import gui	
+	
+	##	clr.AddReference('crdmcgui.dll')
+	##
+	#	from crdmcgui import *
+		
+	#	dmGUI = gui(globalvars.DATFILE)
+	#	dmGUI.ShowDialog(ComicRack.MainWindow)
+	
+
+	else:
+		form = configuratorForm()
+		form.setFile(globalvars.DATFILE)
+		form.Text = 'Data Manager Configurator %s' % globalvars.VERSION
+		form.ShowDialog(ComicRack.MainWindow)
+		form.Dispose()
 
 def crVersion():
 	minVersion = '0.9.164'		# we need CR 0.9.164 minimum (for custom values)
@@ -606,17 +656,6 @@ def crVersion():
 		'Data Manger for ComicRack %s' % globalvars.VERSION)
 		return False
 	return True
-
-def addALotOfBooks():
-	i = 1001
-	while True:
-		theBook = ComicRack.App.AddNewBook(False)
-		theBook.Series = 'Automatic Series'
-		theBook.Number = str(i)
-		if i == 5000:
-			break
-		i += 1
-	return
 
 # ============================================================================      
 # hook to run the configScript
@@ -639,16 +678,6 @@ def dataManagerConfig():
 def replaceData(books):
 
 
-	#for book in [book for book in books if book.GetCustomValue('my_Val') <> None]: # works
-	#for book in [book for book in books if book.GetCustomValue('my_Val') < '2']: # works strange if used with pseudo numbers
-	# sample how to retrieve the custom values for a book:
-	#	for book in books:
-	#		myObj = book.GetCustomValues()
-	#		for o in myObj:
-	#			print o.Key
-	#			print o.Value
-	#	return ''
-
 	ERROR_LEVEL = 0
 
 	if not crVersion():	return		# ComicRack version ok?
@@ -666,6 +695,8 @@ def replaceData(books):
 			pass
 		elif theForm.DialogResult == DialogResult.Cancel:
 			return
+		elif theForm.DialogResult == DialogResult.No:
+			return
 		elif theForm.DialogResult == DialogResult.Retry:
 			dmConfig()
 			return
@@ -682,15 +713,15 @@ def replaceData(books):
 		return
 
 	# check if configuration has been saved once
-	if not File.Exists(globalvars.CHKFILE):
-		MessageBox.Show('Please save your configuration first!','Data Manager %s' % globalvars.VERSION)
-		return
+#	if not File.Exists(globalvars.CHKFILE):
+#		MessageBox.Show('Please save your configuration first!','Data Manager %s' % globalvars.VERSION)
+#		return
+
 
 	writeCode('try:', 0, True)
-	
+
 	progBar = progressForm()
 	progBar.Show()
-#	progBar.ShowDialog(ComicRack.MainWindow)
 	
 	writeCode('import System',1,True)
 	writeCode('from System.Windows.Forms import MessageBox',1,True)
@@ -706,10 +737,12 @@ def replaceData(books):
 		for line in s:
 			i += 1
 
+
 			if not line.StartsWith('#'):	# don't run this on commentary lines
 											# todo: handle parser directives starting with #@
 
 				if not parseString(line):	# syntax error found, break parsing the rule set
+						
 					error_message = File.ReadAllText(globalvars.ERRFILE)
 					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 					ERROR_LEVEL = 1
@@ -719,7 +752,7 @@ def replaceData(books):
 				break
 			
 	except Exception, err:
-		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %' % globalvars.VERSION)
+		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
 		progBar.Dispose()
 
 	writeCode('except Exception,err:', 0, True)
@@ -729,8 +762,6 @@ def replaceData(books):
 		theCode = File.ReadAllText(globalvars.TMPFILE)
 		debug("code generated by CR Data Manager: \n%s" % theCode)
 			
-#		progBar = progressForm()
-#		progBar.ShowDialog()
 		progBar.setMax(books.Length)
 		touched = 0
 		f=open(globalvars.LOGFILE, "w")	# open logfile
@@ -781,13 +812,18 @@ def stringToFloat(myVal):
 	except Exception, err:
 		pass
 
-	s = ''
-	s = str(myVal).lower().strip()
-	
-	if s == '': return None
+	s = myVal
 
+	try:
+		s = str(myVal).lower().strip()
+		if s == '': return None
+	except Exception, err:
+		pass
+	
 	s = s.replace(chr(188),'.25')
 	s = s.replace(chr(189),'.5')
+	s = s.replace(u'\u221e','9999999')			# infinite symbol (∞)
+
 	if s.startswith('minus'): s = s.replace('minus','-')
 
 	try:
@@ -803,5 +839,3 @@ def stringToFloat(myVal):
 			return float(tmp)
 		except Exception, err:
 			return None
-
-		
