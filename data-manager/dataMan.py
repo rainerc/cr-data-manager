@@ -135,6 +135,16 @@ fixed - exception when infinite symbol is used with number (issue 63)
 fixed - various problems with infinite symbol
 fixed - reading and writing the configuration with unicode characters from old gui raised Exception
 
+r141
+fixed - progressbar shows progress while parsing rules
+fixed - label text of progressbar is not updating
+fixed - progressbar was not centered
+change - added allowedValModifiersNumeric to dataman.ini
+fixed - GUI crashes if called with path argument (issue 64, no path argument needed anymore)
+ 
+todo - chack valid modifiers in validate()
+todo - weird exceptions about missing indents in code generation
+
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -167,7 +177,7 @@ from utils import iniFile
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = False
+DEBUG__ = True
 
 import globalvars
 import utils
@@ -360,17 +370,11 @@ def parseString(s):
 
 			if myOperator == "in range":		# must only be used with numerical keys
 				
-				tmpVal = nullToZero('∞')
-				tmpVal = stringToFloat('∞')
-				tmpVal = nullToZero('∞')
 				tmp = myVal.split(",")
 				#val1 = stringToFloat(tmp[0])    # float
 				#val1 = nullToZero(val1)         # float or None
 				
 				val1 = float((nullToZero(stringToFloat(tmp[0]))))
-				# val1 = nullToZero(stringToFloat(tmp[0]))
-				# myVal1 = float(val1)
-				# val2 = int(nullToZero(stringToFloat(tmp[1])))
 				val2 = float(nullToZero(stringToFloat(tmp[1])))
 				
 				myVal = "%d, %d" % (val1, val2 + 1)
@@ -402,7 +406,7 @@ def parseString(s):
 						# myVal = str(myVal)    # this would raise Exception if myVal = ininite symbol
 						
 						myCrit += 'nullToZero(book.%s) %s \'%s\' and ' % (myKey, myOperator, myVal)
-						print myCrit
+
 					else:
 						# if operator is <, > and so forth we have to simulate those
 						# values as numeric, so we use stringToFloat
@@ -486,8 +490,7 @@ def parseString(s):
 	
 	# iterate through each of the newValues
 	
-	print 'criteria checked'
-	
+
 	for n in [n for n in newValues if n.strip() <> '']:
 		if len(n) > 0:
 			n = n.replace('<<','').lstrip()
@@ -618,7 +621,13 @@ def dmConfig():
 
 		import System.Diagnostics
 		from System.Diagnostics import Process
-		Process.Start(globalvars.GUIEXE)
+
+		p = System.Diagnostics.Process()
+		p.StartInfo.FileName = globalvars.GUIEXE
+		#p.StartInfo.Arguments = globalvars.FOLDER.rstrip('\\')
+		p.Start()
+
+		# Process.Start(globalvars.GUIEXE, "\'%s\'" % globalvars.FOLDER.rstrip('\\'))
 		return
 
 		#FOLDER = FileInfo(__file__).DirectoryName + "\\"
@@ -691,17 +700,17 @@ def replaceData(books):
 		theForm.ShowDialog()
 		theForm.Dispose()
 
-		if theForm.DialogResult == DialogResult.Yes:
+		if theForm.DialogResult == DialogResult.Yes:		# closed with Yes button
 			pass
-		elif theForm.DialogResult == DialogResult.Cancel:
+		elif theForm.DialogResult == DialogResult.Cancel:	# closed with window close button
 			return
-		elif theForm.DialogResult == DialogResult.No:
+		elif theForm.DialogResult == DialogResult.No:		# closed with No button
 			return
-		elif theForm.DialogResult == DialogResult.Retry:
+		elif theForm.DialogResult == DialogResult.Retry:	# closed with configure button
 			dmConfig()
 			return
 	
-	try:
+	try:		# delete temporary files from last data manager run
 		File.Delete(globalvars.TMPFILE)
 		File.Delete(globalvars.ERRFILE)
 	except Exception, err:
@@ -713,16 +722,16 @@ def replaceData(books):
 		return
 
 	# check if configuration has been saved once
+	# this was needed in an earlier release when the file format changed
 #	if not File.Exists(globalvars.CHKFILE):
 #		MessageBox.Show('Please save your configuration first!','Data Manager %s' % globalvars.VERSION)
 #		return
 
 
-	writeCode('try:', 0, True)
-
-	progBar = progressForm()
+	progBar = progressForm('Please wait while Data Manager parses your rules')
 	progBar.Show()
-	
+
+	writeCode('try:', 0, True)	
 	writeCode('import System',1,True)
 	writeCode('from System.Windows.Forms import MessageBox',1,True)
 	writeCode('from time import localtime, strftime',1,True)
@@ -732,42 +741,61 @@ def replaceData(books):
 	
 	try:
 		s = File.ReadAllLines(globalvars.DATFILE)
+		progBar._progressBar.Maximum = len(s)
+		#progBar._label1.Text = 'Please wait while Data Manager parses your rules'
+		progBar.Update()
+
+
+		#progBar.setMax(len(s))
+		
 		i = 0
-		s = [line for line in s if str.Trim(line) <> '']
+#		s = [line for line in s if str.Trim(line) <> '']
 		for line in s:
 			i += 1
+			progBar._progressBar.Value = i
 
+			#progBar.progressBar.Refresh()
+			#Application.DoEvents()
+	
+			try:
+				if not line.StartsWith('#') and not str.Trim(line) == '':	# don't run this on commentary lines
+																			# todo: handle parser directives starting with #@
 
-			if not line.StartsWith('#'):	# don't run this on commentary lines
-											# todo: handle parser directives starting with #@
-
-				if not parseString(line):	# syntax error found, break parsing the rule set
+					if not parseString(line):	# syntax error found, break parsing the rule set
 						
-					error_message = File.ReadAllText(globalvars.ERRFILE)
-					MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
-					ERROR_LEVEL = 1
-					progBar.Dispose()
+						error_message = File.ReadAllText(globalvars.ERRFILE)
+						MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
+						ERROR_LEVEL = 1
+						progBar.Dispose()
+						break
+				if line.startswith('#@ END_RULES'):
 					break
-			if line.startswith('#@ END_RULES'):
-				break
-			
+			except Exception, err:
+				pass
+						
 	except Exception, err:
 		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
-		progBar.Dispose()
+
 
 	writeCode('except Exception,err:', 0, True)
 	writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
-	
+	progBar.Dispose()
+
 	if ERROR_LEVEL == 0:
 		theCode = File.ReadAllText(globalvars.TMPFILE)
 		debug("code generated by CR Data Manager: \n%s" % theCode)
-			
-		progBar.setMax(books.Length)
+		progBar = progressForm('Please wait while Data Manager runs over your books')
+		progBar.Show()
+		#progBar._label1.Text = 'Please wait while Data Manager runs over your books'
+		progBar._progressBar.Maximum = books.Length
+		progBar.Update()
+		progBar._progressBar.Value = 1
+		progBar.Update()
 		touched = 0
 		f=open(globalvars.LOGFILE, "w")	# open logfile
 		for book in books:
 			touched += 1
-			progBar.setValue(touched)
+			progBar._progressBar.Value = touched
 			try:
 				exec (theCode)
 				
