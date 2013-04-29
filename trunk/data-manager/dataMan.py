@@ -149,10 +149,13 @@ fixed - exception when min value in range is greater than max value
 fixed - exception with non-ASCII characters in string fields
 fixed - exception when a temporary file was locked
 
+r143
+change - new modifiers isAnyOf and NotIsAnyOf (included in dataman.ini) (issue 51)
+change - includes GUI 0.1.0r8 RC2
+
 todo - chack valid modifiers in validate()
 todo - weird exceptions about missing indents in code generation
 todo - read version info from dataman.ini
-
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
@@ -356,6 +359,10 @@ def parseString(s):
 						myModifier = "ContainsNot"
 					elif str.lower(myModifier) == "containsallof":
 						myOperator = ""
+					elif str.lower(myModifier) == 'isanyof':
+						myOperator = ''
+					elif str.lower(myModifier) == 'notisanyof':
+						myOperator = ''
 					else:
 						File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid modifier %s)\nline: %s)" % (myModifier, s))
 						return 0
@@ -461,6 +468,15 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "ContainsNot modifier cannot be used in %s field" % (myKey))
 					return 0
+			elif myModifier.lower() in ('isanyof','notisanyof'):
+				if myKey in multiValueKeys:
+					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "IsAnyOf and NotIsAnyOf modifiers cannot be used in %s field" % (myKey))
+					return 0
+				if myModifier.lower() == 'isanyof':
+					myCrit = myCrit + ('comp.isAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal))
+				else:
+					myCrit = myCrit + ('comp.isAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == False and ' % (myKey, myVal))
 			elif myModifier.lower() == "notstartswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) == False and " % (myKey,myVal))
 			elif myModifier.lower() == "startswith" and myKey not in numericalKeys:
