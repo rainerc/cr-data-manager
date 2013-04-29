@@ -79,6 +79,21 @@ class comparer(object):
 					return True
 		return False
 
+	def isAnyOf(self,myString,myVals,caseInsensitive):
+		# example <<myString.IsAnyOf:val1,val2,val3>> 
+		# or: <<Batman.IsAnyOf:Batman,Robin,Joker>>
+		myString = unicode(myString).strip()
+		myString = myString.strip()
+		myVals = unicode(myVals)
+		if caseInsensitive:
+			myVals = myVals.lower()
+			myString = myString.lower()
+		theVals = myVals.strip(',').split(',')
+
+		for word in theVals:
+			if word.strip() == myString: return True
+		return False
+
 
 	def containsAnyOf(self, myString, myVals,caseInsensitive):
 		# example <<myString.containsAnyOf:val1,val2,val3>> 
