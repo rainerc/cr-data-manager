@@ -12,6 +12,8 @@ v 0.1.15
 
 by docdoom
 
+GUI by T3KNOGHO57
+
 images and icons used by permission of 600WPMPO and www.aha-soft.com
 
 revision history
@@ -136,14 +138,20 @@ fixed - various problems with infinite symbol
 fixed - reading and writing the configuration with unicode characters from old gui raised Exception
 
 r141
-fixed - progressbar shows progress while parsing rules
+fixed - progressbar does not show progress while parsing rules
 fixed - label text of progressbar is not updating
 fixed - progressbar was not centered
 change - added allowedValModifiersNumeric to dataman.ini
 fixed - GUI crashes if called with path argument (issue 64, no path argument needed anymore)
- 
+
+r142
+fixed - exception when min value in range is greater than max value
+fixed - exception with non-ASCII characters in string fields
+fixed - exception when a temporary file was locked
+
 todo - chack valid modifiers in validate()
 todo - weird exceptions about missing indents in code generation
+todo - read version info from dataman.ini
 
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
@@ -177,7 +185,7 @@ from utils import iniFile
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = True
+DEBUG__ = False
 
 import globalvars
 import utils
@@ -218,7 +226,7 @@ def writeCode(s, level, linebreak):
 	linebreak - add linebreak? (bool)
 	'''
 	try:
-		s = str(s)      # this will raise an Exception if inifinite symbol is included
+		s = unicode(s)      # this shouldn't raise an Exception if non-ASCII character is included
 	except Exception, err:
 		pass
 
@@ -226,7 +234,7 @@ def writeCode(s, level, linebreak):
 	s = prefix + s
 	if linebreak == True: s += '\n'
 	try:
-		File.AppendAllText(globalvars.TMPFILE, s)
+		File.AppendAllText(globalvars.TMPFILE, s, System.Text.Encoding.UTF8)
 		
 	except Exception, err:
 		print "Error in function writeCode: ", str(err)
@@ -376,6 +384,11 @@ def parseString(s):
 				
 				val1 = float((nullToZero(stringToFloat(tmp[0]))))
 				val2 = float(nullToZero(stringToFloat(tmp[1])))
+
+				if val1 > val2:
+					File.AppendAllText(globalvars.ERRFILE,  "Syntax not valid\nline: %s)\n" % (s))
+					File.AppendAllText(globalvars.ERRFILE, "first value in range expression must be smaller than second value")
+					return 0
 				
 				myVal = "%d, %d" % (val1, val2 + 1)
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
@@ -464,7 +477,7 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf and NotStartsWithAnyOf modifiers cannot be used in %s field" % (myKey))
 					return 0
 			elif myOperator == '==' and myKey not in numericalKeys:
-				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal)
+				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,unicode(myVal))
 			elif myOperator == '<' and myKey not in numericalKeys:
 				myCrit = myCrit + "comp.less(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
 			elif myOperator == '<=' and myKey not in numericalKeys:
@@ -513,7 +526,7 @@ def parseString(s):
 			# to do: handling if function is appended to field
 				
 			myVal = tmp[1]
-			writeCode("myOldVal = str(book.%s)" % myKey, 2, True)
+			writeCode("myOldVal = unicode(book.%s)" % myKey, 2, True)	# to catch non-ASCII characters
 
 			if myKey in numericalKeys and stringToFloat(myVal) == None:
 				File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
@@ -526,10 +539,10 @@ def parseString(s):
 			if myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					if myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
-						myVal = String.replace(myVal,'{','str(book.')
+						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
 					else:
-						myVal = String.replace(myVal,'{','int(book.')
-					myVal = String.replace(myVal,'}',')')
+						myVal = String.replace(myVal,'{','int(stringToFloat(book.')
+					myVal = String.replace(myVal,'}','))')
 					if myKey in pseudoNumericalKeys:	# == 'Number':
 						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:
@@ -611,41 +624,20 @@ def parseString(s):
 	
 
 def dmConfig():
-	
-
-	
+	'''
+	runs the ruleset collection editor depending on the value of key GUI in user.ini
+	if GUI == anything other than the value 'Old' it will run the exe defined in
+	globalvars, else if will run the old minimalistic gui
+	type: void
+	'''
 	myIni = iniFile(globalvars.USERINI)
 	myGui = myIni.read('Gui')
 	
 	if myGui <> 'Old':
-
 		import System.Diagnostics
-		from System.Diagnostics import Process
-
 		p = System.Diagnostics.Process()
 		p.StartInfo.FileName = globalvars.GUIEXE
-		#p.StartInfo.Arguments = globalvars.FOLDER.rstrip('\\')
 		p.Start()
-
-		# Process.Start(globalvars.GUIEXE, "\'%s\'" % globalvars.FOLDER.rstrip('\\'))
-		return
-
-		#FOLDER = FileInfo(__file__).DirectoryName + "\\"
-		
-		#theDLL = Path.Combine(FOLDER, 'crdmcgui.dll %s' % globalvars.FOLDER)
-		
-	##	clr.AddReferenceToFileAndPath(theDLL)
-	#	clr.AddReference('crdmcgui-fm3ce.dll')
-	##	from crdmcgui import gui	
-	
-	##	clr.AddReference('crdmcgui.dll')
-	##
-	#	from crdmcgui import *
-		
-	#	dmGUI = gui(globalvars.DATFILE)
-	#	dmGUI.ShowDialog(ComicRack.MainWindow)
-	
-
 	else:
 		form = configuratorForm()
 		form.setFile(globalvars.DATFILE)
@@ -686,7 +678,6 @@ def dataManagerConfig():
 
 def replaceData(books):
 
-
 	ERROR_LEVEL = 0
 
 	if not crVersion():	return		# ComicRack version ok?
@@ -713,10 +704,12 @@ def replaceData(books):
 	try:		# delete temporary files from last data manager run
 		File.Delete(globalvars.TMPFILE)
 		File.Delete(globalvars.ERRFILE)
+		File.Delete(globalvars.LOGFILE)
 	except Exception, err:
-		pass
-	
-	# check if configuration exists
+		MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nPlease restart ComicRack.')
+		return
+
+	# check if the default ruleset collection exists
 	if not File.Exists(globalvars.DATFILE):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % globalvars.VERSION)
 		return
@@ -728,9 +721,6 @@ def replaceData(books):
 #		return
 
 
-	progBar = progressForm('Please wait while Data Manager parses your rules')
-	progBar.Show()
-
 	writeCode('try:', 0, True)	
 	writeCode('import System',1,True)
 	writeCode('from System.Windows.Forms import MessageBox',1,True)
@@ -741,52 +731,45 @@ def replaceData(books):
 	
 	try:
 		s = File.ReadAllLines(globalvars.DATFILE)
+		progBar = progressForm('Please wait while Data Manager parses your rules')
+		progBar.Show()
 		progBar._progressBar.Maximum = len(s)
-		#progBar._label1.Text = 'Please wait while Data Manager parses your rules'
 		progBar.Update()
 
 
-		#progBar.setMax(len(s))
-		
 		i = 0
 #		s = [line for line in s if str.Trim(line) <> '']
 		for line in s:
 			i += 1
 			progBar._progressBar.Value = i
 
-			#progBar.progressBar.Refresh()
-			#Application.DoEvents()
-	
 			try:
-				if not line.StartsWith('#') and not str.Trim(line) == '':	# don't run this on commentary lines
+				if not line.StartsWith('#') and not line.strip() == '':	# don't run this on commentary lines
 																			# todo: handle parser directives starting with #@
 
 					if not parseString(line):	# syntax error found, break parsing the rule set
-						
-						error_message = File.ReadAllText(globalvars.ERRFILE)
-						MessageBox.Show("Error in line %d!\n%s" % (i, str(error_message)),"CR Data Manager %s - Parse error" % globalvars.VERSION)
+						error_message = unicode(File.ReadAllText(globalvars.ERRFILE))
+						MessageBox.Show("Error in line %d!\n%s" % (i, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 						ERROR_LEVEL = 1
-						progBar.Dispose()
 						break
 				if line.startswith('#@ END_RULES'):
 					break
 			except Exception, err:
 				pass
+		progBar.Dispose()
 						
 	except Exception, err:
 		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
-
+		progBar.Dispose()
 
 	writeCode('except Exception,err:', 0, True)
 	writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
-	progBar.Dispose()
 
 	if ERROR_LEVEL == 0:
 		theCode = File.ReadAllText(globalvars.TMPFILE)
 		debug("code generated by CR Data Manager: \n%s" % theCode)
 		progBar = progressForm('Please wait while Data Manager runs over your books')
 		progBar.Show()
-		#progBar._label1.Text = 'Please wait while Data Manager runs over your books'
 		progBar._progressBar.Maximum = books.Length
 		progBar.Update()
 		progBar._progressBar.Value = 1
@@ -797,9 +780,10 @@ def replaceData(books):
 			touched += 1
 			progBar._progressBar.Value = touched
 			try:
-				exec (theCode)
+				exec (unicode(theCode))
 				
 			except Exception, err:
+				print str(Exception.args)
 				MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
 				ERROR_LEVEL = 1
 		
@@ -825,7 +809,8 @@ def replaceData(books):
 
 	try:
 		#File.Delete(TMPFILE)
-		File.Delete(globalvars.ERRFILE)
+		#File.Delete(globalvars.ERRFILE)
+		pass
 	except Exception, err:
 		pass
 	

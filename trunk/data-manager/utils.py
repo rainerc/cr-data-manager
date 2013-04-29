@@ -135,10 +135,12 @@ class comparer(object):
 		return myVal.strip() not in myString			
 	
 	def equals(self, myString, myVal, caseInsensitive):
-
+		myString = unicode(myString)
+		myVal = unicode(myVal)
 		if caseInsensitive == True:
-			myString = str.lower(myString)
-			myVal = str.lower(myVal)
+			myString = myString.lower()
+			myVal = myVal.lower()
+		ret = myString.strip() == myVal.strip()
 		return myString.strip() == myVal.strip()
 
 	def startsWith(self, myString, myVal, caseInsensitive):
@@ -323,7 +325,7 @@ class ruleFile(object):
 		
 		# allowed keys and modifiers for left part of rule
 		self.allowedVals = myIni.read('allowedVals').split(',')
-		self.allowedValsMulti = myIni.read('allowedValsMulti').split(',')
+		#self.allowedValsMulti = myIni.read('allowedValsMulti').split(',')
 		self.allowedValModifiers = myIni.read('allowedValModifiers').split(',')
 		self.allowedValModifiersMulti = myIni.read('allowedValModifiersMulti').split(',')
 		
