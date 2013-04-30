@@ -204,21 +204,43 @@ def nullToZero(s):
 		return 0
 	return s
 
+def ireplace(text, old, new):
+	# replaces after comparing case insensitive
+	# replaces all occurences of [old] with [new]
+    idx = 0
+    while idx < len(text):
+        index_l = text.lower().find(old.lower(), idx)
+        if index_l == -1:
+            return text
+        text = text[:index_l] + new + text[index_l + len(old):]
+        idx = index_l + len(old)
+    return text
 
 def stringAdd(myKey, myVal):
 	return str(myKey) + str(myVal)
 
-def stringReplace(myKey,oldVal,newVal):
-	return myKey.replace(oldVal,newVal)
+def stringReplace(myKey,oldVal,newVal, caseinsensitive = True):
+	if caseinsensitive == True:
+		return ireplace(myKey, oldVal, newVal).lstrip()
+	else:
+		return myKey.replace(oldVal,newVal)
 
-def stringRemove(myKey,myVal):
-	return myKey.replace(myVal,'')
+def stringRemove(myKey,myVal, caseinsensitive = True):
+	if caseinsensitive == True:
+		return ireplace(myKey,myVal,'').lstrip()
+	else:
+		return myKey.replace(myVal,'').lstrip()
 
-def stringRemoveLeading(myKey,myVal):
-#	myKey = myKey.strip()
-	if myKey.startswith(myVal):
-		myKey = myKey.replace(myVal,'',1)
-	return myKey
+def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
+	#	myKey = myKey.strip()		# we must not strip here!
+	leadsWith = False
+	if caseinsensitive == True and myKey.lower().startsWith(myVal().lower):
+		leadsWith = True
+	elif myKey.startsWith(myVal):
+		leadsWith = True
+	if leadsWith == True:
+		return myKey[len(myVal):].lstrip()
+	
 		
 def multiValueAdd(myList, myVal):
 	myVal = str.Trim(str(myVal))
@@ -231,30 +253,34 @@ def multiValueAdd(myList, myVal):
 	newList.append(myVal)										# otherwise append newVal
 	return ','.join(newList)
 
-def multiValueReplace(myList, oldVal, myVal):
+def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
 	oldVal = String.Trim(str(oldVal))
 	myVal = String.Trim(str(myVal))
 	newList = []
 	theList = myList.strip(',').split(',')
 	for l in theList:
 		l = String.Trim(l)
-		if l == oldVal: l = myVal
+		if caseinsensitive == True:
+			if l.lower() == oldVal.lower(): l = myVal
+		else:
+			if l == oldVal: l = myVal
 		if newList.count(l) == 0:
 			newList.Add(l)
 	return ','.join(newList)
 
-def multiValueRemove(myList, myVal):
+def multiValueRemove(myList, myVal,caseinsensitive = True):
 	myVal = String.Trim(str(myVal))
 	theList = myList.strip(',').split(',')
 	newList = []
 	for l in theList:
 		l = String.Trim(l)
-		if l <> myVal:
-			newList.Add(l)
+		if caseinsensitive:
+			if l.lower() <> myVal.lower(): newList.Add(l)
+		else:
+			if l <> myVal: newList.Add(l)
 	return ','.join(newList)
 
 class parser(object):
-	
 	
 	def __init__(self):
 		self.err = False
