@@ -157,6 +157,9 @@ todo - chack valid modifiers in validate()
 todo - weird exceptions about missing indents in code generation
 todo - read version info from dataman.ini
 
+r145
+fix - functions replace, remove, removeLeading now compare caseinsensitive
+
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
 ideas:
@@ -604,7 +607,7 @@ def parseString(s):
 					if myKey in multiValueKeys:
 						writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 					else:
-						writeCode('book.%s = stringRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+						writeCode('book.%s = stringRemove(book.%s,"%s\", COMPARE_CASE_INSENSITIVE)' % (myKey, myKey, myVal), 2, True)
 				if myModifier.lower() == 'removeleading':
 					if len(String.Trim(myVal)) == 0:
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
