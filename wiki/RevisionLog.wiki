@@ -7,8 +7,8 @@ no beta release online
 </pre>
 
 ==Releases==
+===v 0.1.15 (last beta before 1.0)===
 <pre>
-v 0.1.15 (last beta before 1.0
 fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
         (issue 34) (set ComicRack.Window  as parent window handle for all forms)
 change - modular rewriting of forms
@@ -92,13 +92,16 @@ change - new list ruleFile.pseudoNumericalKeys (Number, AlternateNumber)
 change - new modifier Add for string type fields (non-multi value) (issue 32)
 change - new modifier Replace for string type fields (non-multi value) (issue 32)
 change - new modifier Remove for string type fields (non-multi value) (issue 32)
-fixed - range modifiers for multivalue keys are now restricted to the elements of ruleFile.allowedKeyModifiersMulti (issue 55)
+fixed - range modifiers for multivalue keys are now restricted 
+        to the elements of ruleFile.allowedKeyModifiersMulti (issue 55)
 ...
 r128
 change - new modifier NotStartsWith
 change - new modifier NotStartsWithAnyOf
-change - new value modifier RemoveLeading (leading and trailing blanks are respected) (issue 53)
-fixed - StringReplace modifier does not ignore leading or trailing blanks anymore
+change - new value modifier RemoveLeading 
+        (leading and trailing blanks are respected) (issue 53)
+fixed - StringReplace modifier does not ignore leading or 
+        trailing blanks anymore
 change - added directives #@ AUTHOR, #@ NOTES, #@ END_NOTES (issue 59)
 change - added all missing fields of type string, numeric, multi-value
 change - when book was touched the process date is now written to CustomValue 'DataManager.processed'
@@ -145,10 +148,10 @@ change - includes GUI 0.1.0r8 RC2
 
 r145
 fix - functions replace, remove, removeLeading now compare caseinsensitive
-change - includes GUI 0.1.0r8 RC6
+change - includes GUI 0.1.0r8 RC6</pre>
 
-v 0.1.14 release 83
-
+===v 0.1.14 release 83 (last public release before 1.0)===
+<pre>
  fixed - unexpected result if criteria in Number field is Null (issue 31)
 fixed - Null values in numerical fields are actually stored as -1 by CR. Using Null values in
 criteria on these field might return unexpected results
