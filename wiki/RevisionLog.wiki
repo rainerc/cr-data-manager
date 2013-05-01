@@ -7,7 +7,7 @@ no beta release online
 </pre>
 
 ==Releases==
-===v 0.1.15 (last beta before 1.0)===
+===v 0.1.15 (last beta before 1.0, not public)===
 <pre>
 fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
         (issue 34) (set ComicRack.Window  as parent window handle for all forms)
