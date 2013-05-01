@@ -6,8 +6,147 @@
 no beta release online
 </pre>
 
-==Public releases==
+==Releases==
 <pre>
+v 0.1.15 (last beta before 1.0
+fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
+        (issue 34) (set ComicRack.Window  as parent window handle for all forms)
+change - modular rewriting of forms
+change - Contains compares now case insensitive
+change - StartsWith compares now case insensitive
+change - comparison for equality (==) is now case insensitive
+change - comparison for less (<) is now case insensitive
+change - comparison for lessEqual (<=) is now case insensitive
+change - comparison for greater (>) is now case insensitive
+change - comparison for greaterEq (>=) is now case insensitive
+change - comparison for not equal (<>) is now case insensitive
+fix - missing references to globalvars added
+change - PageCount added to allowed keys
+change - new modifier ContainsAnyOf (issue 28)
+change - new modifier ContainsNot (may used as well as NotContains)
+change - new modifier ContainsAllOf (issue 40)
+change - if no value was modified by the DM, only "book xxx was touched" is written to logfile
+change - new modifier NotContainsAnyOf
+change - new modifier StartsWithAnyOf
+change - new directive "#@ END_RULES"
+change - new class "parser"
+change - new class "ruleFile" (encapsulated reading and writing the DATFILE)
+fix - exception when Null value was used in Range modifier
+change - when error was raised by compiling code a MessageBox will show the error
+...
+r105
+change - Configurator form re-written
+change - basic Search functionality in Configurator
+...
+r106
+change - first rudimentary GUI written (no functionality yet)
+...
+r109
+change - ComicRack version check at start (min is 0.9.165)
+change - basic GUI functionality
+...
+r111
+change - new directive #@ GROUP
+change - added combobox to find group header in textbox
+change - textclips (like commentary line, group header etc. can be added via GUI)
+change - rule editor position set to CenterParent
+fixed - 'setvalue' was not recognized as a valid modifier
+fixed - exception if file in rule editor is not the DatFile and combobox group selector is selected
+...
+r113
+fixed - sometimes selected text in rule set is overwritten by inserted rule (GUI)
+fixed - criterion or setvalue are not added to rule if already in there (GUI)
+change - buttons for deleting content of textboxes for criteria and setvalue (GUI)
+change - group names are checked if already used
+fixed - Contains... methods in class parser rewritten (unexpected results when leading
+        or trailing blanks where attached to values)
+fixed - exception when a criterion with apostrophe or quotation mark was written to the log file
+        (issue 36)
+...
+r114
+change - save and close added to configurator menustrip
+change - option to backup and restore the rule set (issue 30)
+change - DMProc is no longer added to Tags but written as a custom value (issue 33)
+..
+r115
+change - new allowed fields: alternateNumber and alternateCount (issue 44)
+fixed - comboModifiers does not match comboCriteria and comboValues (issue 48)
+change - option to select line by line number (issue 49)
+...
+r117
+change - GUI: delete rule from rule set
+change - GUI: re-engineer rule
+change - menu strip upgraded
+...
+r121
+change - new allowed fields: Title
+fixed - unexpected behavior with book numbers like '5AU', 'Minus 1', '¼', fixed with
+        function 'stringToFloat'
+change - rule editor is now dropdown option in CR toolbar (form MainForm is obsolete)
+change - range modifier is not selectable for string fields anymore in GUI
+fixed - group header combo box was not updated when backup of rule set was loaded
+...
+r125
+change - parser directive '#@ END_GROUP' added (issue 56)
+change - new list ruleFile.pseudoNumericalKeys (Number, AlternateNumber)
+change - new modifier Add for string type fields (non-multi value) (issue 32)
+change - new modifier Replace for string type fields (non-multi value) (issue 32)
+change - new modifier Remove for string type fields (non-multi value) (issue 32)
+fixed - range modifiers for multivalue keys are now restricted to the elements of ruleFile.allowedKeyModifiersMulti (issue 55)
+...
+r128
+change - new modifier NotStartsWith
+change - new modifier NotStartsWithAnyOf
+change - new value modifier RemoveLeading (leading and trailing blanks are respected) (issue 53)
+fixed - StringReplace modifier does not ignore leading or trailing blanks anymore
+change - added directives #@ AUTHOR, #@ NOTES, #@ END_NOTES (issue 59)
+change - added all missing fields of type string, numeric, multi-value
+change - when book was touched the process date is now written to CustomValue 'DataManager.processed'
+         (this was it is only displayed when turned on with ShowCustomScriptValues = true in ComicRack.ini) 
+...
+r129
+fixed - comparer >= etc. did not work as expected with numerical values
+fixed - progressbar was hidden behind CR window when clicked (removed MainWindow handle, issue 52)
+...
+r133
+change - allowed vals and modifiers are read from dataman.ini
+...
+r136
+change - integration of user.ini
+change - startup dialog asks user if he wants to start Data Manager running
+change - all dialog frames set to Fixed3D (fixes issue 13)
+...
+r138 TEST RELEASE
+change - configure runs GUI exe
+...
+r140
+fixed - string condition for numerical field throws exception (issue 61)
+fixed - the progressbar form is not disposed if parser code raises error
+change - added argument FOLDER to gui call
+fixed - exception when infinite symbol is used with number (issue 63)
+fixed - various problems with infinite symbol
+fixed - reading and writing the configuration with unicode characters from old gui raised Exception
+
+r141
+fixed - progressbar does not show progress while parsing rules
+fixed - label text of progressbar is not updating
+fixed - progressbar was not centered
+change - added allowedValModifiersNumeric to dataman.ini
+fixed - GUI crashes if called with path argument (issue 64, no path argument needed anymore)
+
+r142
+fixed - exception when min value in range is greater than max value
+fixed - exception with non-ASCII characters in string fields
+fixed - exception when a temporary file was locked
+
+r143
+change - new modifiers isAnyOf and NotIsAnyOf (included in dataman.ini) (issue 51)
+change - includes GUI 0.1.0r8 RC2
+
+r145
+fix - functions replace, remove, removeLeading now compare caseinsensitive
+change - includes GUI 0.1.0r8 RC6
+
 v 0.1.14 release 83
 
  fixed - unexpected result if criteria in Number field is Null (issue 31)
