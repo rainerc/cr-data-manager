@@ -234,9 +234,9 @@ def stringRemove(myKey,myVal, caseinsensitive = True):
 def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
 	#	myKey = myKey.strip()		# we must not strip here!
 	leadsWith = False
-	if caseinsensitive == True and myKey.lower().startsWith(myVal().lower):
+	if caseinsensitive == True and myKey.lower().startswith(myVal().lower):
 		leadsWith = True
-	elif myKey.startsWith(myVal):
+	elif myKey.startswith(myVal):
 		leadsWith = True
 	if leadsWith == True:
 		return myKey[len(myVal):].lstrip()
