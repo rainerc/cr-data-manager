@@ -18,7 +18,7 @@ images and icons used by permission of 600WPMPO and www.aha-soft.com
 
 revision history:
 
-r149
+r149 (RC1)
 fixed - combination of numerical key and Null value like <<Count:>> raised Exception
 bug - if a large set of books is selected then the second progressbar will freeze
 fixed - if an Exception is thrown while executing the rules the for loop continues running
@@ -26,6 +26,11 @@ change - using the backgroundWorker to handle the main loops
 fixed - erratic error: expecting an indented block (issue 66). Code now is written to memory, 
         not to file as before
 change - includes GUI 0.1.0r8 RC9
+
+r150 (RC2)
+fixed - user.ini was overwritten by installation (issue 70, was missing in keepfiles parameter)
+fixed - Exception in stringRemoveLeading (str.startsWith() used instead of str.startswith() )
+
 
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
