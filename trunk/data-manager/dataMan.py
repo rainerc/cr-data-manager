@@ -30,6 +30,12 @@ change - includes GUI 0.1.0r8 RC9
 r150 (RC2)
 fixed - user.ini was overwritten by installation (issue 70, was missing in keepfiles parameter)
 fixed - Exception in stringRemoveLeading (str.startsWith() used instead of str.startswith() )
+change - includes GUI 0.1.1r10
+
+r151 (1.0.1)
+change - added string fields BookAge,BookCondition,BookLocation to dataman.ini (issue 68)
+fixed - range modifiers GreaterEq etc. might give unexpected results (issue 71)
+fixed - progress form now supports cancellation while running over the selected books
 
 
 todo - check valid modifiers in validate()

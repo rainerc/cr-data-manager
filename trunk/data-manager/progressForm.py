@@ -62,6 +62,7 @@ class progressForm(Form):
 		# backgroundWorker1
 		# 
 		self._backgroundWorker1.WorkerReportsProgress = True
+		self._backgroundWorker1.WorkerSupportsCancellation = True
 		self._backgroundWorker1.DoWork += self.BackgroundWorker1DoWork
 		self._backgroundWorker1.ProgressChanged += self.BackgroundWorker1ProgressChanged
 		self._backgroundWorker1.RunWorkerCompleted += self.BackgroundWorker1RunWorkerCompleted
@@ -371,8 +372,15 @@ def parseString(s):
 					else:
 						# if operator is <, > and so forth we have to simulate those
 						# values as numeric, so we use stringToFloat
-						myVal = nullToZero(stringToFloat(myVal))
-						myCrit = myCrit + ('nullToZero(stringToFloat(book.%s)) %s %s and ' % (myKey, myOperator, myVal))
+
+
+# range uses this:
+						myVal = stringToFloat(nullToZero(myVal))
+						myCrit += ("stringToFloat(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
+
+# this gave false result (issue 71):
+#						myVal = nullToZero(stringToFloat(myVal))		
+#						myCrit = myCrit + ('nullToZero(stringToFloat(book.%s)) %s %s and ' % (myKey, myOperator, myVal))
 					pass
 			# end of extra handling of Number field
 			# ----------------------------------------------------------------------------
