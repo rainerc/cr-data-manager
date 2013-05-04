@@ -13,7 +13,7 @@ ERRFILE = Path.Combine(FOLDER, 'dataMan.err')
 TMPFILE = Path.Combine(FOLDER, 'dataMan.tmp')
 LOGFILE = Path.Combine(FOLDER, 'dataMan.log')
 CHKFILE = Path.Combine(FOLDER, 'dataMan.chk')		# will be created once the configuration is saved
-GUIEXE = Path.Combine(FOLDER, 'crdmcgui0.1.1r10.exe')
+GUIEXE = Path.Combine(FOLDER, 'crdmcgui-0.1.1r11.exe')
 
 ICON_SMALL = Path.Combine(FOLDER, 'dataMan16.ico')
 ICON = Path.Combine(FOLDER, 'dataMan.ico')
