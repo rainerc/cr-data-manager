@@ -37,8 +37,13 @@ change - added string fields BookAge,BookCondition,BookLocation to dataman.ini (
 fixed - range modifiers GreaterEq etc. might give unexpected results (issue 71)
 fixed - progress form now supports cancellation while running over the selected books
 
-r1.. (1.0.1)
+r152 (1.0.1)
 change - included GUI 0.1.1r11
+
+r...
+change - GUI tab order corrected
+change - GUI supports export of groups
+change - GUI supports import option
 
 
 todo - check valid modifiers in validate()
