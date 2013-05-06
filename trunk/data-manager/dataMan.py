@@ -48,6 +48,10 @@ change - GUI: Text edit of Rulesets (in the ruleset panel) now always visible
 change - GUI: window is resizable
 change - included GUI 0.1.1r18
 
+r155 (1.0.3)
+fixed - cancellation of backgroundworker did not work as expected (issue 74)
+fixed - Data Manger won't run in a combined after CV Scraper (issue 75)
+
 
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
@@ -77,8 +81,8 @@ clr.AddReference('System.Windows.Forms')
 clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
-import utils
-from utils import iniFile
+import dmutils
+from dmutils import iniFile
 import globalvars
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
@@ -104,7 +108,7 @@ def debug (s):
 
 def writeVersion():
 	''' not sure if we need this '''
-	myIni = utils.iniFile()
+	myIni = dmutils.iniFile()
 	myIni.write('Version',globalvars.VERSION)
 	
 
@@ -144,6 +148,7 @@ def crVersion():
 		return False
 	return True
 
+
 # ============================================================================      
 # hook to run the configScript
 #@Name	 Data Manager configuration
@@ -168,7 +173,7 @@ def replaceData(books):
 
 	if not crVersion():	return		# ComicRack version ok?
 	
-	ini = utils.iniFile(globalvars.USERINI)
+	ini = dmutils.iniFile(globalvars.USERINI)
 	if ini.read('ShowStartupDialog') == 'False':
 		pass
 	else:

@@ -9,8 +9,8 @@ from System.Windows.Forms import *
 import globalvars
 from globalvars import *
 
-import utils
-from utils import *
+import dmutils
+from dmutils import *
 
 
 
@@ -39,6 +39,7 @@ class progressForm(Form):
 		self._progressBar = System.Windows.Forms.ProgressBar()
 		self._label1 = System.Windows.Forms.Label()
 		self._backgroundWorker1 = System.ComponentModel.BackgroundWorker()
+		self._buttonCancel = System.Windows.Forms.Button()
 		self.SuspendLayout()
 		# 
 		# progressBar
@@ -67,9 +68,20 @@ class progressForm(Form):
 		self._backgroundWorker1.ProgressChanged += self.BackgroundWorker1ProgressChanged
 		self._backgroundWorker1.RunWorkerCompleted += self.BackgroundWorker1RunWorkerCompleted
 		# 
+		# buttonCancel
+		# 
+		self._buttonCancel.Location = System.Drawing.Point(185, 71)
+		self._buttonCancel.Name = "buttonCancel"
+		self._buttonCancel.Size = System.Drawing.Size(75, 23)
+		self._buttonCancel.TabIndex = 2
+		self._buttonCancel.Text = "Cancel"
+		self._buttonCancel.UseVisualStyleBackColor = True
+		self._buttonCancel.Click += self.ButtonCancelClick
+		# 
 		# progressForm
 		# 
-		self.ClientSize = System.Drawing.Size(436, 84)
+		self.ClientSize = System.Drawing.Size(436, 106)
+		self.Controls.Add(self._buttonCancel)
 		self.Controls.Add(self._label1)
 		self.Controls.Add(self._progressBar)
 		self.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
@@ -78,6 +90,7 @@ class progressForm(Form):
 		self.Name = "progressForm"
 		self.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
 		self.Text = "progressForm"
+		self.FormClosed += self.ProgressFormFormClosed
 		self.Load += self.ProgressFormLoad
 		self.Shown += self.ProgressFormShown
 		self.ResumeLayout(False)
@@ -112,7 +125,7 @@ class progressForm(Form):
 			writeCode('from System.Windows.Forms import MessageBox',1,True)
 			writeCode('from time import localtime, strftime',1,True)
 			writeCode('from globalvars import *',1,True)
-			writeCode('from utils import *',1,True)
+			writeCode('from dmutils import *',1,True)
 			writeCode('comp = comparer()',1,True)
 
 			s = File.ReadAllLines(globalvars.DATFILE)
@@ -121,23 +134,28 @@ class progressForm(Form):
 			self._progressBar.Step = 1
 			i = 0
 			for line in s:
-				self.stepsPerformed += 1
-				# note that ReportProgress needs an argument!
-				self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
-
-				try:
-					if not line.StartsWith('#') and not line.strip() == '':	# don't run this on commentary lines
-																			# todo: handle parser directives starting with #@
-
-						if not parseString(line):	# syntax error found, break parsing the rule set
-							error_message = unicode(File.ReadAllText(globalvars.ERRFILE))
-							MessageBox.Show("Error in line %d!\n%s" % (i, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
-							self.errorLevel = 1
+				if not self._backgroundWorker1.CancellationPending: 
+					self.stepsPerformed += 1
+					# note that ReportProgress needs an argument!
+					self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
+	
+					try:
+						if not line.StartsWith('#') and not line.strip() == '':	# don't run this on commentary lines
+																				# todo: handle parser directives starting with #@
+	
+							if not parseString(line):	# syntax error found, break parsing the rule set
+								error_message = unicode(File.ReadAllText(globalvars.ERRFILE))
+								MessageBox.Show("Error in line %d!\n%s" % (i, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
+								self.errorLevel = 1
+								break
+						if line.startswith('#@ END_RULES'):
 							break
-					if line.startswith('#@ END_RULES'):
-						break
-				except Exception, err:
-					pass
+					except Exception, err:
+						pass
+				else:
+					MessageBox.Show('Cancellation by user.')
+					return
+				
 			#progBar.Dispose()
 			writeCode('except Exception,err:', 0, True)
 			writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
@@ -154,24 +172,28 @@ class progressForm(Form):
 			f=open(globalvars.LOGFILE, "w")	# open logfile
 
 			for book in self.theBooks:
-				self.stepsPerformed += 1
-				self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
-				try:
-					myCode = ''
-					for line in globalvars.THECODE:
-						if line.strip() <> '':
-							myCode += line
-					exec(myCode)
+				if not self._backgroundWorker1.CancellationPending: 
+					self.stepsPerformed += 1
+					self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
+					try:
+						myCode = ''
+						for line in globalvars.THECODE:
+							if line.strip() <> '':
+								myCode += line
+						exec(myCode)
 
-
-				except Exception, err:
-					print str(Exception.args)
-					MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
-					self.errorLevel = 1
+					except Exception, err:
+						print str(Exception.args)
+						MessageBox.Show('Error while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
+						self.errorLevel = 1
+						break
+					
+				else:
+					f.write('\n\nExcecution cancelled by user.')
 					break
+				
 			f.close()				# close logfile
 			self.Close()
-
 
 			
 
@@ -191,6 +213,13 @@ class progressForm(Form):
 
 	def ProgressFormShown(self, sender, e):
 		self._backgroundWorker1.RunWorkerAsync()
+		
+	def ButtonCancelClick(self, sender, e):
+		self._backgroundWorker1.CancelAsync()
+		pass
+	
+	def ProgressFormFormClosed(self, sender, e):
+		self._backgroundWorker1.CancelAsync()
 
 
 def parseString(s):
@@ -203,7 +232,7 @@ def parseString(s):
 	myModifier = ''			# the modifier (like Contains, Range, Calc etc.)
 
 
-	rules = utils.ruleFile()
+	rules = dmutils.ruleFile()
 	allowedKeys = rules.allowedKeys
 	allowedVals = rules.allowedVals
 	numericalKeys = rules.numericalKeys
@@ -211,7 +240,7 @@ def parseString(s):
 	multiValueKeys = rules.multiValueKeys
 	
 
-	myParser = utils.parser()
+	myParser = dmutils.parser()
 	myParser.validate(s)
 	if myParser.err:
 		File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (%s)\nline: %s)" % (myParser.error, s))
@@ -647,3 +676,5 @@ def stringToFloat(myVal):
 			return float(tmp)
 		except Exception, err:
 			return None
+
+

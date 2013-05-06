@@ -10,15 +10,15 @@ from System.Drawing import *
 from System.Windows.Forms import *
 
 import globalvars
-import utils
-from utils import readFile
-from utils import ruleFile
-from utils import parser
+import dmutils
+from dmutils import readFile
+from dmutils import ruleFile
+from dmutils import parser
 
 import aboutForm
 from aboutForm import aboutForm
 
-rulefile = utils.ruleFile()
+rulefile = dmutils.ruleFile()
 #parser = utils.parser()
 
 class configuratorForm(Form):
@@ -746,7 +746,7 @@ to visual editor""")
 	def showTheFile(self):
 		if self.theFile <> '':
 			if self.theFile == globalvars.DATFILE:
-				ruleFile = utils.ruleFile()
+				ruleFile = dmutils.ruleFile()
 				self._textBox1.Text = ruleFile.read()
 				if ruleFile.editedByParser:
 					self.isDirty = True
@@ -856,7 +856,7 @@ to visual editor""")
 
 	def writeRuleFile(self):
 		self.Cursor = Cursors.WaitCursor
-		rulefile = utils.ruleFile()
+		rulefile = dmutils.ruleFile()
 		if rulefile.write(self._textBox1.Text) == rulefile.NOERROR:
 			self.showTheFile()
 			self.isDirty = False
@@ -961,7 +961,7 @@ to visual editor""")
 
 	def addRuleToRuleSet(self,theText,overWriteSelection):
 		
-		parser = utils.parser()
+		parser = dmutils.parser()
 		parser.validate(theText)
 		if parser.err == True:
 			MessageBox.Show(parser.error)

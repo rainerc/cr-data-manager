@@ -6,8 +6,8 @@ import globalvars
 from System.Drawing import *
 from System.Windows.Forms import *
 
-import utils
-from utils import iniFile
+import dmutils
+from dmutils import iniFile
 
 class startupForm(Form):
 	def __init__(self):
@@ -118,5 +118,5 @@ Do you want to start?"""
 
 	def StartupFormFormClosed(self, sender, e):
 		if self.DialogResult <> DialogResult.Cancel:
-			ini = utils.iniFile(globalvars.USERINI)
+			ini = dmutils.iniFile(globalvars.USERINI)
 			ini.write('ShowStartupDialog', str(not self._checkBox1.Checked))
