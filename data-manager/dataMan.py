@@ -40,10 +40,13 @@ fixed - progress form now supports cancellation while running over the selected 
 r152 (1.0.1)
 change - included GUI 0.1.1r11
 
-r...
+r154 (1.0.2)
 change - GUI tab order corrected
-change - GUI supports export of groups
+change - GUI supports import _random export of groups
 change - GUI supports import option
+change - GUI: Text edit of Rulesets (in the ruleset panel) now always visible
+change - GUI: window is resizable
+change - included GUI 0.1.1r18
 
 
 todo - check valid modifiers in validate()
