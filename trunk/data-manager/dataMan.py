@@ -42,7 +42,7 @@ change - included GUI 0.1.1r11
 
 r154 (1.0.2)
 change - GUI tab order corrected
-change - GUI supports import _random export of groups
+change - GUI supports import / export of groups
 change - GUI supports import option
 change - GUI: Text edit of Rulesets (in the ruleset panel) now always visible
 change - GUI: window is resizable
@@ -51,6 +51,11 @@ change - included GUI 0.1.1r18
 r155 (1.0.3)
 fixed - cancellation of backgroundworker did not work as expected (issue 74)
 fixed - Data Manger won't run in a combined after CV Scraper (issue 75)
+
+r1.. (1.0.4)
+fixed - error when assigning a Null value to numerical fields (issue 76)
+fixed - error message has meaningless line number (issue 77)
+fixed - user cannot cancel parsing a *very* large ruleset collection (issue 78)
 
 
 todo - check valid modifiers in validate()
@@ -94,7 +99,7 @@ from configuratorForm import configuratorForm
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = False
+DEBUG__ = True
 
 #sys.path.append(globalvars.FOLDER)
 
@@ -212,7 +217,7 @@ def replaceData(books):
 		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
 		progBar.Dispose()
 
-	if progBar.errorLevel == 0:
+	if progBar.errorLevel == 0 and progBar.cancelledByUser == False:
 
 		progBar = progressForm(globalvars.PROCESS_BOOKS, books)
 		progBar.ShowDialog()
