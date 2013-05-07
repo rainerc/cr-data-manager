@@ -1,7 +1,7 @@
 mkdir build
 copy dataman.py build
 copy aboutForm.py build
-copy utils.py build
+copy dmutils.py build
 copy globalvars.py build
 copy displayResultsForm.py build
 copy configuratorForm.py build

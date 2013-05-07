@@ -32,6 +32,7 @@ class progressForm(Form):
 		#self.theCode = theCode
 		self.theBooks = books
 		self.errorLevel = 0
+		self.cancelledByUser = False
 		self.stepsPerformed = 0
 		self.maxVal = 0
 	
@@ -90,6 +91,7 @@ class progressForm(Form):
 		self.Name = "progressForm"
 		self.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
 		self.Text = "progressForm"
+		self.FormClosing += self.ProgressFormFormClosing
 		self.FormClosed += self.ProgressFormFormClosed
 		self.Load += self.ProgressFormLoad
 		self.Shown += self.ProgressFormShown
@@ -132,7 +134,7 @@ class progressForm(Form):
 			self.maxVal = len(s)
 			self._progressBar.Maximum = self.maxVal
 			self._progressBar.Step = 1
-			i = 0
+#			i = 0
 			for line in s:
 				if not self._backgroundWorker1.CancellationPending: 
 					self.stepsPerformed += 1
@@ -145,7 +147,7 @@ class progressForm(Form):
 	
 							if not parseString(line):	# syntax error found, break parsing the rule set
 								error_message = unicode(File.ReadAllText(globalvars.ERRFILE))
-								MessageBox.Show("Error in line %d!\n%s" % (i, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
+								MessageBox.Show("Error in line %d!\n%s" % (self.stepsPerformed, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
 								self.errorLevel = 1
 								break
 						if line.startswith('#@ END_RULES'):
@@ -153,7 +155,8 @@ class progressForm(Form):
 					except Exception, err:
 						pass
 				else:
-					MessageBox.Show('Cancellation by user.')
+					# MessageBox.Show('Cancellation by user.')
+					self.cancelledByUser = True
 					return
 				
 			#progBar.Dispose()
@@ -181,6 +184,7 @@ class progressForm(Form):
 							if line.strip() <> '':
 								myCode += line
 						exec(myCode)
+#						print myCode
 
 					except Exception, err:
 						print str(Exception.args)
@@ -190,6 +194,7 @@ class progressForm(Form):
 					
 				else:
 					f.write('\n\nExcecution cancelled by user.')
+					self.cancelledByUser = True
 					break
 				
 			f.close()				# close logfile
@@ -219,6 +224,9 @@ class progressForm(Form):
 		pass
 	
 	def ProgressFormFormClosed(self, sender, e):
+		self._backgroundWorker1.CancelAsync()
+		
+	def ProgressFormFormClosing(self, sender, e):
 		self._backgroundWorker1.CancelAsync()
 
 
@@ -523,6 +531,13 @@ def parseString(s):
 			myVal = tmp[1]
 			writeCode("myOldVal = unicode(book.%s)" % myKey, 2, True)	# to catch non-ASCII characters
 
+			# ComicRack stores NullValues for numerical fields as -1
+			try:
+				if myKey in numericalKeys and str(myVal).strip() == '': myVal = -1
+
+			except Exception, err:
+				pass
+			
 			if myKey in numericalKeys and stringToFloat(myVal) == None:
 				File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
 				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
@@ -598,7 +613,7 @@ def parseString(s):
 			else:
 
 				if myKey in numericalKeys:
-					if len(myVal) == 0:
+					if len(str(myVal)) == 0:
 						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
 					else:
 						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
@@ -676,5 +691,6 @@ def stringToFloat(myVal):
 			return float(tmp)
 		except Exception, err:
 			return None
+
 
 
