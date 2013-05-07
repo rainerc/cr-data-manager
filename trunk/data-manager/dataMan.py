@@ -52,7 +52,7 @@ r155 (1.0.3)
 fixed - cancellation of backgroundworker did not work as expected (issue 74)
 fixed - Data Manger won't run in a combined after CV Scraper (issue 75)
 
-r1.. (1.0.4)
+r156 (1.0.4)
 fixed - error when assigning a Null value to numerical fields (issue 76)
 fixed - error message has meaningless line number (issue 77)
 fixed - user cannot cancel parsing a *very* large ruleset collection (issue 78)
