@@ -1,5 +1,4 @@
 #summary A quick-start tutorial for CR Data Manager.
-#labels Featured
 
 = Introduction =
 
