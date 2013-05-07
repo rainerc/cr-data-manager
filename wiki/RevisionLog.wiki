@@ -7,6 +7,54 @@ no beta release online
 </pre>
 
 ==Releases==
+===v 1.0.4 (r156)===
+<pre>
+fixed - error when assigning a Null value to numerical fields (issue 76)
+fixed - error message has meaningless line number (issue 77)
+fixed - user cannot cancel parsing a *very* large ruleset collection (issue 78)
+</pre>
+===v 1.0.3 (r155)===
+<pre>
+fixed - cancellation of backgroundworker did not work as expected (issue 74)
+fixed - Data Manger won't run in a combined after CV Scraper (issue 75)
+</pre>
+===v 1.0.2 (r154)===
+<pre>
+change - GUI tab order corrected
+change - GUI supports import / export of groups
+change - GUI supports import option
+change - GUI: Text edit of Rulesets (in the ruleset panel) now always visible
+change - GUI: window is resizable
+change - included GUI 0.1.1r18
+</pre>
+
+===v 1.0.1===
+<pre>r152
+change - included GUI 0.1.1r11
+</pre>
+<pre>r151
+change - added string fields BookAge,BookCondition,BookLocation to dataman.ini (issue 68)
+fixed - range modifiers GreaterEq etc. might give unexpected results (issue 71)
+fixed - progress form now supports cancellation while running over the selected books
+</pre>
+===v 1.0.0===
+<pre>
+r150 (RC2)
+fixed - user.ini was overwritten by installation (issue 70, was missing in keepfiles parameter)
+fixed - Exception in stringRemoveLeading (str.startsWith() used instead of str.startswith() )
+change - includes GUI 0.1.1r10
+
+
+r149 (RC1)
+fixed - combination of numerical key and Null value like <<Count:>> raised Exception
+bug - if a large set of books is selected then the second progressbar will freeze
+fixed - if an Exception is thrown while executing the rules the for loop continues running
+change - using the backgroundWorker to handle the main loops
+fixed - erratic error: expecting an indented block (issue 66). 
+     Code now is written to memory, not to file as before 
+change - includes GUI 0.1.0r8 RC9
+</pre>
+
 ===v 0.1.15 (last beta before 1.0, not public)===
 <pre>
 fixed - "do you want to see the log" dialogbox always appears behind the Comicrack Window
