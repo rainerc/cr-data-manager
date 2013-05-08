@@ -173,6 +173,15 @@ def dataManagerConfig():
 # ============================================================================     
 
 def replaceData(books):
+	
+
+	clr.AddReference("ComicRack.Engine")
+	from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+	for book in books:
+		print book.Manga
+		print book.BlackAndWhite
+		pass
+	return	
 
 	ERROR_LEVEL = 0
 
