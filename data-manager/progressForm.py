@@ -129,6 +129,7 @@ class progressForm(Form):
 			writeCode('from globalvars import *',1,True)
 			writeCode('from dmutils import *',1,True)
 			writeCode('comp = comparer()',1,True)
+			writeCode('dmString = dmString()',1,True)
 
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -246,6 +247,8 @@ def parseString(s):
 	numericalKeys = rules.numericalKeys
 	pseudoNumericalKeys = rules.pseudoNumericalKeys
 	multiValueKeys = rules.multiValueKeys
+	yesNoKeys = rules.yesNoKeys
+	mangaYesNoKeys = rules.mangaYesNoKeys
 	
 
 	myParser = dmutils.parser()
@@ -298,13 +301,11 @@ def parseString(s):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
-			if c <> "" and not (myKey in allowedKeys) and not myKey.startswith('CustomValue'):
-				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
+			if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.startswith('CustomValue'):
+				File.AppendAllText(globalvars.ERRFILE,"Error 303: Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
 
-			# todo: checked up here
-			
 			myOperator = "=="
 			# handling if modifier is appended to field
 			# like Volume.Range:1961, 1963
@@ -356,11 +357,19 @@ def parseString(s):
 
 			myVal = tmp[1]
 			
-			if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
-				File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
-				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
-				return 0				
-
+			try:
+				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
+					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
+					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
+					return 0	
+	
+				if myKey in yesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
+					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
+					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
+					return 0	
+					
+			except Exception, err:
+				print str(err)
 
 			if myOperator == "in range":		# must only be used with numerical keys
 				
@@ -479,7 +488,12 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf and NotStartsWithAnyOf modifiers cannot be used in %s field" % (myKey))
 					return 0
 			elif myOperator == '==' and myKey not in numericalKeys:
-				myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,unicode(myVal))
+				if myKey in yesNoKeys:
+					myCrit += "comp.yesNo(book.%s,\"%s\") and " % (myKey, myVal)
+				elif myKey in mangaYesNoKeys:
+					myCrit += "comp.mangaYesNo(book.%s,\"%s\") and " % (myKey, myVal)
+				else :
+					myCrit = myCrit + "comp.equals(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,unicode(myVal))
 			elif myOperator == '<' and myKey not in numericalKeys:
 				myCrit = myCrit + "comp.less(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
 			elif myOperator == '<=' and myKey not in numericalKeys:
@@ -489,7 +503,12 @@ def parseString(s):
 			elif myOperator == '>=' and myKey not in numericalKeys:
 				myCrit = myCrit + "comp.greaterEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
 			elif myOperator == '<>' and myKey not in numericalKeys:
-				myCrit = myCrit + "comp.notEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
+				if myKey in yesNoKeys:
+					myCrit += "not comp.yesNo(book.%s,\"%s\") and " % (myKey, myVal)
+				elif myKey in mangaYesNoKeys:
+					myCrit += "not comp.mangaYesNo(book.%s,\"%s\") and " % (myKey, myVal)
+				else :
+					myCrit = myCrit + "comp.notEq(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey, myVal)
 			else:
 				# numerical values in CR are -1 if Null
 				if myKey in numericalKeys and str.Trim(myVal) == '':
@@ -617,6 +636,10 @@ def parseString(s):
 						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
 					else:
 						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
+				elif myKey in yesNoKeys:
+					writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+				elif myKey in mangaYesNoKeys:
+					writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 				else:
 					writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
 				myNewVal = myNewVal + ("\t\tbook.%s = \"%s\"" % (myKey, myVal)) 

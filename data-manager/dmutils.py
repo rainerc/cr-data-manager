@@ -5,6 +5,7 @@ from System import String
 from System.IO import File
 
 #from System.Windows.Forms import MessageBox
+import clr
 import re
 import globalvars
 
@@ -57,7 +58,31 @@ class iniFile:
 
 class comparer(object):
 	"""description of class"""
+	
+	def __init__(self):
+		clr.AddReference("ComicRack.Engine")
+		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+		self.myYesNo = YesNo
+		self.myMangaYesNo = MangaYesNo
 
+	def yesNo(self,myString,myVal):
+		myVal = myVal.lower()
+		if myVal == 'yes': return myString == self.myYesNo.Yes
+		elif myVal == 'no': return myString == self.myYesNo.No
+		elif myVal == 'unknown' : return myString == self.myYesNo.Unknown
+		elif myVal == '' : return myString == self.myYesNo.Unknown
+		else : return False
+		
+	def mangaYesNo(self,myString,myVal):
+		myVal = myVal.lower()
+		if myVal == 'yes': return myString == self.myMangaYesNo.Yes
+		elif myVal == 'no': return myString == self.myMangaYesNo.No
+		elif myVal == 'unknown' : return myString == self.myMangaYesNo.Unknown
+		elif myVal == '' : return myString == self.myMangaYesNo.Unknown
+		elif myVal == 'yesandrighttoleft' : return myString == self.myMangaYesNo.YesAndRightToLeft
+		else : return False
+		
+	
 	def inList(self,myString,myVal,caseInsensitive):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
@@ -280,6 +305,28 @@ def multiValueRemove(myList, myVal,caseinsensitive = True):
 			if l <> myVal: newList.Add(l)
 	return ','.join(newList)
 
+class dmString(object):
+	def __init__(self):
+		clr.AddReference("ComicRack.Engine")
+		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+		self.myYesNo = YesNo
+		self.myMangaYesNo = MangaYesNo
+	
+	def yesNo(self,myVal):
+		myVal = myVal.lower()
+		if myVal == 'yes': return self.myYesNo.Yes
+		elif myVal == 'no': return self.myYesNo.No
+		elif myVal == 'unknown': return self.myYesNo.Unknown
+		elif myVal == '': return self.myYesNo.Unknown
+		
+	def mangaYesNo(self,myVal):
+		myVal = myVal.lower()
+		if myVal == 'yes': return self.myMangaYesNo.Yes
+		elif myVal == 'no': return self.myMangaYesNo.No
+		elif myVal == 'unknown': return self.myMangaYesNo.Unknown
+		elif myVal == 'yesandlefttoright' : return self.myMangaYesNo.YesAndLeftToRight
+		elif myVal == '': return self.myMangaYesNo.Unknown
+		
 class parser(object):
 	
 	def __init__(self):
@@ -360,6 +407,8 @@ class ruleFile(object):
 		self.numericalKeys = myIni.read('numericalKeys').split(',')
 		self.pseudoNumericalKeys = myIni.read('pseudoNumericalKeys').split(',')
 		self.multiValueKeys = myIni.read('multiValueKeys').split(',')
+		self.yesNoKeys = myIni.read('yesNoKeys').split(',')
+		self.mangaYesNoKeys = myIni.read('mangaYesNoKeys').split(',')
 		self.allowedKeyModifiers = myIni.read('allowedKeyModifiers').split(',')
 		self.allowedKeyModifiersNumeric = myIni.read('allowedKeyModifiersNumeric').split(',')
 		self.allowedKeyModifiersMulti = myIni.read('allowedKeyModifiersMulti').split(',')
