@@ -367,7 +367,11 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
 					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
 					return 0	
-					
+				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
+					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
+					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'yesAndRightToLeft', 'no' or 'unknown' are valid. Please check your rules.")
+					return 0	
+								
 			except Exception, err:
 				print str(err)
 
