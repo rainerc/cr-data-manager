@@ -50,13 +50,20 @@ change - included GUI 0.1.1r18
 
 r155 (1.0.3)
 fixed - cancellation of backgroundworker did not work as expected (issue 74)
-fixed - Data Manger won't run in a combined after CV Scraper (issue 75)
+fixed - Data Manger won't run in a combined script after CV Scraper (issue 75)
 
 r156 (1.0.4)
 fixed - error when assigning a Null value to numerical fields (issue 76)
 fixed - error message has meaningless line number (issue 77)
 fixed - user cannot cancel parsing a *very* large ruleset collection (issue 78)
 
+r162 (1.0.5)
+change - added Manga, LanguageISO and all YesNo fields (issue 58)
+change - added BookPrice, CommunityRating, Rating (issue 65)
+
+r164 (1.0.5)
+change - added GUI r21
+fixed - GUI: click on row header throws error if cell edit not confirmed
 
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
@@ -99,7 +106,7 @@ from configuratorForm import configuratorForm
 bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
-DEBUG__ = True
+DEBUG__ = False
 
 #sys.path.append(globalvars.FOLDER)
 
@@ -173,15 +180,6 @@ def dataManagerConfig():
 # ============================================================================     
 
 def replaceData(books):
-	
-
-	clr.AddReference("ComicRack.Engine")
-	from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
-	for book in books:
-		print book.Manga
-		print book.BlackAndWhite
-		pass
-	return	
 
 	ERROR_LEVEL = 0
 
