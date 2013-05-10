@@ -65,6 +65,9 @@ r164 (1.0.5)
 change - added GUI r21
 fixed - GUI: click on row header throws error if cell edit not confirmed
 
+r165 (1.0.6)
+fixed - writing non-ascii characters to log output raises error (issue 80) 
+
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
 todo - cleanup configuratorForm (only needed now to display the log file)
@@ -180,6 +183,36 @@ def dataManagerConfig():
 # ============================================================================     
 
 def replaceData(books):
+	
+#	import System
+#	from System.Windows.Forms import MessageBox
+#	from time import localtime, strftime
+#	from globalvars import *
+#	from dmutils import *
+#	
+##	import sys
+###	reload(sys)
+##	sys.setdefaultencoding('utf-8')
+#	
+#	for book in books:
+#
+#		comp = comparer()
+#		dmString = dmString()
+#		if comp.startsWith(book.Series,"Sunstone", COMPARE_CASE_INSENSITIVE):
+##			f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.StartsWith:Sunstone>>)\n')
+#			myOldVal = book.Writer
+#			book.Writer = "Stjepan Šejic"
+#			myNewVal = unicode(book.Writer)
+#			if myNewVal <> myOldVal:
+##				f.write('\tbook.Writer - old value: ' + myOldVal.encode('utf-8') + '\n')
+##				f.write('\tbook.Writer - new value: ' + myNewVal.encode('utf-8') + '\n')
+#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
+#			else:
+#				pass
+#			
+#	return
+	
+	
 
 	ERROR_LEVEL = 0
 

@@ -185,7 +185,7 @@ class progressForm(Form):
 							if line.strip() <> '':
 								myCode += line
 						exec(myCode)
-#						print myCode
+						print myCode
 
 					except Exception, err:
 						print str(Exception.args)
@@ -524,7 +524,7 @@ def parseString(s):
 	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
 
-	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % a[0], 2, True)
+	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % unicode(a[0]), 2, True)
 	
 	# ----------------------------------------------------------------
 	# iterate through each of the newValues
@@ -646,9 +646,11 @@ def parseString(s):
 					writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 				else:
 					writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
-				myNewVal = myNewVal + ("\t\tbook.%s = \"%s\"" % (myKey, myVal)) 
 
-			writeCode("myNewVal = str(book.%s)" % myKey, 2, True)
+				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
+
+			# this raised an error (issue 80) when used without unicode():
+			writeCode("myNewVal = unicode(book.%s)" % myKey, 2, True)
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
 			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
