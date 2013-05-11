@@ -38,4 +38,4 @@ THECODE = []	# this will later on contain the parsed code
 
 
 COMPARE_CASE_INSENSITIVE = True
-VERSION = '1.0.5 r165'
+VERSION = '1.0.7 r166'
