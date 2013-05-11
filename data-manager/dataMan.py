@@ -72,6 +72,14 @@ todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
 todo - cleanup configuratorForm (only needed now to display the log file)
 
+r166 (1.0.7)
+
+change - GUI: Changed handling of LanguageISOs (fixes issue 81)
+added - GUI: Disable Confirmation of Default Profile Save (at the top of the Utilities Menu.)
+added - GUI: startup debug log to track further startup problems.
+change - GUI: updated handling of limited value items in Templates (YesNo, LanguageISOs, MangaYesNo).
+change - GUI: made menus more user friendly, you no longer have to focus on the drop down arrow to activate menu, clicking the dropdown menu will activate it)
+
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
 ideas:
