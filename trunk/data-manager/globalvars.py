@@ -3,6 +3,8 @@
 import System
 from System.IO import Path, FileInfo
 
+
+
 FOLDER = FileInfo(__file__).DirectoryName + "\\"
 DATFILE = Path.Combine(FOLDER, 'dataMan.dat')
 SAMPLEFILE = Path.Combine(FOLDER, 'dataManSample.dat')
@@ -38,4 +40,11 @@ THECODE = []	# this will later on contain the parsed code
 
 
 COMPARE_CASE_INSENSITIVE = True
+
+#import dmutils
+#from dmutils import iniFile
+#print dir(dmutils)
+
+
+#VERSION = ini.read('Version')
 VERSION = '1.0.7 r166'

@@ -69,7 +69,8 @@ r165 (1.0.6)
 fixed - writing non-ascii characters to log output raises error (issue 80) 
 
 r1.. (1.0.7)
-change - added custom fields
+change - added custom fields (issue 60)
+<< half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 << add here changes in GUI after 1.0.6 >>
 
 todo - check valid modifiers in validate()
@@ -140,6 +141,7 @@ def dmConfig():
 	'''
 	myIni = iniFile(globalvars.USERINI)
 	myGui = myIni.read('Gui')
+	version = myIni.read('Version')
 	
 	if myGui <> 'Old':
 		import System.Diagnostics
@@ -149,7 +151,7 @@ def dmConfig():
 	else:
 		form = configuratorForm()
 		form.setFile(globalvars.DATFILE)
-		form.Text = 'Data Manager Configurator %s' % globalvars.VERSION
+		form.Text = 'Data Manager Configurator %s' % version
 		form.ShowDialog(ComicRack.MainWindow)
 		form.Dispose()
 

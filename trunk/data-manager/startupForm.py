@@ -13,7 +13,9 @@ class startupForm(Form):
 	def __init__(self):
 		self.InitializeComponent()
 		self._pictureBox1.Image = System.Drawing.Image.FromFile(globalvars.IMAGE)
-		self.Text = 'Data Manager for ComicRack %s' % globalvars.VERSION
+		iniFile = dmutils.iniFile()
+		self.theVersion = iniFile.read('Version')
+		self.Text = 'Data Manager for ComicRack %s' % self.theVersion
 		self.Icon = Icon(globalvars.ICON_SMALL)
 	
 	def InitializeComponent(self):
