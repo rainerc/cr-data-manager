@@ -9,6 +9,46 @@ import clr
 import re
 import globalvars
 
+class customFields:
+	
+	def __init__(self):
+		self.theKey = ''
+		self.theModifier = ''
+		self.theVal = ''
+		
+	def parseRule(self,theRule):
+		try:
+			theRule = theRule.replace('<<','')
+			theRule = theRule.replace('>>','')
+			tmp = theRule.split(')',1)			# this will return 'Custom(MyHero','.Is:Batman'
+			self.theKey = tmp[0] + ')'				# this is 'Custom(Hero'
+			tmp2 = tmp[1].split(':')			# this is '.Is','Batman'
+			self.theModifier = tmp2[0][1:]		# this is 'Is'
+			if self.theModifier == '': self.theModifier = 'Is'			
+			self.theVal = tmp2[1]				# this is 'Batman'
+		except Exception, err:
+			print str(err)	
+
+	def parseAction(self,theRule):
+		try:
+			theRule = theRule.replace('<<','')
+			theRule = theRule.replace('>>','')
+			tmp = theRule.split(')',1)			# this will return 'Custom(MyHero','.Is:Batman'
+			self.theKey = tmp[0] + ')'				# this is 'Custom(Hero'
+			tmp2 = tmp[1].split(':')			# this is '.Is','Batman'
+			self.theModifier = tmp2[0][1:]		# this is 'Is'
+			if self.theModifier == '': self.theModifier = 'SetValue'			
+			self.theVal = tmp2[1]				# this is 'Batman'
+		except Exception, err:
+			print str(err)	
+
+	def customFieldName(self, myString):
+		# get the field name of Custom(myField)
+		myString = myString.replace('Custom(','')
+		myString = myString.replace(')','')
+		return myString
+
+			
 class iniFile:
 	def __init__(self,theFile = globalvars.INIFILE):
 		self.theFile = theFile
