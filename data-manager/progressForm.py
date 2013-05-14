@@ -286,13 +286,26 @@ def parseString(s):
 
 	for c in criteria:
 		#i = len(c)
+		myCustomField = dmutils.customFields()
 		if len(c) > 0:
 			c = String.Trim(String.replace(c,"<<",""))
 			myKey = ''  # only to reference it
-			if String.find(c,':') > 0:
-				tmp = c.split(":",1)
-				tmp2 = tmp[0].split(".",1)
+			
+			if c.lower().startswith('custom'):
+				try:
+
+					myCustomField.parseRule(c)
+					myKey = myCustomField.theKey
+					myModifier = myCustomField.theModifier
+					myVal = myCustomField.theVal
+					
+				except Exception, err:
+					print str(err)
+			elif String.find(c,':') > 0:
+				tmp = c.split(":",1)			# split key+modifier and value part
+				tmp2 = tmp[0].split(".",1)		# split key and modifier
 				myKey = tmp2[0]
+				myVal = tmp[1]
 				try:
 					myModifier = tmp2[1]
 				except Exception, err:
@@ -301,7 +314,7 @@ def parseString(s):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
-			if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.startswith('CustomValue'):
+			if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.lower().startswith('custom'):
 				File.AppendAllText(globalvars.ERRFILE,"Error 303: Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
@@ -355,9 +368,10 @@ def parseString(s):
 				MessageBox.Show("error at parseString: %s" % str(err))
 				return
 
-			myVal = tmp[1]
+			#myVal = tmp[1]
 			
 			try:
+				
 				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
 					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
 					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
@@ -375,7 +389,11 @@ def parseString(s):
 			except Exception, err:
 				print str(err)
 
-			if myOperator == "in range":		# must only be used with numerical keys
+
+			if myKey.lower().startswith('custom'):
+				myKeyName = myCustomField.customFieldName(myKey)
+				myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s \'%s\'.lower()' % (myKeyName,myOperator,myVal)
+			elif myOperator == "in range":		# must only be used with numerical keys
 				
 				tmp = myVal.split(",")
 				#val1 = stringToFloat(tmp[0])    # float
@@ -534,7 +552,12 @@ def parseString(s):
 		if len(n) > 0:
 			n = n.replace('<<','').lstrip()
 			str.lower(n).replace('.setvalue','')		# SetValue is default
-			if String.find(n,':') > 0:
+			if n.lower().startswith('custom'):
+				myCustomField.parseAction(n)
+				myKey = myCustomField.theKey
+				myModifier = myCustomField.theModifier
+				myVal = myCustomField.theVal
+			elif String.find(n,':') > 0:
 				# get key part (substring before ':')
 				tmp = n.split(":",1)
 				myKey = tmp[0]
@@ -543,16 +566,21 @@ def parseString(s):
 					tmp3 = myKey.split('.')
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
+					myVal = tmp[1]
 			else:
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
-			if not (myKey in allowedVals):
+			if not (myKey in allowedVals) and not myKey.lower().startswith('custom'):
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			# to do: handling if function is appended to field
 				
-			myVal = tmp[1]
-			writeCode("myOldVal = unicode(book.%s)" % myKey, 2, True)	# to catch non-ASCII characters
+			#myVal = tmp[1]
+			if myKey.lower().startswith('custom'):
+				myCustomKey = myCustomField.customFieldName(myKey)
+				writeCode('myOldVal = unicode(book.GetCustomValue(\'%s\'))' % myCustomKey, 2, True)
+			else:
+				writeCode("myOldVal = unicode(book.%s)" % myKey, 2, True)	# to catch non-ASCII characters
 
 			# ComicRack stores NullValues for numerical fields as -1
 			try:
@@ -569,7 +597,16 @@ def parseString(s):
 			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
 				
-			if myModifier <> "":
+			if myKey.lower().startswith('custom'):
+				myKeyName = myCustomField.customFieldName(myKey)
+				# this shall be undocumented but is good (replaces calc):
+				if myVal.startswith('{') and myVal.endswith('}'):
+					myVal = myVal.replace('{','book.')
+					myVal = myVal.replace('}','')
+				else:
+					myVal = '\'%s\'' % myVal
+				writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
+			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					if myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
@@ -650,7 +687,11 @@ def parseString(s):
 				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			# this raised an error (issue 80) when used without unicode():
-			writeCode("myNewVal = unicode(book.%s)" % myKey, 2, True)
+			if myKey.lower().startswith('custom'):
+				myCustomKey = myCustomField.customFieldName(myKey)
+				writeCode('myNewVal = unicode(book.GetCustomValue(\'%s\'))' % myCustomKey, 2, True)
+			else:
+				writeCode("myNewVal = unicode(book.%s)" % myKey, 2, True)
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
 			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
