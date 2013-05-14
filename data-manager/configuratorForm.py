@@ -14,6 +14,7 @@ import dmutils
 from dmutils import readFile
 from dmutils import ruleFile
 from dmutils import parser
+from dmutils import iniFile
 
 import aboutForm
 from aboutForm import aboutForm
@@ -31,6 +32,9 @@ class configuratorForm(Form):
 		self.textBoxMinHeight = 260
 		self.textBoxWidth = 760
 		self.textBoxMinWidth = 717
+
+		iniFile = dmutils.iniFile()
+		self.theVersion = iniFile.read('Version')
 
 		self.dictTextClips = {
 			'commentary line': '# ', 
@@ -739,8 +743,10 @@ to visual editor""")
 			self._textBox1.Focus()
 			self._textBox1.ScrollToCaret()
 		except Exception, err:
+			#MessageBox.Show('End of rule set reached: \"%s\" was not found.' % self._textBoxSearch.Text,
+			#	'Data Manager for ComicRack %s' % globalvars.VERSION)
 			MessageBox.Show('End of rule set reached: \"%s\" was not found.' % self._textBoxSearch.Text,
-				'Data Manager for ComicRack %s' % globalvars.VERSION)
+				'Data Manager for ComicRack %s' % self.theVersion)
 		self.setLineInfo()
 
 	def showTheFile(self):
@@ -796,7 +802,8 @@ to visual editor""")
 		self.findString()
 
 	def ConfiguratorFormLoad(self, sender, e):
-		self.Text = 'Data Manager for ComicRack - Version %s' % (globalvars.VERSION)
+		#self.Text = 'Data Manager for ComicRack - Version %s' % (globalvars.VERSION)
+		self.Text = 'Data Manager for ComicRack - Version %s' % (self.theVersion)
 		self.showTheFile
 		self._textBox1.SelectionStart = 1
 		self._textBox1.SelectionLength = 0
@@ -874,7 +881,7 @@ to visual editor""")
 		if self.isDirty and self.theFile == globalvars.DATFILE:
 			result = (MessageBox.Show(
                'Would you like to save your changes before closing?'
-               , 'CR Data Manager - %s' % globalvars.VERSION
+               , 'CR Data Manager - %s' % self.theVersion
                , MessageBoxButtons.YesNoCancel
                , MessageBoxIcon.Question))
 			if result == DialogResult.Yes:
@@ -1042,12 +1049,12 @@ to visual editor""")
 		if myVal.StartsWith('#@ GROUP'):
 			groupName = str.lower(str.Replace(myVal,'#@ GROUP',''))
 			if str.Trim(groupName) == '':
-				MessageBox.Show('Please add a name for the group','Data Manager for ComicRack %s' % globalvars.VERSION)
+				MessageBox.Show('Please add a name for the group','Data Manager for ComicRack %s' % self.theVersion)
 				return
 			else:
 				s = self._textBox1.Text.splitlines()
 				for line in [line for line in s if str.lower(line) == str.lower(myVal)]:
-					MessageBox.Show('Group name is already used','Data Manager for ComicRack %s' % globalvars.VERSION)
+					MessageBox.Show('Group name is already used','Data Manager for ComicRack %s' % self.theVersion)
 					return				 
 			
 			
@@ -1098,7 +1105,7 @@ to visual editor""")
 			try:
 				File.Copy(globalvars.DATFILE,saveAsDialog.FileName)
 			except Exception, err:
-				MessageBox.Show('Could not save file.\n%s' % str(err), 'Data Manager for ComicRack %s' % globalvars.VERSION)
+				MessageBox.Show('Could not save file.\n%s' % str(err), 'Data Manager for ComicRack %s' % self.theVersion)
 		return
 
 	def RestorelStripMenuItem1Click(self, sender, e):
@@ -1112,7 +1119,7 @@ to visual editor""")
 				File.Copy(openFileDialog.FileName, globalvars.DATFILE, True)
 				self.showTheFile()
 			except Exception, err:
-				MessageBox.Show('Could not restore file.\n%s' % str(err), 'Data Manager for ComicRack %s' % globalvars.VERSION)
+				MessageBox.Show('Could not restore file.\n%s' % str(err), 'Data Manager for ComicRack %s' % self.theVersion)
 			
 		pass
 
@@ -1139,7 +1146,7 @@ to visual editor""")
 		if self._textBoxCompleteCriteria.Text + self._textBoxCompleteValues.Text == '':
 			self.copyLineToGui()
 		else:
-			if MessageBox.Show('Do you want to replace the current content in the visual editor?','Data Manager for ComicRack %s' % globalvars.VERSION,MessageBoxButtons.YesNo) <> System.Windows.Forms.DialogResult.No:
+			if MessageBox.Show('Do you want to replace the current content in the visual editor?','Data Manager for ComicRack %s' % self.theVersion,MessageBoxButtons.YesNo) <> System.Windows.Forms.DialogResult.No:
 				self.copyLineToGui()
 		return
 	
@@ -1157,7 +1164,7 @@ to visual editor""")
 		self.selectLine(self.currentLine())
 		if askConfirm == True:
 			if MessageBox.Show('Are you sure you want to delete this line?\nYou cannot undo this.', 
-				'Data Manger for ComicRack %s' % globalvars.VERSION, 
+				'Data Manger for ComicRack %s' % self.theVersion, 
 				MessageBoxButtons.YesNo) == DialogResult.No:
 				return
 		line = int(line)
