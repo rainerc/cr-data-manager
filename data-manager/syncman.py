@@ -13,6 +13,26 @@
 #@PCount 1
 #@Enabled True
 
+# playing around with datetime
+
+
+import datetime
+from datetime import date
+
+def testDateTime():
+
+	dt = datetime.date(2013,1,12)
+	myCurrentDate = date.today()
+	
+	print dt > myCurrentDate
+	
+class myDateTime(object):
+	
+	def stringToDate(self, s):
+		tmp = s.split('/')
+		return datetime(tmp[0],tmp[1],tmp[2]
+	
+	
 
 
 #@Name     [Code Sample] All Books starting with
