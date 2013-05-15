@@ -245,6 +245,7 @@ def parseString(s):
 	allowedKeys = rules.allowedKeys
 	allowedVals = rules.allowedVals
 	numericalKeys = rules.numericalKeys
+	dateTimeKeys = rules.dateTimeKeys
 	pseudoNumericalKeys = rules.pseudoNumericalKeys
 	multiValueKeys = rules.multiValueKeys
 	yesNoKeys = rules.yesNoKeys
@@ -293,12 +294,10 @@ def parseString(s):
 			
 			if c.lower().startswith('custom'):
 				try:
-
 					myCustomField.parseRule(c)
 					myKey = myCustomField.theKey
 					myModifier = myCustomField.theModifier
 					myVal = myCustomField.theVal
-					
 				except Exception, err:
 					print str(err)
 			elif String.find(c,':') > 0:
@@ -314,7 +313,8 @@ def parseString(s):
 				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
-			if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.lower().startswith('custom'):
+			# if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.lower().startswith('custom'):
+			if c <> "" and not myKey in allowedKeys and not myKey.lower().startswith('custom'):
 				File.AppendAllText(globalvars.ERRFILE,"Error 303: Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 
@@ -399,17 +399,24 @@ def parseString(s):
 				#val1 = stringToFloat(tmp[0])    # float
 				#val1 = nullToZero(val1)         # float or None
 				
-				val1 = float((nullToZero(stringToFloat(tmp[0]))))
-				val2 = float(nullToZero(stringToFloat(tmp[1])))
+				if myKey in numericalKeys or myKey in pseudoNumericalKeys:
+					val1 = float((nullToZero(stringToFloat(tmp[0]))))
+					val2 = float(nullToZero(stringToFloat(tmp[1])))
+					if val1 > val2:
+						File.AppendAllText(globalvars.ERRFILE,  "Syntax not valid\nline: %s)\n" % (s))
+						File.AppendAllText(globalvars.ERRFILE, "first value in range expression must be smaller than second value")
+						return 0
+				elif myKey in dateTimeKeys:
+					val1 = tmp[0]
+					val2 = tmp[1] + ' 23:59:59'
 
-				if val1 > val2:
-					File.AppendAllText(globalvars.ERRFILE,  "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "first value in range expression must be smaller than second value")
-					return 0
 				
-				myVal = "%d, %d" % (val1, val2 + 1)
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
+					myVal = "%d, %d" % (val1, val2 + 1)
 					myCrit = myCrit + ("int(stringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
+				elif myKey in dateTimeKeys:
+					myCrit += 'book.%s >= System.DateTime.Parse(\'%s\') and book.%s <= System.DateTime.Parse(\'%s\') and ' % (myKey,val1,myKey,val2)
+					print myCrit
 				else:
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "Range modifier cannot be used in %s field" % (myKey))
@@ -509,6 +516,12 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
 					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf and NotStartsWithAnyOf modifiers cannot be used in %s field" % (myKey))
 					return 0
+			elif myKey in dateTimeKeys:
+				if myVal.strip() == '':
+					myCrit += 'book.%s %s System.DateTime.MinValue and ' % (myKey, myOperator)
+				else:
+					myCrit += 'book.%s %s System.DateTime.Parse(\'%s\') and ' % (myKey, myOperator, myVal)
+					print myCrit
 			elif myOperator == '==' and myKey not in numericalKeys:
 				if myKey in yesNoKeys:
 					myCrit += "comp.yesNo(book.%s,\"%s\") and " % (myKey, myVal)
@@ -608,7 +621,9 @@ def parseString(s):
 				writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
-					if myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
+					if myKey in dateTimeKeys:
+						pass	# todo
+					elif myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
 					else:
 						myVal = String.replace(myVal,'{','int(stringToFloat(book.')
@@ -670,9 +685,14 @@ def parseString(s):
 						return 0
 					writeCode('book.%s = stringRemoveLeading(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
 
-			else:
+			else:	# myModifier == 'SetValue'
 
-				if myKey in numericalKeys:
+				if myKey in dateTimeKeys:
+					if myVal.strip() == '':
+						writeCode('book.%s = System.DateTime.MinValue\n' % myKey, 2, True)
+					else:
+						writeCode('book.%s = System.DateTime.Parse(\'%s\')\n' % (myKey,myVal), 2, True)
+				elif myKey in numericalKeys:
 					if len(str(myVal)) == 0:
 						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
 					else:

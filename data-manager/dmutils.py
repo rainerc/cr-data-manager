@@ -48,7 +48,8 @@ class customFields:
 		myString = myString.replace(')','')
 		return myString
 
-			
+
+				
 class iniFile:
 	def __init__(self,theFile = globalvars.INIFILE):
 		self.theFile = theFile
@@ -449,6 +450,7 @@ class ruleFile(object):
 		self.multiValueKeys = myIni.read('multiValueKeys').split(',')
 		self.yesNoKeys = myIni.read('yesNoKeys').split(',')
 		self.mangaYesNoKeys = myIni.read('mangaYesNoKeys').split(',')
+		self.dateTimeKeys = myIni.read('dateTimeKeys').split(',')
 		self.allowedKeyModifiers = myIni.read('allowedKeyModifiers').split(',')
 		self.allowedKeyModifiersNumeric = myIni.read('allowedKeyModifiersNumeric').split(',')
 		self.allowedKeyModifiersMulti = myIni.read('allowedKeyModifiersMulti').split(',')
