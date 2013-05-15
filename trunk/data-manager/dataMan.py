@@ -68,10 +68,24 @@ fixed - GUI: click on row header throws error if cell edit not confirmed
 r165 (1.0.6)
 fixed - writing non-ascii characters to log output raises error (issue 80) 
 
-r1.. (1.0.7)
+r166 (1.0.7)
+change - GUI: single Instance of gui only.
+change - GUI: Changed handling of LanguageISOs (fixes issue 81)
+added - GUI: Disable Confirmation of Default Profile Save (at the top of the Utilities Menu.)
+added - GUI: startup debug log to track further startup problems.
+change - GUI: updated handling of limited value items in Templates (YesNo, LanguageISOs, MangaYesNo).
+change - GUI: made menus more user friendly, you no longer have to focus on the drop down arrow to activate menu, clicking the dropdown menu will activate it)
+change - added GUI r25
+
+r171 (1.1.0)
+fixed - GUI: Custom value in rule was taking value from action instead of rule textbox
+fixed - GUI: custom keys and modifiers now read from ini file.
+fixed - GUI: Custom value adaptation for templates.
 change - added custom fields (issue 60)
+change - added dateTime fields - todo: CALC modifier for action part of dateTime?
+change - added GUI r31
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
-<< add here changes in GUI after 1.0.6 >>
 
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
@@ -169,6 +183,15 @@ def crVersion():
 		return False
 	return True
 
+class dates:
+	
+	def __init__(self):
+		pass
+	
+	def stringToDate(self,theString):
+		theDate = Sytem.DateTime.Parse(theString)
+		return theDate
+	
 
 # ============================================================================      
 # hook to run the configScript
@@ -218,7 +241,27 @@ def replaceData(books):
 #			
 #	return
 	
-	
+
+#	dateTime = System.DateTime(1979, 07, 28, 22, 35, 5, 15)
+#	dateTime = System.DateTime(2013,1,1)
+#	
+#	dateTime = System.DateTime.Parse('2013-05-01')
+#	print dateTime
+#
+#	for book in books:
+#		print book.AddedTime > System.DateTime.Parse('2013/01/01')
+#		print book.Published  
+#		book.AddedTime = System.DateTime.Parse('2011/12/12 23:59:59')
+#		print book.AddedTime
+##		print book.AddedTime.Date > datum
+##		print dir(book.AddedTime)
+#		
+#	return
+#
+#	for book in books:
+#		# book.AddedTime = None
+#		book.AddedTime = System.DateTime.MinValue
+#	return
 
 	ERROR_LEVEL = 0
 
