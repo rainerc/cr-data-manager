@@ -381,7 +381,7 @@ def parseString(s):
 					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
 					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
 					return 0	
-				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
+				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,,yesandrighttoleft' :
 					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
 					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'yesAndRightToLeft', 'no' or 'unknown' are valid. Please check your rules.")
 					return 0	
@@ -392,7 +392,10 @@ def parseString(s):
 
 			if myKey.lower().startswith('custom'):
 				myKeyName = myCustomField.customFieldName(myKey)
-				myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s \'%s\'.lower()' % (myKeyName,myOperator,myVal)
+				if myVal.strip() == '': 
+					myCrit += 'book.GetCustomValue(\'%s\') %s None' % (myKeyName,myOperator)
+				else:
+					myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s \'%s\'.lower()' % (myKeyName,myOperator,myVal)
 			elif myOperator == "in range":		# must only be used with numerical keys
 				
 				tmp = myVal.split(",")
@@ -562,15 +565,20 @@ def parseString(s):
 	# ----------------------------------------------------------------
 
 	for n in [n for n in newValues if n.strip() <> '']:
+
 		if len(n) > 0:
 			n = n.replace('<<','').lstrip()
 			str.lower(n).replace('.setvalue','')		# SetValue is default
-			if n.lower().startswith('custom'):
+			
+			# -------------------------------------------------
+			# split key and value part of action
+			# -------------------------------------------------
+			if n.lower().startswith('custom'):		# custom field?
 				myCustomField.parseAction(n)
 				myKey = myCustomField.theKey
 				myModifier = myCustomField.theModifier
 				myVal = myCustomField.theVal
-			elif String.find(n,':') > 0:
+			elif String.find(n,':') > 0:			# any other field?
 				# get key part (substring before ':')
 				tmp = n.split(":",1)
 				myKey = tmp[0]
@@ -580,15 +588,19 @@ def parseString(s):
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
 					myVal = tmp[1]
-			else:
+			else:									# no colon (:) in action part? raise syntax error
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
+			
+			# is key in allowedVals? if not, raise syntax error
 			if not (myKey in allowedVals) and not myKey.lower().startswith('custom'):
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
 				return 0
 			# to do: handling if function is appended to field
 				
-			#myVal = tmp[1]
+			# ------------------------------------------------------------
+			# store the old value for later use in log file
+			# ------------------------------------------------------------
 			if myKey.lower().startswith('custom'):
 				myCustomKey = myCustomField.customFieldName(myKey)
 				writeCode('myOldVal = unicode(book.GetCustomValue(\'%s\'))' % myCustomKey, 2, True)
@@ -598,7 +610,6 @@ def parseString(s):
 			# ComicRack stores NullValues for numerical fields as -1
 			try:
 				if myKey in numericalKeys and str(myVal).strip() == '': myVal = -1
-
 			except Exception, err:
 				pass
 			
@@ -609,7 +620,8 @@ def parseString(s):
 
 			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
-				
+
+
 			if myKey.lower().startswith('custom'):
 				myKeyName = myCustomField.customFieldName(myKey)
 				# this shall be undocumented but is good (replaces calc):
@@ -621,8 +633,9 @@ def parseString(s):
 				writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
+					
 					if myKey in dateTimeKeys:
-						pass	# todo
+						myVal = String.replace(myVal,'{','((book.')
 					elif myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
 					else:
@@ -690,7 +703,13 @@ def parseString(s):
 				if myKey in dateTimeKeys:
 					if myVal.strip() == '':
 						writeCode('book.%s = System.DateTime.MinValue\n' % myKey, 2, True)
-					else:
+						
+					# this may be used as kind of calc in dateTime fields:
+					elif myVal.startswith('{') and myVal.endswith('}'):
+						myVal = myVal.replace('{','book.')
+						myVal = myVal.replace('}','')
+						writeCode('book.%s = %s\n' % (myKey,myVal), 2, True)
+					else:	
 						writeCode('book.%s = System.DateTime.Parse(\'%s\')\n' % (myKey,myVal), 2, True)
 				elif myKey in numericalKeys:
 					if len(str(myVal)) == 0:

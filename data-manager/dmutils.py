@@ -307,17 +307,24 @@ def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
 	if leadsWith == True:
 		return myKey[len(myVal):].lstrip()
 	
-		
-def multiValueAdd(myList, myVal):
-	myVal = str.Trim(str(myVal))
-	newList = []
-	theList = myList.strip(',').split(',')
-	for l in theList: 
-		l = str.Trim(l)							
-		if l <> '': newList.Add(l)								# eliminate Null values
-	if newList.count(myVal) > 0: return ','.join(newList)		# item already in list?
-	newList.append(myVal)										# otherwise append newVal
-	return ','.join(newList)
+
+def multiValueAdd(myField,myVals):
+	'''
+	add value or multiple values to a multi value field
+	myField: content of field (like book.Tags)
+	myVals: comma seperated list of values that shall be added
+	returns: myField
+	'''
+	theVals = myVals.split(',')				# create list from myVals
+	theList = myField.lower()				# create temp string from myField with all lower chars
+	theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
+	theList = theList.replace(', ',',')
+	myList = theList.split(',')				# create list from temp string
+	for v in theVals:						# run through every value in theVals
+		v = v.lower().strip()
+		if v not in myList and v <> '':		# if value not in temp list
+			myField += ',%s' % v			# ... then add value to myField
+	return myField
 
 def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
 	oldVal = String.Trim(str(oldVal))
@@ -334,18 +341,29 @@ def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
 			newList.Add(l)
 	return ','.join(newList)
 
-def multiValueRemove(myList, myVal,caseinsensitive = True):
-	myVal = String.Trim(str(myVal))
-	theList = myList.strip(',').split(',')
-	newList = []
-	for l in theList:
-		l = String.Trim(l)
-		if caseinsensitive:
-			if l.lower() <> myVal.lower(): newList.Add(l)
-		else:
-			if l <> myVal: newList.Add(l)
-	return ','.join(newList)
-
+def multiValueRemove(myField, myVals, caseinsensitive = True):
+	'''
+	remove value or multiple values from a multi value field
+	myField: content of field (like book.Tags)
+	myVals: comma seperated list of values that shall be removed
+	returns: cleaned myField
+	'''	
+	theVals = myVals.split(',')				# create list from myVals
+	myList = myField.split(',')				# create list from temp string
+	print 'myList: %s' % myList
+	tmpField = []
+	for l in myList:
+		for v in theVals:
+			if v.lower().strip() == l.lower().strip():
+				l = ''
+				break
+		tmpField.Add(l)
+	cleanedList = ','.join(tmpField)
+	while ',,' in cleanedList:				# check for double commas
+		cleanedList = cleanedList.replace(',,',',')
+	cleanedList = cleanedList.strip(',').strip()	# check for leading or trailing blanks and commas
+	return cleanedList
+	
 class dmString(object):
 	def __init__(self):
 		clr.AddReference("ComicRack.Engine")
