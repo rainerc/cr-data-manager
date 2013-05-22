@@ -85,6 +85,14 @@ change - added custom fields (issue 60)
 change - added dateTime fields - todo: CALC modifier for action part of dateTime?
 change - added GUI r31
 
+r172 (1.1.1)
+fixed: <<Custom(xxx):>> does not return any books with empty Custom(xxx), had to be set to 'None'
+fixed: yesandrighttoleft value left out for manga (issue 84)
+fixed: multiValueAdd and multiValueRemove accept multiple values (issue 67)
+change - Calc modifier supports DateTime fields
+change - GUI: DateTime fields support
+change - GUI: entries with calc modifier are validated within GUI
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
