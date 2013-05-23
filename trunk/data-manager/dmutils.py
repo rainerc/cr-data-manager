@@ -300,15 +300,17 @@ def stringRemove(myKey,myVal, caseinsensitive = True):
 def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
 	#	myKey = myKey.strip()		# we must not strip here!
 	leadsWith = False
-	if caseinsensitive == True and myKey.lower().startswith(myVal().lower):
+	if caseinsensitive == True and myKey.lower().startswith(myVal.lower()):
 		leadsWith = True
 	elif myKey.startswith(myVal):
 		leadsWith = True
 	if leadsWith == True:
 		return myKey[len(myVal):].lstrip()
+	else:
+		return myKey
 	
 
-def multiValueAdd(myField,myVals):
+def multiValueAdd(myField,myVals,book):
 	'''
 	add value or multiple values to a multi value field
 	myField: content of field (like book.Tags)
@@ -321,9 +323,12 @@ def multiValueAdd(myField,myVals):
 	theList = theList.replace(', ',',')
 	myList = theList.split(',')				# create list from temp string
 	for v in theVals:						# run through every value in theVals
-		v = v.lower().strip()
-		if v not in myList and v <> '':		# if value not in temp list
-			myField += ',%s' % v			# ... then add value to myField
+		if v.lower().strip() not in myList and v <> '':		# if value not in temp list
+			if v.startswith('book.'):
+				myField += ',%s' % eval(v) 
+			else:
+				myField += ',%s' % v			# ... then add value to myField
+	myField = myField.strip(',')
 	return myField
 
 def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
@@ -341,7 +346,7 @@ def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
 			newList.Add(l)
 	return ','.join(newList)
 
-def multiValueRemove(myField, myVals, caseinsensitive = True):
+def multiValueRemove(myField, myVals, book, caseinsensitive = True):
 	'''
 	remove value or multiple values from a multi value field
 	myField: content of field (like book.Tags)
@@ -354,6 +359,7 @@ def multiValueRemove(myField, myVals, caseinsensitive = True):
 	tmpField = []
 	for l in myList:
 		for v in theVals:
+			if v.startswith('book.'): v = eval(v)
 			if v.lower().strip() == l.lower().strip():
 				l = ''
 				break
@@ -442,7 +448,14 @@ class parser(object):
 			self.err = True
 			self.error = 'rules must start with <<'
 			return
-		
+	
+	def getField(self,myField):
+		'''
+		converts {Series} to book.Series
+		'''
+		myField = myField.replace('{','book.')
+		myField = myField.replace('}','')
+		return myField
 	
 	pass
 

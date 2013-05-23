@@ -303,8 +303,9 @@ def parseString(s):
 			elif String.find(c,':') > 0:
 				tmp = c.split(":",1)			# split key+modifier and value part
 				tmp2 = tmp[0].split(".",1)		# split key and modifier
-				myKey = tmp2[0]
-				myVal = tmp[1]
+				myKey = tmp2[0]					# this is the key
+				myVal = tmp[1]					# this is the value
+				
 				try:
 					myModifier = tmp2[1]
 				except Exception, err:
@@ -368,8 +369,9 @@ def parseString(s):
 				MessageBox.Show("error at parseString: %s" % str(err))
 				return
 
-			#myVal = tmp[1]
-			
+			# --------------------------------------------------
+			# some basic error handling
+			# --------------------------------------------------
 			try:
 				
 				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
@@ -390,11 +392,18 @@ def parseString(s):
 				print str(err)
 
 
+			# --------------------------------------------------
+			# special handling for custom fields
+			# --------------------------------------------------
+			
 			if myKey.lower().startswith('custom'):
 				myKeyName = myCustomField.customFieldName(myKey)
 				if myVal.strip() == '': 
 					myCrit += 'book.GetCustomValue(\'%s\') %s None' % (myKeyName,myOperator)
 				else:
+#					if myVal.startswith('book.')	# check if field variable is used
+#						myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s unicode(%s).lower()' % (myKeyName,myOperator,myVal)
+#					else:
 					myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s \'%s\'.lower()' % (myKeyName,myOperator,myVal)
 			elif myOperator == "in range":		# must only be used with numerical keys
 				
@@ -588,9 +597,12 @@ def parseString(s):
 					myKey = tmp3[0]
 					myModifier = tmp3[1]
 					myVal = tmp[1]
+					
 			else:									# no colon (:) in action part? raise syntax error
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
+			
+			# check if field variables are used in myVal
 			
 			# is key in allowedVals? if not, raise syntax error
 			if not (myKey in allowedVals) and not myKey.lower().startswith('custom'):
@@ -613,10 +625,11 @@ def parseString(s):
 			except Exception, err:
 				pass
 			
-			if myKey in numericalKeys and stringToFloat(myVal) == None:
-				File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
-				File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
-				return 0				
+			if not unicode(myVal).startswith('{'):
+				if myKey in numericalKeys and stringToFloat(myVal) == None and myModifier.lower() <> 'calc':
+					File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
+					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
+					return 0				
 
 			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
@@ -624,18 +637,23 @@ def parseString(s):
 
 			if myKey.lower().startswith('custom'):
 				myKeyName = myCustomField.customFieldName(myKey)
-				# this shall be undocumented but is good (replaces calc):
-				if myVal.startswith('{') and myVal.endswith('}'):
-					myVal = myVal.replace('{','book.')
-					myVal = myVal.replace('}','')
-				else:
+				myVal = myParser.getField(myVal)
+				if not myVal.startswith('book.'):
 					myVal = '\'%s\'' % myVal
-				writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
+				# old:
+				# writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
+				# new:
+				writeCode('book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal), 2, True)
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					
 					if myKey in dateTimeKeys:
-						myVal = String.replace(myVal,'{','((book.')
+						# the GUI will not allow this
+						# myVal = String.replace(myVal,'{','((book.')
+						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
+						File.AppendAllText(globalvars.ERRFILE, "Calc modifier cannot be used in %s field" % (myKey))
+						return 0
+					
 					elif myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
 					else:
@@ -645,6 +663,10 @@ def parseString(s):
 						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
+						
+				# risky because this might affect multiValue items
+				# this has to be handled by multiValueAdd and multiValueRemove:
+				myVal = myParser.getField(myVal)
 				if str.lower(myModifier) == "add":
 					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
@@ -656,9 +678,13 @@ def parseString(s):
 							File.AppendAllText(globalvars.ERRFILE, "Add modifier needs 1 argument")
 							return 0
 						else:
-							writeCode('book.%s = multiValueAdd(book.%s,"%s")' % (myKey, myKey, myVal), 2, True)
+							writeCode('book.%s = multiValueAdd(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 					else: 				# myKey in allowedKeys
-						writeCode('book.%s = stringAdd(book.%s,"%s")' %  (myKey, myKey, myVal), 2, True)
+						if not myVal.startswith('book.'):
+							myVal = '"%s"' % myVal
+						else:
+							myVal = 'unicode(%s)' % myVal
+						writeCode('book.%s = stringAdd(book.%s,%s)' %  (myKey, myKey, myVal), 2, True)
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
 					if len(tmpVal) <= 1:
@@ -672,7 +698,15 @@ def parseString(s):
 					elif myKey in multiValueKeys:
 						writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 					else:
-						writeCode('book.%s = stringReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+						if not tmpVal[0].startswith('book.'):
+							tmpVal[0] = '"%s"' % tmpVal[0]
+						else:
+							tmpVal[0] = 'unicode(%s)' % tmpVal[0]
+						if not tmpVal[1].startswith('book.'):
+							tmpVal[1] = '"%s"' % tmpVal[1]
+						else:
+							tmpVal[1] = 'unicode(%s)' % tmpVal[1]
+						writeCode('book.%s = stringReplace(book.%s,%s,%s)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 							
 				if str.lower(myModifier) == "remove":
 					if len(String.Trim(myVal)) == 0:
@@ -684,9 +718,13 @@ def parseString(s):
 						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
 					if myKey in multiValueKeys:
-						writeCode('book.%s = multiValueRemove(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+						writeCode('book.%s = multiValueRemove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 2, True)
 					else:
-						writeCode('book.%s = stringRemove(book.%s,"%s\", COMPARE_CASE_INSENSITIVE)' % (myKey, myKey, myVal), 2, True)
+						if not myVal.startswith('book.'):
+							myVal = '"%s"' % myVal
+						else:
+							myVal = 'unicode(%s)' % myVal
+						writeCode('book.%s = stringRemove(book.%s,%s, COMPARE_CASE_INSENSITIVE)' % (myKey, myKey, myVal), 2, True)
 				if myModifier.lower() == 'removeleading':
 					if len(String.Trim(myVal)) == 0:
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
@@ -696,18 +734,18 @@ def parseString(s):
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
-					writeCode('book.%s = stringRemoveLeading(book.%s,"%s\")' % (myKey, myKey, myVal), 2, True)
+					if not myVal.startswith('book.'):
+						myVal = '"%s"' % myVal
+					else:
+						myVal = 'unicode(%s)' % myVal					
+					writeCode('book.%s = stringRemoveLeading(book.%s,%s)' % (myKey, myKey, myVal), 2, True)
 
 			else:	# myModifier == 'SetValue'
-
+				myVal = myParser.getField(myVal)
 				if myKey in dateTimeKeys:
 					if myVal.strip() == '':
 						writeCode('book.%s = System.DateTime.MinValue\n' % myKey, 2, True)
-						
-					# this may be used as kind of calc in dateTime fields:
-					elif myVal.startswith('{') and myVal.endswith('}'):
-						myVal = myVal.replace('{','book.')
-						myVal = myVal.replace('}','')
+					elif myVal.startswith('book.'):
 						writeCode('book.%s = %s\n' % (myKey,myVal), 2, True)
 					else:	
 						writeCode('book.%s = System.DateTime.Parse(\'%s\')\n' % (myKey,myVal), 2, True)
@@ -717,11 +755,20 @@ def parseString(s):
 					else:
 						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
 				elif myKey in yesNoKeys:
-					writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+					if myVal.startswith('book.'):
+						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
+					else:
+						writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 				elif myKey in mangaYesNoKeys:
-					writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+					if myVal.startswith('book.'):
+						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
+					else:
+						writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 				else:
-					writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
+					if myVal.startswith('book.'):
+						writeCode('book.%s = %s' % (myKey, myVal), 2, True)
+					else:
+						writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
 
 				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 

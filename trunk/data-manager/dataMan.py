@@ -85,19 +85,22 @@ change - added custom fields (issue 60)
 change - added dateTime fields - todo: CALC modifier for action part of dateTime?
 change - added GUI r31
 
-r172 (1.1.1)
+r174 (1.1.0)
 fixed: <<Custom(xxx):>> does not return any books with empty Custom(xxx), had to be set to 'None'
 fixed: yesandrighttoleft value left out for manga (issue 84)
 fixed: multiValueAdd and multiValueRemove accept multiple values (issue 67)
 change - Calc modifier supports DateTime fields
 change - GUI: DateTime fields support
 change - GUI: entries with calc modifier are validated within GUI
+fixed - {Field} is now allowed in all actions (issue 82)
+fixed - removeLeading returns None if leading string is not found
+change - includes GUI r40
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
 todo - read version info from dataman.ini
-todo - cleanup configuratorForm (only needed now to display the log file)
+todo - cleanup configuratorForm (only needed from now on to display the log file)
 
 >> revision history for older releases is at http://code.google.com/p/cr-replace-data/wiki/RevisionLog
 
