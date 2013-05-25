@@ -665,8 +665,6 @@ def parseString(s):
 					else:
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
 						
-				# risky because this might affect multiValue items
-				# this has to be handled by multiValueAdd and multiValueRemove:
 #				myVal = myParser.getField(myVal)
 				if str.lower(myModifier) == "add":
 					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
@@ -681,12 +679,6 @@ def parseString(s):
 						else:
 							writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 					else: 				# myKey in allowedKeys
-					
-						#todo: parse with parser.castType:
-#						if not myVal.startswith('book.'):
-#							myVal = '"%s"' % myVal
-#						else:
-#							myVal = 'unicode(%s)' % myVal
 						writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 2, True)
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
@@ -699,17 +691,9 @@ def parseString(s):
 						File.AppendAllText(globalvars.ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
 						return 0
 					elif myKey in multiValueKeys:
-						writeCode ('book.%s = multiValueReplace(book.%s,"%s","%s")' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+						writeCode ('book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 					else:
-						if not tmpVal[0].startswith('book.'):
-							tmpVal[0] = '"%s"' % tmpVal[0]
-						else:
-							tmpVal[0] = 'unicode(%s)' % tmpVal[0]
-						if not tmpVal[1].startswith('book.'):
-							tmpVal[1] = '"%s"' % tmpVal[1]
-						else:
-							tmpVal[1] = 'unicode(%s)' % tmpVal[1]
-						writeCode('book.%s = stringReplace(book.%s,%s,%s)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
+						writeCode('book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 							
 				if str.lower(myModifier) == "remove":
 					if len(String.Trim(myVal)) == 0:
@@ -721,13 +705,9 @@ def parseString(s):
 						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
 					if myKey in multiValueKeys:
-						writeCode('book.%s = multiValueRemove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 2, True)
+						writeCode('book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 2, True)
 					else:
-						if not myVal.startswith('book.'):
-							myVal = '"%s"' % myVal
-						else:
-							myVal = 'unicode(%s)' % myVal
-						writeCode('book.%s = stringRemove(book.%s,%s, COMPARE_CASE_INSENSITIVE)' % (myKey, myKey, myVal), 2, True)
+						writeCode('book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 				if myModifier.lower() == 'removeleading':
 					if len(String.Trim(myVal)) == 0:
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
@@ -737,11 +717,11 @@ def parseString(s):
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
 						return 0
-					if not myVal.startswith('book.'):
-						myVal = '"%s"' % myVal
-					else:
-						myVal = 'unicode(%s)' % myVal					
-					writeCode('book.%s = stringRemoveLeading(book.%s,%s)' % (myKey, myKey, myVal), 2, True)
+#					if not myVal.startswith('book.'):
+#						myVal = '"%s"' % myVal
+#					else:
+#						myVal = 'unicode(%s)' % myVal					
+					writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 
 			else:	# myModifier == 'SetValue'
 				myVal = myParser.getField(myVal)
