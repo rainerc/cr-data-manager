@@ -96,8 +96,10 @@ fixed - {Field} is now allowed in all actions (issue 82)
 fixed - removeLeading returns None if leading string is not found
 change - includes GUI r40
 
-r 1.. (1.1.0)
-change - user defined DateTime format (user.ini) can be used with Calc modifier
+r 176 (1.1.0)
+change - implemented parser.parseCalc() anduser defined DateTime format  (issue 86)
+change - parseCalc() supports Calc modifier
+change - parseCalc() supports Add and MultiValueAdd
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
