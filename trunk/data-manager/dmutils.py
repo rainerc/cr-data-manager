@@ -374,6 +374,9 @@ class dmString(object):
 	def __init__(self):
 		clr.AddReference("ComicRack.Engine")
 		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+		from System import DateTime
+		theIni = iniFile(globalvars.USERINI)
+		self.dateTimeFormat = theIni.read('DateTimeFormat')	
 		self.myYesNo = YesNo
 		self.myMangaYesNo = MangaYesNo
 	
@@ -392,11 +395,15 @@ class dmString(object):
 		elif myVal == 'yesandlefttoright' : return self.myMangaYesNo.YesAndLeftToRight
 		elif myVal == '': return self.myMangaYesNo.Unknown
 		
+	def dateTimeToString(self,myVal):
+		return myVal.ToString(self.dateTimeFormat)
+		
 class parser(object):
 	
 	def __init__(self):
 		self.err = False
 		self.error = ''
+
 		
 	def commentedLine(self, line):
 		return '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (
@@ -448,6 +455,9 @@ class parser(object):
 			self.err = True
 			self.error = 'rules must start with <<'
 			return
+		
+		return
+	
 	
 	def getField(self,myField):
 		'''
@@ -456,6 +466,38 @@ class parser(object):
 		myField = myField.replace('{','book.')
 		myField = myField.replace('}','')
 		return myField
+	
+	def castType(self,myField,myType):
+		'''
+		returns a typeCaster
+		example: parser.castType('{Series}',str,book)
+		returns: 'unicode(book.Series)'
+		'''
+		myRules = ruleFile()
+		myField = self.getField(myField)
+		myField = myField.replace('book.','')
+		
+		if myType == str:
+			if myField in myRules.dateTimeKeys:
+				return 'dmString.dateTimeToString(book.%s)' % myField
+			else:
+				return 'unicode(book.%s)' % myField
+			
+		elif myType == int:
+			return 'int(stringToFloat(book.%s))' % myField
+
+	def parseCalc(self,theString,theType):
+		'''
+		parses the Calc modifier depending on the field type
+		example: parser.parseCalc({Series} + 'Hugo', str)
+		returns: 'unicode(book.Series) + 'Hugo''
+		'''
+		while '{' in theString:
+			m = re.search('{.*?}',theString)
+			tmpField = m.group(0)				# returns {series}, e.g.
+			myExpression = self.castType(tmpField,theType) # now we want to change {Series} to unicode(book.Series)
+			theString = theString.replace(tmpField,myExpression)
+		return theString
 	
 	pass
 
@@ -485,6 +527,7 @@ class ruleFile(object):
 		self.allowedKeyModifiers = myIni.read('allowedKeyModifiers').split(',')
 		self.allowedKeyModifiersNumeric = myIni.read('allowedKeyModifiersNumeric').split(',')
 		self.allowedKeyModifiersMulti = myIni.read('allowedKeyModifiersMulti').split(',')
+		self.languageISOKeys = myIni.read('languageISOKeys').split(',')
 		
 		# allowed keys and modifiers for left part of rule
 		self.allowedVals = myIni.read('allowedVals').split(',')

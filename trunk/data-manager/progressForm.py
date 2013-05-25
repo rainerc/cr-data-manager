@@ -649,16 +649,14 @@ def parseString(s):
 					
 					if myKey in dateTimeKeys:
 						# the GUI will not allow this
-						# myVal = String.replace(myVal,'{','((book.')
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
 						File.AppendAllText(globalvars.ERRFILE, "Calc modifier cannot be used in %s field" % (myKey))
 						return 0
 					
 					elif myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
-						myVal = String.replace(myVal,'{','(unicode(book.')	# to catch non-ASCII characters
+						myVal = myParser.parseCalc(myVal, str)
 					else:
-						myVal = String.replace(myVal,'{','int(stringToFloat(book.')
-					myVal = String.replace(myVal,'}','))')
+						myVal = myParser.parseCalc(myVal, int)
 					if myKey in pseudoNumericalKeys:	# == 'Number':
 						writeCode("book.%s = str(%s)" % (myKey, myVal), 2, True)
 					else:

@@ -96,6 +96,9 @@ fixed - {Field} is now allowed in all actions (issue 82)
 fixed - removeLeading returns None if leading string is not found
 change - includes GUI r40
 
+r 1.. (1.1.0)
+change - user defined DateTime format (user.ini) can be used with Calc modifier
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
@@ -224,32 +227,14 @@ def dataManagerConfig():
 
 def replaceData(books):
 	
-#	import System
-#	from System.Windows.Forms import MessageBox
-#	from time import localtime, strftime
-#	from globalvars import *
-#	from dmutils import *
-#	
-##	import sys
-###	reload(sys)
-##	sys.setdefaultencoding('utf-8')
+#	from dmutils import parser
+#	myParser = parser()
 #	
 #	for book in books:
-#
-#		comp = comparer()
-#		dmString = dmString()
-#		if comp.startsWith(book.Series,"Sunstone", COMPARE_CASE_INSENSITIVE):
-##			f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.StartsWith:Sunstone>>)\n')
-#			myOldVal = book.Writer
-#			book.Writer = "Stjepan Šejic"
-#			myNewVal = unicode(book.Writer)
-#			if myNewVal <> myOldVal:
-##				f.write('\tbook.Writer - old value: ' + myOldVal.encode('utf-8') + '\n')
-##				f.write('\tbook.Writer - new value: ' + myNewVal.encode('utf-8') + '\n')
-#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
-#			else:
-#				pass
-#			
+#		ret = myParser.castType('{Manga}',str,book)
+#		print ret
+#		print eval(ret)
+#		
 #	return
 	
 
