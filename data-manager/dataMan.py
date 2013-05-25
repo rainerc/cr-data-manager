@@ -97,9 +97,14 @@ fixed - removeLeading returns None if leading string is not found
 change - includes GUI r40
 
 r 176 (1.1.0)
-change - implemented parser.parseCalc() anduser defined DateTime format  (issue 86)
+change - implemented parser.parseCalc() and user defined DateTime format  (issue 86)
 change - parseCalc() supports Calc modifier
 change - parseCalc() supports Add and MultiValueAdd
+
+r177 (1.1.0)
+change - parseCalc() supports dmString.replace and multiValue.replace
+change - parseCalc() supports dmString.remove and multiValue.remove
+change - parseCalc() support dmString.removeLeading
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 

@@ -284,36 +284,18 @@ def ireplace(text, old, new):
 
 
 
-def stringReplace(myKey,oldVal,newVal, caseinsensitive = True):
-	if caseinsensitive == True:
-		return ireplace(myKey, oldVal, newVal).lstrip()
-	else:
-		return myKey.replace(oldVal,newVal)
 
-def stringRemove(myKey,myVal, caseinsensitive = True):
-	if caseinsensitive == True:
-		return ireplace(myKey,myVal,'').lstrip()
-	else:
-		return myKey.replace(myVal,'').lstrip()
 
-def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
-	#	myKey = myKey.strip()		# we must not strip here!
-	leadsWith = False
-	if caseinsensitive == True and myKey.lower().startswith(myVal.lower()):
-		leadsWith = True
-	elif myKey.startswith(myVal):
-		leadsWith = True
-	if leadsWith == True:
-		return myKey[len(myVal):].lstrip()
-	else:
-		return myKey
-	pass
+
+
+
 	
 class multiValue(object):
 	
 	def __init__(self):
 		theIni = iniFile(globalvars.USERINI)
 		self.dateTimeFormat = theIni.read('DateTimeFormat')
+		self.myParser = parser()
 	
 	def add(self,myField,myVals,book):
 		'''
@@ -322,7 +304,7 @@ class multiValue(object):
 		myVals: comma seperated list of values that shall be added
 		returns: myField
 		'''
-		myParser = parser()
+#		myParser = parser()
 		theVals = myVals.split(',')				# create list from myVals
 		theList = myField.lower()				# create temp string from myField with all lower chars
 		theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
@@ -333,7 +315,7 @@ class multiValue(object):
 				# old:
 				# if v.startswith('book.'):
 				if v.startswith('{'):
-					v = myParser.parseCalc(v,str)
+					v = self.myParser.parseCalc(v,str)
 					print 'v: %s' % v
 					print 'v eval: %s' %eval(v)
 					myField += ',%s' % eval(v) 
@@ -343,44 +325,49 @@ class multiValue(object):
 		myField = myField.strip(',')
 		return myField
 
-def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
-	oldVal = String.Trim(str(oldVal))
-	myVal = String.Trim(str(myVal))
-	newList = []
-	theList = myList.strip(',').split(',')
-	for l in theList:
-		l = String.Trim(l)
-		if caseinsensitive == True:
+	def replace(self, myList, oldVal, myVal, book):	# , caseinsensitive = True):
+#		myParser = parser()
+		oldVal = String.Trim(str(oldVal))
+		myVal = String.Trim(str(myVal))
+		newList = []
+		theList = myList.strip(',').split(',')
+		if oldVal.startswith('{'):
+			oldVal = eval(self.myParser.parseCalc(oldVal,str))
+		if myVal.startswith('{'):
+			myVal = eval(self.myParser.parseCalc(myVal,str))
+		for l in theList:			# iterate through every value of the old list
+			l = String.Trim(l)
+			# if caseinsensitive == True:
 			if l.lower() == oldVal.lower(): l = myVal
-		else:
-			if l == oldVal: l = myVal
-		if newList.count(l) == 0:
-			newList.Add(l)
-	return ','.join(newList)
+			if newList.count(l) == 0:
+				newList.Add(l)
+		return ','.join(newList)
+	
+	def remove(self, myField, myVals, book):  # , caseinsensitive = True):
+		'''
+		remove value or multiple values from a multi value field
+		myField: content of field (like book.Tags)
+		myVals: comma seperated list of values that shall be removed
+		returns: cleaned myField
+		'''	
+		theVals = myVals.split(',')				# create list from myVals
+		myList = myField.split(',')				# create list from temp string
+		print 'myList: %s' % myList
+		tmpField = []
+		for l in myList:
+			for v in theVals:
+				if v.startswith('{'): v = eval(self.myParser.parseCalc(v,str))
+				if v.lower().strip() == l.lower().strip():
+					l = ''
+					break
+			tmpField.Add(l)
+		cleanedList = ','.join(tmpField)
+		while ',,' in cleanedList:				# check for double commas
+			cleanedList = cleanedList.replace(',,',',')
+		cleanedList = cleanedList.strip(',').strip()	# check for leading or trailing blanks and commas
+		return cleanedList
 
-def multiValueRemove(myField, myVals, book, caseinsensitive = True):
-	'''
-	remove value or multiple values from a multi value field
-	myField: content of field (like book.Tags)
-	myVals: comma seperated list of values that shall be removed
-	returns: cleaned myField
-	'''	
-	theVals = myVals.split(',')				# create list from myVals
-	myList = myField.split(',')				# create list from temp string
-	print 'myList: %s' % myList
-	tmpField = []
-	for l in myList:
-		for v in theVals:
-			if v.startswith('book.'): v = eval(v)
-			if v.lower().strip() == l.lower().strip():
-				l = ''
-				break
-		tmpField.Add(l)
-	cleanedList = ','.join(tmpField)
-	while ',,' in cleanedList:				# check for double commas
-		cleanedList = cleanedList.replace(',,',',')
-	cleanedList = cleanedList.strip(',').strip()	# check for leading or trailing blanks and commas
-	return cleanedList
+
 	
 class dmString(object):
 	def __init__(self):
@@ -393,6 +380,7 @@ class dmString(object):
 		self.myMangaYesNo = MangaYesNo
 		theIni = iniFile(globalvars.USERINI)
 		self.dateTimeFormat = theIni.read('DateTimeFormat')
+		self.myParser = parser()
 	
 	def yesNo(self,myVal):
 		myVal = myVal.lower()
@@ -413,16 +401,51 @@ class dmString(object):
 #		return myVal.ToString(self.dateTimeFormat)
 
 	def add(self, myKey, myVal, book):
-		myParser = parser()
+#		myParser = parser()
 		if myVal.startswith('{'):
-			myVal = myParser.parseCalc(myVal,str)
+			myVal = self.myParser.parseCalc(myVal,str)
 			print 'v: %s' % myVal
 			print 'v eval: %s' %eval(myVal)
 			return str(myKey) + eval(myVal) 
 		else:
 			return str(mykey) + str(myVal)
 		pass
+	
+	def replace(self, myKey,oldVal,newVal,book): # caseinsensitive = True):
+#		myParser = parser()
+		if oldVal.startswith('{'): oldVal = eval(self.myParser.parseCalc(oldVal,str))
+		if newVal.startswith('{'): newVal = eval(self.myParser.parseCalc(newVal,str))
+		print 'oldVal: %s ' % oldVal	
+		print 'newVal: %s ' % newVal
+		# if caseinsensitive == True:
+		return ireplace(myKey, oldVal, newVal).lstrip()
+#		else:
+#			return myKey.replace(oldVal,newVal)
+		pass
+	
+	def remove(self, myKey,myVal, book):  # caseinsensitive = True):
+		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
+#		if caseinsensitive == True:
+		return ireplace(myKey,myVal,'').lstrip()
+#		else:
+#			return myKey.replace(myVal,'').lstrip()
+		pass
+	
+	def removeLeading(self, myKey,myVal, book): # caseinsensitive = True):
+		#	myKey = myKey.strip()		# we must not strip here!
+	#	leadsWith = False
+		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
+	#	if caseinsensitive == True and myKey.lower().startswith(myVal.lower()):
+		if myKey.lower().startswith(myVal.lower()):
+	#		leadsWith = True
+	#	elif myKey.startswith(myVal):
+	#		leadsWith = True
+	#	if leadsWith == True:
+			return myKey[len(myVal):].lstrip()
+		else:
+			return myKey
 
+	
 class parser(object):
 	
 	def __init__(self):
