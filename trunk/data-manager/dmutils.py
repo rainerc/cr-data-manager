@@ -282,8 +282,7 @@ def ireplace(text, old, new):
         idx = index_l + len(old)
     return text
 
-def stringAdd(myKey, myVal):
-	return str(myKey) + str(myVal)
+
 
 def stringReplace(myKey,oldVal,newVal, caseinsensitive = True):
 	if caseinsensitive == True:
@@ -308,28 +307,41 @@ def stringRemoveLeading(myKey,myVal, caseinsensitive = True):
 		return myKey[len(myVal):].lstrip()
 	else:
 		return myKey
+	pass
 	
-
-def multiValueAdd(myField,myVals,book):
-	'''
-	add value or multiple values to a multi value field
-	myField: content of field (like book.Tags)
-	myVals: comma seperated list of values that shall be added
-	returns: myField
-	'''
-	theVals = myVals.split(',')				# create list from myVals
-	theList = myField.lower()				# create temp string from myField with all lower chars
-	theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
-	theList = theList.replace(', ',',')
-	myList = theList.split(',')				# create list from temp string
-	for v in theVals:						# run through every value in theVals
-		if v.lower().strip() not in myList and v <> '':		# if value not in temp list
-			if v.startswith('book.'):
-				myField += ',%s' % eval(v) 
-			else:
-				myField += ',%s' % v			# ... then add value to myField
-	myField = myField.strip(',')
-	return myField
+class multiValue(object):
+	
+	def __init__(self):
+		theIni = iniFile(globalvars.USERINI)
+		self.dateTimeFormat = theIni.read('DateTimeFormat')
+	
+	def add(self,myField,myVals,book):
+		'''
+		add value or multiple values to a multi value field
+		myField: content of field (like book.Tags)
+		myVals: comma seperated list of values that shall be added
+		returns: myField
+		'''
+		myParser = parser()
+		theVals = myVals.split(',')				# create list from myVals
+		theList = myField.lower()				# create temp string from myField with all lower chars
+		theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
+		theList = theList.replace(', ',',')
+		myList = theList.split(',')				# create list from temp string
+		for v in theVals:						# run through every value in theVals
+			if v.lower().strip() not in myList and v <> '':		# if value not in temp list
+				# old:
+				# if v.startswith('book.'):
+				if v.startswith('{'):
+					v = myParser.parseCalc(v,str)
+					print 'v: %s' % v
+					print 'v eval: %s' %eval(v)
+					myField += ',%s' % eval(v) 
+				else:
+					myField += ',%s' % v			# ... then add value to myField
+				
+		myField = myField.strip(',')
+		return myField
 
 def multiValueReplace(myList, oldVal, myVal, caseinsensitive = True):
 	oldVal = String.Trim(str(oldVal))
@@ -375,10 +387,12 @@ class dmString(object):
 		clr.AddReference("ComicRack.Engine")
 		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
 		from System import DateTime
-		theIni = iniFile(globalvars.USERINI)
-		self.dateTimeFormat = theIni.read('DateTimeFormat')	
+#		theIni = iniFile(globalvars.USERINI)
+#		self.dateTimeFormat = theIni.read('DateTimeFormat')	
 		self.myYesNo = YesNo
 		self.myMangaYesNo = MangaYesNo
+		theIni = iniFile(globalvars.USERINI)
+		self.dateTimeFormat = theIni.read('DateTimeFormat')
 	
 	def yesNo(self,myVal):
 		myVal = myVal.lower()
@@ -395,15 +409,26 @@ class dmString(object):
 		elif myVal == 'yesandlefttoright' : return self.myMangaYesNo.YesAndLeftToRight
 		elif myVal == '': return self.myMangaYesNo.Unknown
 		
-	def dateTimeToString(self,myVal):
-		return myVal.ToString(self.dateTimeFormat)
-		
+#	def dateTimeToString(self,myVal):
+#		return myVal.ToString(self.dateTimeFormat)
+
+	def add(self, myKey, myVal, book):
+		myParser = parser()
+		if myVal.startswith('{'):
+			myVal = myParser.parseCalc(myVal,str)
+			print 'v: %s' % myVal
+			print 'v eval: %s' %eval(myVal)
+			return str(myKey) + eval(myVal) 
+		else:
+			return str(mykey) + str(myVal)
+		pass
+
 class parser(object):
 	
 	def __init__(self):
+
 		self.err = False
 		self.error = ''
-
 		
 	def commentedLine(self, line):
 		return '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (
@@ -457,8 +482,7 @@ class parser(object):
 			return
 		
 		return
-	
-	
+		
 	def getField(self,myField):
 		'''
 		converts {Series} to book.Series
@@ -470,7 +494,7 @@ class parser(object):
 	def castType(self,myField,myType):
 		'''
 		returns a typeCaster
-		example: parser.castType('{Series}',str,book)
+		example: parser.castType('{Series}',str)
 		returns: 'unicode(book.Series)'
 		'''
 		myRules = ruleFile()
@@ -479,7 +503,8 @@ class parser(object):
 		
 		if myType == str:
 			if myField in myRules.dateTimeKeys:
-				return 'dmString.dateTimeToString(book.%s)' % myField
+				# return 'dmString.dateTimeToString(book.%s)' % myField
+				return 'book.%s.ToString(self.dateTimeFormat)' % myField
 			else:
 				return 'unicode(book.%s)' % myField
 			

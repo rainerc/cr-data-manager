@@ -35,6 +35,8 @@ class progressForm(Form):
 		self.cancelledByUser = False
 		self.stepsPerformed = 0
 		self.maxVal = 0
+		theIni = iniFile(globalvars.USERINI)
+		self.dateTimeFormat = theIni.read('DateTimeFormat')	
 	
 	def InitializeComponent(self):
 		self._progressBar = System.Windows.Forms.ProgressBar()
@@ -130,6 +132,7 @@ class progressForm(Form):
 			writeCode('from dmutils import *',1,True)
 			writeCode('comp = comparer()',1,True)
 			writeCode('dmString = dmString()',1,True)
+			writeCode('multiValue = multiValue()',1,True)
 
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -664,7 +667,7 @@ def parseString(s):
 						
 				# risky because this might affect multiValue items
 				# this has to be handled by multiValueAdd and multiValueRemove:
-				myVal = myParser.getField(myVal)
+#				myVal = myParser.getField(myVal)
 				if str.lower(myModifier) == "add":
 					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
 						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
@@ -676,13 +679,15 @@ def parseString(s):
 							File.AppendAllText(globalvars.ERRFILE, "Add modifier needs 1 argument")
 							return 0
 						else:
-							writeCode('book.%s = multiValueAdd(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
+							writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 					else: 				# myKey in allowedKeys
-						if not myVal.startswith('book.'):
-							myVal = '"%s"' % myVal
-						else:
-							myVal = 'unicode(%s)' % myVal
-						writeCode('book.%s = stringAdd(book.%s,%s)' %  (myKey, myKey, myVal), 2, True)
+					
+						#todo: parse with parser.castType:
+#						if not myVal.startswith('book.'):
+#							myVal = '"%s"' % myVal
+#						else:
+#							myVal = 'unicode(%s)' % myVal
+						writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 2, True)
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
 					if len(tmpVal) <= 1:
