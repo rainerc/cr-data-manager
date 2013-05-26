@@ -135,6 +135,10 @@ class progressForm(Form):
 			writeCode('multiValue = multiValue()',1,True)
 			writeCode('dmDateTime = dmDateTime()',1,True)
 			writeCode('dmNumeric = dmNumeric()',1,True)
+			writeCode('dmYesNo = dmYesNo()',1,True)
+						
+			
+			
 
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -631,18 +635,18 @@ def parseString(s):
 
 				if myKey in dateTimeKeys:
 					writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
-# 				todo: use parser.parseCalc from here
 				elif myKey in numericalKeys:
 					writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
-#					if len(str(myVal)) == 0:
-#						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
-#					else:
-#						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
+# 				todo: use parser.parseCalc from here
 				elif myKey in yesNoKeys:
-					if myVal.startswith('book.'):
-						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
-					else:
-						writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+					print 'Here we go'
+					print ('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal))
+					writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 2, True)
+					print 'we\'ve done our best'
+#					if myVal.startswith('book.'):
+#						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
+#					else:
+#						writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 				elif myKey in mangaYesNoKeys:
 					if myVal.startswith('book.'):
 						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)

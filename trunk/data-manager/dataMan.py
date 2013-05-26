@@ -111,6 +111,12 @@ change - parseCalc() supports dmString.setValue
 change - parseCalc() supports dmDateTime.setValue
 change - parseCalc() supports dmNumeric.setValue
 
+r179 (1.1.0)
+change - parseCalc() supports dmYesNo.setValue
+
+
+
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
