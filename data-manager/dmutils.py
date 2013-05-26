@@ -1,4 +1,4 @@
-# the utils module
+﻿# the utils module
 
 import System
 from System import String
@@ -282,13 +282,6 @@ def ireplace(text, old, new):
         idx = index_l + len(old)
     return text
 
-
-
-
-
-
-
-
 	
 class multiValue(object):
 	
@@ -367,7 +360,6 @@ class multiValue(object):
 		cleanedList = cleanedList.strip(',').strip()	# check for leading or trailing blanks and commas
 		return cleanedList
 
-
 	
 class dmString(object):
 	def __init__(self):
@@ -388,7 +380,8 @@ class dmString(object):
 		elif myVal == 'no': return self.myYesNo.No
 		elif myVal == 'unknown': return self.myYesNo.Unknown
 		elif myVal == '': return self.myYesNo.Unknown
-		
+		pass
+	
 	def mangaYesNo(self,myVal):
 		myVal = myVal.lower()
 		if myVal == 'yes': return self.myMangaYesNo.Yes
@@ -396,10 +389,46 @@ class dmString(object):
 		elif myVal == 'unknown': return self.myMangaYesNo.Unknown
 		elif myVal == 'yesandlefttoright' : return self.myMangaYesNo.YesAndLeftToRight
 		elif myVal == '': return self.myMangaYesNo.Unknown
+		pass
+	
+	def toFloat(self, myVal):
+		# tries to convert a string myVal to float
+		# returns None if not possible or string myVal is empty
+	
+		print 'myVal @ toFloat: %s' % myVal
+		try:
+			return float(myVal)
+		except Exception, err:
+			pass
+	
+		s = myVal
+	
+		try:
+			s = str(myVal).lower().strip()
+			if s == '': return None
+		except Exception, err:
+			pass
 		
-#	def dateTimeToString(self,myVal):
-#		return myVal.ToString(self.dateTimeFormat)
-
+		s = s.replace(chr(188),'.25')
+		s = s.replace(chr(189),'.5')
+		s = s.replace(u'\u221e','9999999')			# infinite symbol (∞)
+	
+		if s.startswith('minus'): s = s.replace('minus','-')
+	
+		try:
+			return float(s)
+		except Exception, err:
+			tmp = ''
+			for c in s:
+				if c in ('.','-') or c.isdigit():
+					tmp += c
+				else:
+					break
+			try:
+				return float(tmp)
+			except Exception, err:
+				return None
+			
 	def add(self, myKey, myVal, book):
 #		myParser = parser()
 		if myVal.startswith('{'):
@@ -408,7 +437,7 @@ class dmString(object):
 			print 'v eval: %s' %eval(myVal)
 			return str(myKey) + eval(myVal) 
 		else:
-			return str(mykey) + str(myVal)
+			return str(myKey) + str(myVal)
 		pass
 	
 	def replace(self, myKey,oldVal,newVal,book): # caseinsensitive = True):
@@ -444,8 +473,48 @@ class dmString(object):
 			return myKey[len(myVal):].lstrip()
 		else:
 			return myKey
+		
+	def setValue(self,myVal,book):
+		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
+		return myVal
 
+class dmDateTime(object):
+
+	def __init__(self):
+		self.myParser = parser()
+		pass
 	
+	def setValue(self,myKey,myVal,book):
+		print 'myVal: %s' % myVal
+		if myVal.startswith('{'): 
+			myVal = eval(self.myParser.parseCalc(myVal,DateTime))
+		elif myVal == '': 
+			myVal = System.DateTime.MinValue
+		else: 
+			myVal = System.DateTime.Parse(myVal)
+		return myVal
+
+class dmNumeric(object):
+	def __init__(self):
+		self.myParser = parser()
+		self.dmString = dmString()
+		pass
+	
+	def setValue(self,myKey,myVal,book):
+		if str(myVal).startswith('{'): 
+			# no other way to pass a Null value from a field variable:
+			tmpVal = myVal.strip('{').strip('}')
+			if eval('book.%s' % tmpVal) == '':
+				return -1
+			else:
+				myVal = eval(self.myParser.parseCalc(myVal,int))
+				print 'myVal: %s' % myVal
+		elif str(myVal).strip() == '':
+			myVal = -1
+		else:
+			return myVal
+		return myVal
+		
 class parser(object):
 	
 	def __init__(self):
@@ -532,7 +601,13 @@ class parser(object):
 				return 'unicode(book.%s)' % myField
 			
 		elif myType == int:
-			return 'int(stringToFloat(book.%s))' % myField
+#			return 'int(self.dmString.toFloat(book.%s))' % myField
+
+			return 'self.dmString.toFloat(book.%s)' % myField
+		
+		elif myType == DateTime:
+			return 'System.DateTime.Parse(%s)' % myField
+		pass
 
 	def parseCalc(self,theString,theType):
 		'''
@@ -545,6 +620,8 @@ class parser(object):
 			tmpField = m.group(0)				# returns {series}, e.g.
 			myExpression = self.castType(tmpField,theType) # now we want to change {Series} to unicode(book.Series)
 			theString = theString.replace(tmpField,myExpression)
+			
+		print 'theString: %s' % theString
 		return theString
 	
 	pass

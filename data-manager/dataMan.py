@@ -106,6 +106,11 @@ change - parseCalc() supports dmString.replace and multiValue.replace
 change - parseCalc() supports dmString.remove and multiValue.remove
 change - parseCalc() support dmString.removeLeading
 
+r178 (1.1.0)
+change - parseCalc() supports dmString.setValue
+change - parseCalc() supports dmDateTime.setValue
+change - parseCalc() supports dmNumeric.setValue
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()

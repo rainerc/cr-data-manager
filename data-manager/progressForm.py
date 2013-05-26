@@ -12,7 +12,7 @@ from globalvars import *
 import dmutils
 from dmutils import *
 
-
+dmString = dmString()
 
 # initialize this with
 # 1.) for the run over the books:
@@ -133,6 +133,8 @@ class progressForm(Form):
 			writeCode('comp = comparer()',1,True)
 			writeCode('dmString = dmString()',1,True)
 			writeCode('multiValue = multiValue()',1,True)
+			writeCode('dmDateTime = dmDateTime()',1,True)
+			writeCode('dmNumeric = dmNumeric()',1,True)
 
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -203,7 +205,7 @@ class progressForm(Form):
 				
 			f.close()				# close logfile
 			self.Close()
-
+		return
 			
 
 	def BackgroundWorker1ProgressChanged(self, sender, e):
@@ -214,7 +216,7 @@ class progressForm(Form):
 			self._label1.Text = 'Data Manager worked on %d books' % self.stepsPerformed
 		elif self.theProcess == globalvars.PROCESS_CODE:
 			self._label1.Text = 'Data Manager parsed %d rules' % self.stepsPerformed
-
+		return
 
 	def BackgroundWorker1RunWorkerCompleted(self, sender, e):
 		self.Close()
@@ -254,6 +256,7 @@ def parseString(s):
 	yesNoKeys = rules.yesNoKeys
 	mangaYesNoKeys = rules.mangaYesNoKeys
 	
+	dmString = dmutils.dmString()
 
 	myParser = dmutils.parser()
 	myParser.validate(s)
@@ -313,14 +316,6 @@ def parseString(s):
 					myModifier = tmp2[1]
 				except Exception, err:
 					myModifier = ""
-			else:
-				File.AppendAllText(globalvars.ERRFILE,"Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
-				return 0
-
-			# if c <> "" and not myKey in allowedKeys and not myKey in yesNoKeys and not myKey.lower().startswith('custom'):
-			if c <> "" and not myKey in allowedKeys and not myKey.lower().startswith('custom'):
-				File.AppendAllText(globalvars.ERRFILE,"Error 303: Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
-				return 0
 
 
 			myOperator = "=="
@@ -375,24 +370,24 @@ def parseString(s):
 			# --------------------------------------------------
 			# some basic error handling
 			# --------------------------------------------------
-			try:
-				
-				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
-					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
-					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
-					return 0	
-	
-				if myKey in yesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
-					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
-					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
-					return 0	
-				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,,yesandrighttoleft' :
-					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
-					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'yesAndRightToLeft', 'no' or 'unknown' are valid. Please check your rules.")
-					return 0	
-								
-			except Exception, err:
-				print str(err)
+#			try:
+#				
+#				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
+#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
+#					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
+#					return 0	
+#	
+#				if myKey in yesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
+#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
+#					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
+#					return 0	
+#				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,,yesandrighttoleft' :
+#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
+#					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'yesAndRightToLeft', 'no' or 'unknown' are valid. Please check your rules.")
+#					return 0	
+#								
+#			except Exception, err:
+#				print str(err)
 
 
 			# --------------------------------------------------
@@ -415,8 +410,8 @@ def parseString(s):
 				#val1 = nullToZero(val1)         # float or None
 				
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:
-					val1 = float((nullToZero(stringToFloat(tmp[0]))))
-					val2 = float(nullToZero(stringToFloat(tmp[1])))
+					val1 = float((nullToZero(dmString.toFloat(tmp[0]))))
+					val2 = float(nullToZero(dmString.toFloat(tmp[1])))
 					if val1 > val2:
 						File.AppendAllText(globalvars.ERRFILE,  "Syntax not valid\nline: %s)\n" % (s))
 						File.AppendAllText(globalvars.ERRFILE, "first value in range expression must be smaller than second value")
@@ -428,14 +423,10 @@ def parseString(s):
 				
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
 					myVal = "%d, %d" % (val1, val2 + 1)
-					myCrit = myCrit + ("int(stringToFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
+					myCrit = myCrit + ("int(dmString.toFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
 				elif myKey in dateTimeKeys:
 					myCrit += 'book.%s >= System.DateTime.Parse(\'%s\') and book.%s <= System.DateTime.Parse(\'%s\') and ' % (myKey,val1,myKey,val2)
-					print myCrit
-				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "Range modifier cannot be used in %s field" % (myKey))
-					return 0
+
 			# ---------------------------------------------------------------------------
 			# now begins the interesting part for fields Number/Autonumber which is stored as 
 			# a string but should be treated like a numerical value
@@ -465,8 +456,8 @@ def parseString(s):
 
 
 # range uses this:
-						myVal = stringToFloat(nullToZero(myVal))
-						myCrit += ("stringToFloat(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
+						myVal = dmString.toFloat(nullToZero(myVal))
+						myCrit += ("dmString.toFloat(nullToZero(book.%s)) %s (%s) and " % (myKey, myOperator, myVal))
 
 # this gave false result (issue 71):
 #						myVal = nullToZero(stringToFloat(myVal))		
@@ -478,40 +469,14 @@ def parseString(s):
 				myCrit = myCrit + 'comp.contains(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 			
 			elif str.lower(myModifier) == "containsanyof": # and myKey not in numericalKeys:
-				if myKey not in numericalKeys:
-					myCrit = myCrit + 'comp.containsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "ContainsAnyOf modifier cannot be used in %s field" % (myKey))
-					return 0
+				myCrit = myCrit + 'comp.containsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 			elif str.lower(myModifier) == "notcontainsanyof":
-				if myKey not in numericalKeys:
-					myCrit = myCrit + 'comp.notContainsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "NotContainsAnyOf modifier cannot be used in %s field" % (myKey))
-					return 0
-				
+				myCrit = myCrit + 'comp.notContainsAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 			elif str.lower(myModifier) == "containsallof": # and myKey not in numericalKeys:
-				if myKey not in numericalKeys:
-					myCrit = myCrit + 'comp.containsAllOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "ContainsAllOf modifier cannot be used in %s field" % (myKey))
-					return 0
-
+				myCrit = myCrit + 'comp.containsAllOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 			elif str.lower(myModifier) == "containsnot":
-				if myKey not in numericalKeys:
-					myCrit = myCrit + 'comp.containsNot(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "ContainsNot modifier cannot be used in %s field" % (myKey))
-					return 0
+				myCrit = myCrit + 'comp.containsNot(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 			elif myModifier.lower() in ('isanyof','notisanyof'):
-				if myKey in multiValueKeys:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "IsAnyOf and NotIsAnyOf modifiers cannot be used in %s field" % (myKey))
-					return 0
 				if myModifier.lower() == 'isanyof':
 					myCrit = myCrit + ('comp.isAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal))
 				else:
@@ -520,17 +485,11 @@ def parseString(s):
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) == False and " % (myKey,myVal))
 			elif myModifier.lower() == "startswith" and myKey not in numericalKeys:
 				myCrit = myCrit + ("comp.startsWith(book.%s,\"%s\", COMPARE_CASE_INSENSITIVE) and " % (myKey,myVal))
-				#myCrit = myCrit + ("book.%s.startswith(\"%s\") and " % (myKey,myVal))
 			elif str.lower(myModifier) == "startswithanyof" or myModifier.lower() == 'notstartswithanyof' : # and myKey not in numericalKeys:
-				if myKey not in numericalKeys:
-					if myModifier.lower() == 'startswithanyof':
-						myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
-					else:
-						myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == False and ' % (myKey, myVal)
+				if myModifier.lower() == 'startswithanyof':
+					myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == True and ' % (myKey, myVal)
 				else:
-					File.AppendAllText(globalvars.ERRFILE, "Syntax not valid\nline: %s)\n" % (s))
-					File.AppendAllText(globalvars.ERRFILE, "StartsWithAnyOf and NotStartsWithAnyOf modifiers cannot be used in %s field" % (myKey))
-					return 0
+					myCrit = myCrit + 'comp.startsWithAnyOf(book.%s,\"%s\",COMPARE_CASE_INSENSITIVE) == False and ' % (myKey, myVal)
 			elif myKey in dateTimeKeys:
 				if myVal.strip() == '':
 					myCrit += 'book.%s %s System.DateTime.MinValue and ' % (myKey, myOperator)
@@ -605,14 +564,6 @@ def parseString(s):
 				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (missing \':\' after \'%s\')\nline: %s)" % (myKey, s))			
 				return 0
 			
-			# check if field variables are used in myVal
-			
-			# is key in allowedVals? if not, raise syntax error
-			if not (myKey in allowedVals) and not myKey.lower().startswith('custom'):
-				File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)" % (myKey, s))
-				return 0
-			# to do: handling if function is appended to field
-				
 			# ------------------------------------------------------------
 			# store the old value for later use in log file
 			# ------------------------------------------------------------
@@ -628,12 +579,7 @@ def parseString(s):
 			except Exception, err:
 				pass
 			
-			if not unicode(myVal).startswith('{'):
-				if myKey in numericalKeys and stringToFloat(myVal) == None and myModifier.lower() <> 'calc':
-					File.AppendAllText(globalvars.ERRFILE,"You wanted to assign the string value '%s' to the numerical field '%s'\n" % (myVal, myKey))
-					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
-					return 0				
-
+			
 			if str.lower(myModifier) == 'setvalue':
 				myModifier = ''
 
@@ -650,13 +596,7 @@ def parseString(s):
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					
-					if myKey in dateTimeKeys:
-						# the GUI will not allow this
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Calc modifier cannot be used in %s field" % (myKey))
-						return 0
-					
-					elif myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
+					if myKey not in numericalKeys and myKey not in pseudoNumericalKeys:	# <> 'Number':
 						myVal = myParser.parseCalc(myVal, str)
 					else:
 						myVal = myParser.parseCalc(myVal, int)
@@ -665,78 +605,39 @@ def parseString(s):
 					else:
 						writeCode("book.%s = %s" % (myKey, myVal), 2, True)
 						
-#				myVal = myParser.getField(myVal)
 				if str.lower(myModifier) == "add":
-					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Add modifier cannot be used in %s field" % (myKey))
-						return 0
 					if myKey in multiValueKeys:
-						if len(String.Trim(myVal)) == 0:
-							File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-							File.AppendAllText(globalvars.ERRFILE, "Add modifier needs 1 argument")
-							return 0
-						else:
-							writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
-					else: 				# myKey in allowedKeys
+						writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
+					else: 
 						writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 2, True)
+
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
-					if len(tmpVal) <= 1:
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Replace modifier needs 2 arguments")
-						return 0
-					if myKey in numericalKeys + pseudoNumericalKeys:	# == 'Number':
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Replace modifier cannot be used in %s field" % (myKey))
-						return 0
-					elif myKey in multiValueKeys:
+					if myKey in multiValueKeys:
 						writeCode ('book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 					else:
 						writeCode('book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 2, True)
 							
 				if str.lower(myModifier) == "remove":
-					if len(String.Trim(myVal)) == 0:
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Remove modifier needs 1 argument")
-						return 0
-					if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# == 'Number':
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
-						return 0
 					if myKey in multiValueKeys:
 						writeCode('book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 2, True)
 					else:
 						writeCode('book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 				if myModifier.lower() == 'removeleading':
-					if len(String.Trim(myVal)) == 0:
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "RemoveLeading modifier needs 1 argument")
-						return 0
-					if myKey in numericalKeys or myKey in (pseudoNumericalKeys + multiValueKeys):	# == 'Number':
-						File.AppendAllText(globalvars.ERRFILE, "Syntax not valid (invalid field %s)\nline: %s)\n" % (myKey, s))
-						File.AppendAllText(globalvars.ERRFILE, "Remove modifier cannot be used in %s field" % (myKey))
-						return 0
-#					if not myVal.startswith('book.'):
-#						myVal = '"%s"' % myVal
-#					else:
-#						myVal = 'unicode(%s)' % myVal					
 					writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 
 			else:	# myModifier == 'SetValue'
-				myVal = myParser.getField(myVal)
+#				myVal = myParser.getField(myVal)
+
 				if myKey in dateTimeKeys:
-					if myVal.strip() == '':
-						writeCode('book.%s = System.DateTime.MinValue\n' % myKey, 2, True)
-					elif myVal.startswith('book.'):
-						writeCode('book.%s = %s\n' % (myKey,myVal), 2, True)
-					else:	
-						writeCode('book.%s = System.DateTime.Parse(\'%s\')\n' % (myKey,myVal), 2, True)
+					writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
+# 				todo: use parser.parseCalc from here
 				elif myKey in numericalKeys:
-					if len(str(myVal)) == 0:
-						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
-					else:
-						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
+					writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
+#					if len(str(myVal)) == 0:
+#						writeCode("book.%s = \'\'\n" % (myKey), 2, True)
+#					else:
+#						writeCode("book.%s = %s\n" % (myKey, myVal), 2, True)
 				elif myKey in yesNoKeys:
 					if myVal.startswith('book.'):
 						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
@@ -747,12 +648,9 @@ def parseString(s):
 						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
 					else:
 						writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+#				todo ends here
 				else:
-					if myVal.startswith('book.'):
-						writeCode('book.%s = %s' % (myKey, myVal), 2, True)
-					else:
-						writeCode("book.%s = \"%s\"" % (myKey, myVal), 2, True)
-
+					writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 2, True)
 				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			# this raised an error (issue 80) when used without unicode():
@@ -794,42 +692,42 @@ def writeCode(s, level, linebreak = True):
 
 
 # todo: move stringToFloat to utils.py
-def stringToFloat(myVal):
-	# tries to convert a string myVal to float
-	# returns None if not possible or string myVal is empty
-
-	try:
-		return float(myVal)
-	except Exception, err:
-		pass
-
-	s = myVal
-
-	try:
-		s = str(myVal).lower().strip()
-		if s == '': return None
-	except Exception, err:
-		pass
-	
-	s = s.replace(chr(188),'.25')
-	s = s.replace(chr(189),'.5')
-	s = s.replace(u'\u221e','9999999')			# infinite symbol (∞)
-
-	if s.startswith('minus'): s = s.replace('minus','-')
-
-	try:
-		return float(s)
-	except Exception, err:
-		tmp = ''
-		for c in s:
-			if c in ('.','-') or c.isdigit():
-				tmp += c
-			else:
-				break
-		try:
-			return float(tmp)
-		except Exception, err:
-			return None
+#def stringToFloat(myVal):
+#	# tries to convert a string myVal to float
+#	# returns None if not possible or string myVal is empty
+#
+#	try:
+#		return float(myVal)
+#	except Exception, err:
+#		pass
+#
+#	s = myVal
+#
+#	try:
+#		s = str(myVal).lower().strip()
+#		if s == '': return None
+#	except Exception, err:
+#		pass
+#	
+#	s = s.replace(chr(188),'.25')
+#	s = s.replace(chr(189),'.5')
+#	s = s.replace(u'\u221e','9999999')			# infinite symbol (∞)
+#
+#	if s.startswith('minus'): s = s.replace('minus','-')
+#
+#	try:
+#		return float(s)
+#	except Exception, err:
+#		tmp = ''
+#		for c in s:
+#			if c in ('.','-') or c.isdigit():
+#				tmp += c
+#			else:
+#				break
+#		try:
+#			return float(tmp)
+#		except Exception, err:
+#			return None
 
 
 
