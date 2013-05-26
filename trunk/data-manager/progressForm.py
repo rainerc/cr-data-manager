@@ -136,7 +136,7 @@ class progressForm(Form):
 			writeCode('dmDateTime = dmDateTime()',1,True)
 			writeCode('dmNumeric = dmNumeric()',1,True)
 			writeCode('dmYesNo = dmYesNo()',1,True)
-						
+			writeCode('mangaYesNo = dmYesNo()',1,True)						
 			
 			
 
@@ -637,21 +637,15 @@ def parseString(s):
 					writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 				elif myKey in numericalKeys:
 					writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
-# 				todo: use parser.parseCalc from here
 				elif myKey in yesNoKeys:
-					print 'Here we go'
-					print ('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal))
 					writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 2, True)
-					print 'we\'ve done our best'
+# 				todo: use parser.parseCalc from here
+				elif myKey in mangaYesNoKeys:
+					writeCode('book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 2, True)
 #					if myVal.startswith('book.'):
 #						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
 #					else:
-#						writeCode('book.%s = dmString.yesNo(\'%s\')\n' % (myKey, myVal), 2, True)
-				elif myKey in mangaYesNoKeys:
-					if myVal.startswith('book.'):
-						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
-					else:
-						writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
+#						writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
 #				todo ends here
 				else:
 					writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 2, True)
