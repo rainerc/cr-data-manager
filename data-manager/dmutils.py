@@ -9,6 +9,9 @@ import clr
 import re
 import globalvars
 
+#clr.AddReference("ComicRack.Engine")
+#from cYo.Projects.ComicRack.Engine import YesNo
+
 class customFields:
 	
 	def __init__(self):
@@ -375,8 +378,12 @@ class dmString(object):
 		self.myParser = parser()
 	
 	def yesNo(self,myVal):
+		print 'dmString.yesno entered'
 		myVal = myVal.lower()
-		if myVal == 'yes': return self.myYesNo.Yes
+		if myVal == 'yes': 
+			print 'value is yes'
+			print 'value: %s' % str(self.myYesNo.Yes)
+			return self.myYesNo.Yes
 		elif myVal == 'no': return self.myYesNo.No
 		elif myVal == 'unknown': return self.myYesNo.Unknown
 		elif myVal == '': return self.myYesNo.Unknown
@@ -514,13 +521,34 @@ class dmNumeric(object):
 		else:
 			return myVal
 		return myVal
+
+class dmYesNo(object):
+	def __init__(self):
+		print 'YesNo entered'
+		clr.AddReference("ComicRack.Engine")
+		from cYo.Projects.ComicRack.Engine import YesNo
+		self.myParser = parser()
+		self.dmString = dmString()
+		
+	def setValue(self,myKey,myVal,book):
+		print 'setValue entered'
+		print 'myVal: %s' % myVal
+		if str(myVal).startswith('{'):
+			myVal = eval(self.myParser.parseCalc(myVal,YesNo))
+		else:
+			print 'myVal @ dm.setValue'
+			myVal = self.dmString.yesNo('%s' % myVal)
+		return myVal
 		
 class parser(object):
 	
 	def __init__(self):
-
+		print 'parser entered'
 		self.err = False
 		self.error = ''
+		clr.AddReference("ComicRack.Engine")
+		from cYo.Projects.ComicRack.Engine import YesNo
+		self.YesNo = YesNo
 		
 	def commentedLine(self, line):
 		return '#\t------------%s#\tinvalid expression in next line (%s)%s#\t%s%s#\t------------' % (
@@ -577,7 +605,7 @@ class parser(object):
 		
 	def getField(self,myField):
 		'''
-		converts {Series} to book.Series
+		converts {Series} to 'book.Series'
 		'''
 		myField = myField.replace('{','book.')
 		myField = myField.replace('}','')
@@ -593,6 +621,8 @@ class parser(object):
 		myField = self.getField(myField)
 		myField = myField.replace('book.','')
 		
+		print 'CastType entered'
+		
 		if myType == str:
 			if myField in myRules.dateTimeKeys:
 				# return 'dmString.dateTimeToString(book.%s)' % myField
@@ -601,20 +631,27 @@ class parser(object):
 				return 'unicode(book.%s)' % myField
 			
 		elif myType == int:
-#			return 'int(self.dmString.toFloat(book.%s))' % myField
+			return 'int(self.dmString.toFloat(book.%s))' % myField
 
-			return 'self.dmString.toFloat(book.%s)' % myField
+#			return 'self.dmString.toFloat(book.%s)' % myField
 		
 		elif myType == DateTime:
-			return 'System.DateTime.Parse(%s)' % myField
+			return 'System.DateTime.Parse(book.%s)' % myField
+			
+		elif myType == self.YesNo:
+			print 'CastType trying'
+			return 'self.dmString.YesNo(book.%s)' % myField
+		
 		pass
-
+	
 	def parseCalc(self,theString,theType):
 		'''
 		parses the Calc modifier depending on the field type
 		example: parser.parseCalc({Series} + 'Hugo', str)
 		returns: 'unicode(book.Series) + 'Hugo''
 		'''
+		
+		print 'theType @ parseCalc %s' % str(theType)
 		while '{' in theString:
 			m = re.search('{.*?}',theString)
 			tmpField = m.group(0)				# returns {series}, e.g.
