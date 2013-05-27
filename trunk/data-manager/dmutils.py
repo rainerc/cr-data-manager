@@ -4,15 +4,10 @@ import System
 from System import String
 from System.IO import File
 
-#from System.Windows.Forms import MessageBox
 import clr
 import re
 import globalvars
 
-#clr.AddReference("ComicRack.Engine")
-#from cYo.Projects.ComicRack.Engine import YesNo
-
-#myParser = parser()
 
 class customFields:
 	
@@ -111,21 +106,35 @@ class comparer(object):
 		self.myYesNo = YesNo
 		self.myMangaYesNo = MangaYesNo
 
-	def yesNo(self,myString,myVal):
+	def yesNo(self,myField,myVal):
+		'''
+		returns true if string expression myVal is string equivalent of 
+		YesNo type in field myField
+		Example:
+		comparer.yesNo(book.SeriesComplete,'Yes') returns True if content of 
+		book.SeriesComplete is YesNo.Yes		
+		'''
 		myVal = myVal.lower()
-		if myVal == 'yes': return myString == self.myYesNo.Yes
-		elif myVal == 'no': return myString == self.myYesNo.No
-		elif myVal == 'unknown' : return myString == self.myYesNo.Unknown
-		elif myVal == '' : return myString == self.myYesNo.Unknown
+		if myVal == 'yes': return myField == self.myYesNo.Yes
+		elif myVal == 'no': return myField == self.myYesNo.No
+		elif myVal == 'unknown' : return myField == self.myYesNo.Unknown
+		elif myVal == '' : return myField == self.myYesNo.Unknown
 		else : return False
 		
-	def mangaYesNo(self,myString,myVal):
+	def mangaYesNo(self,myField,myVal):
+		'''
+		returns true if string expression myVal is string equivalent of 
+		MangaYesNo type in field myField
+		Example:
+		comparer.mangaYesNo(book.Manga,'Yes') returns True if content of 
+		book.Manga is MangaYesNo.Yes		
+		'''
 		myVal = myVal.lower()
-		if myVal == 'yes': return myString == self.myMangaYesNo.Yes
-		elif myVal == 'no': return myString == self.myMangaYesNo.No
-		elif myVal == 'unknown' : return myString == self.myMangaYesNo.Unknown
-		elif myVal == '' : return myString == self.myMangaYesNo.Unknown
-		elif myVal == 'yesandrighttoleft' : return myString == self.myMangaYesNo.YesAndRightToLeft
+		if myVal == 'yes': return myField == self.myMangaYesNo.Yes
+		elif myVal == 'no': return myField == self.myMangaYesNo.No
+		elif myVal == 'unknown' : return myField == self.myMangaYesNo.Unknown
+		elif myVal == '' : return myField == self.myMangaYesNo.Unknown
+		elif myVal == 'yesandrighttoleft' : return myField == self.myMangaYesNo.YesAndRightToLeft
 		else : return False
 		
 	
@@ -314,8 +323,6 @@ class multiValue(object):
 				# if v.startswith('book.'):
 				if v.startswith('{'):
 					v = self.myParser.parseCalc(v,str)
-					print 'v: %s' % v
-					print 'v eval: %s' %eval(v)
 					myField += ',%s' % eval(v) 
 				else:
 					myField += ',%s' % v			# ... then add value to myField
@@ -350,7 +357,6 @@ class multiValue(object):
 		'''	
 		theVals = myVals.split(',')				# create list from myVals
 		myList = myField.split(',')				# create list from temp string
-		print 'myList: %s' % myList
 		tmpField = []
 		for l in myList:
 			for v in theVals:
@@ -398,7 +404,6 @@ class dmString(object):
 		# tries to convert a string myVal to float
 		# returns None if not possible or string myVal is empty
 	
-		print 'myVal @ toFloat: %s' % myVal
 		try:
 			return float(myVal)
 		except Exception, err:
@@ -464,7 +469,6 @@ class dmDateTime(object):
 		pass
 	
 	def setValue(self,myKey,myVal,book):
-		print 'myVal: %s' % myVal
 		if myVal.startswith('{'): 
 			myVal = eval(self.myParser.parseCalc(myVal,DateTime))
 		elif myVal == '': 
@@ -487,7 +491,6 @@ class dmNumeric(object):
 				return -1
 			else:
 				myVal = eval(myParser.parseCalc(myVal,int))
-				print 'myVal: %s' % myVal
 		elif str(myVal).strip() == '':
 			myVal = -1
 		else:
@@ -520,7 +523,6 @@ class dmMangaYesNo(object):
 			myVal = eval(myParser.parseCalc(myVal,MangaYesNo))
 		else:
 			myVal = self.dmString.mangaYesNo('%s' % myVal)
-			print 'myVal: %s' % myVal
 		return myVal
 		
 class parser(object):
