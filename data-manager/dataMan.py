@@ -104,7 +104,7 @@ change - parseCalc() supports Add and MultiValueAdd
 r177 (1.1.0)
 change - parseCalc() supports dmString.replace and multiValue.replace
 change - parseCalc() supports dmString.remove and multiValue.remove
-change - parseCalc() support dmString.removeLeading
+change - parseCalc() supports dmString.removeLeading
 
 r178 (1.1.0)
 change - parseCalc() supports dmString.setValue
@@ -116,6 +116,9 @@ change - parseCalc() supports dmYesNo.setValue
 
 r 181 (1.1.0)
 change - parseCalc() supports dmMangaYesNo.setValue
+
+r182 (1.1.0)
+change - actions are checked for syntax errors which are written to the logfile
 
 
 
