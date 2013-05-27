@@ -114,6 +114,9 @@ change - parseCalc() supports dmNumeric.setValue
 r179 (1.1.0)
 change - parseCalc() supports dmYesNo.setValue
 
+r 181 (1.1.0)
+change - parseCalc() supports dmMangaYesNo.setValue
+
 
 
 
@@ -148,13 +151,16 @@ clr.AddReference('System.Drawing')
 from System.Windows.Forms import *
 from System.Drawing import *
 import dmutils
-from dmutils import iniFile
+from dmutils import iniFile, parser, dmString
 import globalvars
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
 from progressForm import progressForm
 from startupForm import startupForm
 from configuratorForm import configuratorForm
+
+myParser = parser()
+dmString = dmString()
 
 # this handles unicode encoding:
 bodyname = System.Text.Encoding.Default.BodyName
@@ -244,6 +250,37 @@ def dataManagerConfig():
 # ============================================================================     
 
 def replaceData(books):
+
+	##try:
+	#import System
+	#from System.Windows.Forms import MessageBox
+	#from time import localtime, strftime
+	#from globalvars import *
+	#from dmutils import *
+	#comp = comparer()
+	#dmString = dmString()
+	#multiValue = multiValue()
+	#dmDateTime = dmDateTime()
+	#dmNumeric = dmNumeric()
+	#dmYesNo = dmYesNo()
+	#dmMangaYesNo = dmMangaYesNo()
+
+	#for book in books:
+	#	if comp.notEq(book.Series,"", COMPARE_CASE_INSENSITIVE):
+	#		#f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.Not:>>)\n')
+	#		myOldVal = unicode(book.Manga)
+	#		book.Manga = dmMangaYesNo.setValue(book.Manga,"Yes",book)
+	#		myNewVal = unicode(book.Manga)
+	#		if myNewVal <> myOldVal:
+	#			#f.write('\tbook.Manga - old value: ' + myOldVal.encode('utf-8') + '\n')
+	#			#f.write('\tbook.Manga - new value: ' + myNewVal.encode('utf-8') + '\n')
+	#			book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
+	#		else:
+	#			pass
+	##except Exception,err:
+	##	MessageBox.Show ("Error in code generation: %s" % str(err))
+
+	#return
 	
 #	from dmutils import parser
 #	myParser = parser()
