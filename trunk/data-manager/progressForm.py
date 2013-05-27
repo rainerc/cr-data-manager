@@ -136,7 +136,7 @@ class progressForm(Form):
 			writeCode('dmDateTime = dmDateTime()',1,True)
 			writeCode('dmNumeric = dmNumeric()',1,True)
 			writeCode('dmYesNo = dmYesNo()',1,True)
-			writeCode('mangaYesNo = dmYesNo()',1,True)						
+			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)						
 			
 			
 
@@ -371,28 +371,6 @@ def parseString(s):
 				MessageBox.Show("error at parseString: %s" % str(err))
 				return
 
-			# --------------------------------------------------
-			# some basic error handling
-			# --------------------------------------------------
-#			try:
-#				
-#				if myKey in numericalKeys and myVal <> '' and stringToFloat(myVal) == None:
-#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the numerical field '%s'\n" % (myVal, myKey))
-#					File.AppendAllText(globalvars.ERRFILE,"This is not allowed. Please check your rules.")
-#					return 0	
-#	
-#				if myKey in yesNoKeys and myVal.lower() not in 'yes,no,unknown,' :
-#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
-#					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'no' or 'unknown' are valid. Please check your rules.")
-#					return 0	
-#				if myKey in mangaYesNoKeys and myVal.lower() not in 'yes,no,unknown,,yesandrighttoleft' :
-#					File.AppendAllText(globalvars.ERRFILE,"You entered the string value '%s' as a condition for the field '%s'\n" % (myVal, myKey))
-#					File.AppendAllText(globalvars.ERRFILE,"Only 'yes', 'yesAndRightToLeft', 'no' or 'unknown' are valid. Please check your rules.")
-#					return 0	
-#								
-#			except Exception, err:
-#				print str(err)
-
 
 			# --------------------------------------------------
 			# special handling for custom fields
@@ -410,21 +388,14 @@ def parseString(s):
 			elif myOperator == "in range":		# must only be used with numerical keys
 				
 				tmp = myVal.split(",")
-				#val1 = stringToFloat(tmp[0])    # float
-				#val1 = nullToZero(val1)         # float or None
-				
+		
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:
 					val1 = float((nullToZero(dmString.toFloat(tmp[0]))))
 					val2 = float(nullToZero(dmString.toFloat(tmp[1])))
-					if val1 > val2:
-						File.AppendAllText(globalvars.ERRFILE,  "Syntax not valid\nline: %s)\n" % (s))
-						File.AppendAllText(globalvars.ERRFILE, "first value in range expression must be smaller than second value")
-						return 0
 				elif myKey in dateTimeKeys:
 					val1 = tmp[0]
 					val2 = tmp[1] + ' 23:59:59'
 
-				
 				if myKey in numericalKeys or myKey in pseudoNumericalKeys:	# ('Number','AlternateNumber'):
 					myVal = "%d, %d" % (val1, val2 + 1)
 					myCrit = myCrit + ("int(dmString.toFloat(nullToZero(book.%s))) %s (%s) and " % (myKey, myOperator, myVal))
@@ -631,22 +602,14 @@ def parseString(s):
 					writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 
 			else:	# myModifier == 'SetValue'
-#				myVal = myParser.getField(myVal)
-
 				if myKey in dateTimeKeys:
 					writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 				elif myKey in numericalKeys:
 					writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 2, True)
 				elif myKey in yesNoKeys:
 					writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 2, True)
-# 				todo: use parser.parseCalc from here
 				elif myKey in mangaYesNoKeys:
 					writeCode('book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 2, True)
-#					if myVal.startswith('book.'):
-#						writeCode('book.%s = %s)\n' % (myKey, myVal), 2, True)
-#					else:
-#						writeCode('book.%s = dmString.mangaYesNo(\'%s\')\n' % (myKey, myVal), 2, True)
-#				todo ends here
 				else:
 					writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 2, True)
 				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 

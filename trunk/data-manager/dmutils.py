@@ -12,6 +12,8 @@ import globalvars
 #clr.AddReference("ComicRack.Engine")
 #from cYo.Projects.ComicRack.Engine import YesNo
 
+#myParser = parser()
+
 class customFields:
 	
 	def __init__(self):
@@ -285,7 +287,7 @@ def ireplace(text, old, new):
         idx = index_l + len(old)
     return text
 
-	
+
 class multiValue(object):
 	
 	def __init__(self):
@@ -369,8 +371,6 @@ class dmString(object):
 		clr.AddReference("ComicRack.Engine")
 		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
 		from System import DateTime
-#		theIni = iniFile(globalvars.USERINI)
-#		self.dateTimeFormat = theIni.read('DateTimeFormat')	
 		self.myYesNo = YesNo
 		self.myMangaYesNo = MangaYesNo
 		theIni = iniFile(globalvars.USERINI)
@@ -378,10 +378,8 @@ class dmString(object):
 		self.myParser = parser()
 	
 	def yesNo(self,myVal):
-		print 'dmString.yesno entered'
 		myVal = myVal.lower()
-		if myVal == 'yes': 
-			return self.myYesNo.Yes
+		if myVal == 'yes': return self.myYesNo.Yes
 		elif myVal == 'no': return self.myYesNo.No
 		elif myVal == 'unknown': return self.myYesNo.Unknown
 		elif myVal == '': return self.myYesNo.Unknown
@@ -434,47 +432,23 @@ class dmString(object):
 			except Exception, err:
 				return None
 			
-	def add(self, myKey, myVal, book):
-#		myParser = parser()
+	def add(self, myKey = '', myVal = '', book = None):
 		if myVal.startswith('{'):
 			myVal = self.myParser.parseCalc(myVal,str)
-			print 'v: %s' % myVal
-			print 'v eval: %s' %eval(myVal)
-			return str(myKey) + eval(myVal) 
-		else:
-			return str(myKey) + str(myVal)
-		pass
+		return str(myKey) + str(eval(myVal)) 
 	
-	def replace(self, myKey,oldVal,newVal,book): # caseinsensitive = True):
-#		myParser = parser()
+	def replace(self, myKey,oldVal,newVal,book):
 		if oldVal.startswith('{'): oldVal = eval(self.myParser.parseCalc(oldVal,str))
 		if newVal.startswith('{'): newVal = eval(self.myParser.parseCalc(newVal,str))
-		print 'oldVal: %s ' % oldVal	
-		print 'newVal: %s ' % newVal
-		# if caseinsensitive == True:
 		return ireplace(myKey, oldVal, newVal).lstrip()
-#		else:
-#			return myKey.replace(oldVal,newVal)
-		pass
 	
-	def remove(self, myKey,myVal, book):  # caseinsensitive = True):
+	def remove(self, myKey,myVal, book):  
 		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
-#		if caseinsensitive == True:
 		return ireplace(myKey,myVal,'').lstrip()
-#		else:
-#			return myKey.replace(myVal,'').lstrip()
-		pass
 	
-	def removeLeading(self, myKey,myVal, book): # caseinsensitive = True):
-		#	myKey = myKey.strip()		# we must not strip here!
-	#	leadsWith = False
+	def removeLeading(self, myKey,myVal, book):
 		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
-	#	if caseinsensitive == True and myKey.lower().startswith(myVal.lower()):
 		if myKey.lower().startswith(myVal.lower()):
-	#		leadsWith = True
-	#	elif myKey.startswith(myVal):
-	#		leadsWith = True
-	#	if leadsWith == True:
 			return myKey[len(myVal):].lstrip()
 		else:
 			return myKey
@@ -501,7 +475,7 @@ class dmDateTime(object):
 
 class dmNumeric(object):
 	def __init__(self):
-		self.myParser = parser()
+		#self.myParser = parser()
 		self.dmString = dmString()
 		pass
 	
@@ -512,12 +486,12 @@ class dmNumeric(object):
 			if eval('book.%s' % tmpVal) == '':
 				return -1
 			else:
-				myVal = eval(self.myParser.parseCalc(myVal,int))
+				myVal = eval(myParser.parseCalc(myVal,int))
 				print 'myVal: %s' % myVal
 		elif str(myVal).strip() == '':
 			myVal = -1
 		else:
-			return myVal
+			return self.dmString.toFloat(myVal)
 		return myVal
 
 class dmYesNo(object):
@@ -543,15 +517,15 @@ class dmMangaYesNo(object):
 		
 	def setValue(self,myKey,myVal,book):
 		if str(myVal).startswith('{'):
-			myVal = eval(self.myParser.parseCalc(myVal,MangaYesNo))
+			myVal = eval(myParser.parseCalc(myVal,MangaYesNo))
 		else:
 			myVal = self.dmString.mangaYesNo('%s' % myVal)
+			print 'myVal: %s' % myVal
 		return myVal
 		
 class parser(object):
 	
 	def __init__(self):
-		print 'parser entered'
 		self.err = False
 		self.error = ''
 		clr.AddReference("ComicRack.Engine")
@@ -631,29 +605,21 @@ class parser(object):
 		myField = myField.replace('book.','')
 		
 		if myType == str:
-			if myField in myRules.dateTimeKeys:
-				# return 'dmString.dateTimeToString(book.%s)' % myField
-				return 'book.%s.ToString(self.dateTimeFormat)' % myField
-			else:
-				return 'unicode(book.%s)' % myField
+			if myField in myRules.dateTimeKeys: return 'book.%s.ToString(self.dateTimeFormat)' % myField
+			else: return 'unicode(book.%s)' % myField
 			
 		elif myType == int:
 			return 'int(self.dmString.toFloat(book.%s))' % myField
-
-#			return 'self.dmString.toFloat(book.%s)' % myField
 		
 		elif myType == DateTime:
 			return 'System.DateTime.Parse(book.%s)' % myField
 			
 		elif myType == self.YesNo:
-			print 'CastType trying'
 			return 'self.dmString.YesNo(book.%s)' % myField
 		
 		elif myType == self.MangaYesNo:
-			print 'CastType trying'
 			return 'self.dmString.MangaYesNo(book.%s)' % myField
-		
-		
+	
 		pass
 	
 	def parseCalc(self,theString,theType):
@@ -662,19 +628,14 @@ class parser(object):
 		example: parser.parseCalc({Series} + 'Hugo', str)
 		returns: 'unicode(book.Series) + 'Hugo''
 		'''
-		
-		print 'theType @ parseCalc %s' % str(theType)
+
 		while '{' in theString:
 			m = re.search('{.*?}',theString)
 			tmpField = m.group(0)				# returns {series}, e.g.
 			myExpression = self.castType(tmpField,theType) # now we want to change {Series} to unicode(book.Series)
 			theString = theString.replace(tmpField,myExpression)
-			
-		print 'theString: %s' % theString
 		return theString
 	
-	pass
-
 
 class ruleFile(object):
 	
