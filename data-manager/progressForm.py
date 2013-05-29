@@ -626,6 +626,7 @@ def parseString(s):
 				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			writeCode('except Exception, err:',2,True)
+			writeCode('print str(err)',3,True)
 			writeCode('ERRCOUNT += 1',3,True)
 			writeCode('userIni.write("LastScanErrors",str(ERRCOUNT))',3,True)
 			writeCode("f.write('\\t*************************************************\\n')",3,True)
