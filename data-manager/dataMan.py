@@ -123,6 +123,7 @@ change - includes GUI r47
 
 r 183 (1.1.0)
 fix - modifier Add raises error if no field variable {field} is used
+change - includes GUI r48
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
