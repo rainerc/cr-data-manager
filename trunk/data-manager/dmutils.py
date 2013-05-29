@@ -321,7 +321,7 @@ class multiValue(object):
 			if v.lower().strip() not in myList and v <> '':		# if value not in temp list
 				# old:
 				# if v.startswith('book.'):
-				if v.startswith('{'):
+				if '{' in v:
 					v = self.myParser.parseCalc(v,str)
 					myField += ',%s' % eval(v) 
 				else:
@@ -336,9 +336,9 @@ class multiValue(object):
 		myVal = String.Trim(str(myVal))
 		newList = []
 		theList = myList.strip(',').split(',')
-		if oldVal.startswith('{'):
+		if '{' in oldVal:
 			oldVal = eval(self.myParser.parseCalc(oldVal,str))
-		if myVal.startswith('{'):
+		if '{' in myVal:
 			myVal = eval(self.myParser.parseCalc(myVal,str))
 		for l in theList:			# iterate through every value of the old list
 			l = String.Trim(l)
@@ -360,7 +360,7 @@ class multiValue(object):
 		tmpField = []
 		for l in myList:
 			for v in theVals:
-				if v.startswith('{'): v = eval(self.myParser.parseCalc(v,str))
+				if '{' in v: v = eval(self.myParser.parseCalc(v,str))
 				if v.lower().strip() == l.lower().strip():
 					l = ''
 					break
@@ -372,7 +372,7 @@ class multiValue(object):
 		return cleanedList
 
 	
-class dmString(object):
+class dmString():
 	def __init__(self):
 		clr.AddReference("ComicRack.Engine")
 		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
@@ -437,22 +437,22 @@ class dmString(object):
 			except Exception, err:
 				return None
 			
-	def add(self, myKey = '', myVal = '', book = None):
-		if myVal.startswith('{'):
-			myVal = self.myParser.parseCalc(myVal,str)
-		return str(myKey) + str(eval(myVal)) 
+	def add(self, myKey, myVal, book):
+		if '{' in myVal:
+			myVal = eval(self.myParser.parseCalc(myVal,str))
+		return str(myKey) + str(myVal) 
 	
 	def replace(self, myKey,oldVal,newVal,book):
-		if oldVal.startswith('{'): oldVal = eval(self.myParser.parseCalc(oldVal,str))
-		if newVal.startswith('{'): newVal = eval(self.myParser.parseCalc(newVal,str))
+		if '{' in oldVal: oldVal = eval(self.myParser.parseCalc(oldVal,str))
+		if '{' in newVal: newVal = eval(self.myParser.parseCalc(newVal,str))
 		return ireplace(myKey, oldVal, newVal).lstrip()
 	
 	def remove(self, myKey,myVal, book):  
-		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
+		if '{' in myVal: myVal = eval(self.myParser.parseCalc(myVal,str))
 		return ireplace(myKey,myVal,'').lstrip()
 	
 	def removeLeading(self, myKey,myVal, book):
-		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
+		if '{' in myVal: myVal = eval(self.myParser.parseCalc(myVal,str))
 		if myKey.lower().startswith(myVal.lower()):
 			return myKey[len(myVal):].lstrip()
 		else:
@@ -469,7 +469,7 @@ class dmDateTime(object):
 		pass
 	
 	def setValue(self,myKey,myVal,book):
-		if myVal.startswith('{'): 
+		if '{' in myVal: 
 			myVal = eval(self.myParser.parseCalc(myVal,DateTime))
 		elif myVal == '': 
 			myVal = System.DateTime.MinValue
@@ -484,7 +484,7 @@ class dmNumeric(object):
 		pass
 	
 	def setValue(self,myKey,myVal,book):
-		if str(myVal).startswith('{'): 
+		if '{' in str(myVal): 
 			# no other way to pass a Null value from a field variable:
 			tmpVal = myVal.strip('{').strip('}')
 			if eval('book.%s' % tmpVal) == '':
@@ -630,7 +630,7 @@ class parser(object):
 		example: parser.parseCalc({Series} + 'Hugo', str)
 		returns: 'unicode(book.Series) + 'Hugo''
 		'''
-
+	
 		while '{' in theString:
 			m = re.search('{.*?}',theString)
 			tmpField = m.group(0)				# returns {series}, e.g.

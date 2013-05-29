@@ -119,9 +119,10 @@ change - parseCalc() supports dmMangaYesNo.setValue
 
 r182 (1.1.0)
 change - actions are checked for syntax errors which are written to the logfile
+change - includes GUI r47
 
-
-
+r 183 (1.1.0)
+fix - modifier Add raises error if no field variable {field} is used
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
@@ -254,68 +255,52 @@ def dataManagerConfig():
 
 def replaceData(books):
 
-	##try:
-	#import System
-	#from System.Windows.Forms import MessageBox
-	#from time import localtime, strftime
-	#from globalvars import *
-	#from dmutils import *
-	#comp = comparer()
-	#dmString = dmString()
-	#multiValue = multiValue()
-	#dmDateTime = dmDateTime()
-	#dmNumeric = dmNumeric()
-	#dmYesNo = dmYesNo()
-	#dmMangaYesNo = dmMangaYesNo()
-
 	#for book in books:
-	#	if comp.notEq(book.Series,"", COMPARE_CASE_INSENSITIVE):
-	#		#f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.Not:>>)\n')
-	#		myOldVal = unicode(book.Manga)
-	#		book.Manga = dmMangaYesNo.setValue(book.Manga,"Yes",book)
-	#		myNewVal = unicode(book.Manga)
-	#		if myNewVal <> myOldVal:
-	#			#f.write('\tbook.Manga - old value: ' + myOldVal.encode('utf-8') + '\n')
-	#			#f.write('\tbook.Manga - new value: ' + myNewVal.encode('utf-8') + '\n')
-	#			book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
-	#		else:
-	#			pass
-	##except Exception,err:
-	##	MessageBox.Show ("Error in code generation: %s" % str(err))
+	#	try:
+	#		import System
+	#		from System.Windows.Forms import MessageBox
+	#		from time import localtime, strftime
+	#		from globalvars import *
+	#		from dmutils import *
+	#		import dmutils.dmString
+	#		userIni = iniFile(globalvars.USERINI)
+	#		comp = comparer()
+	#		dmString = dmString()
+	#		multiValue = multiValue()
+	#		dmDateTime = dmDateTime()
+	#		dmNumeric = dmNumeric()
+	#		dmYesNo = dmYesNo()
+	#		dmMangaYesNo = dmMangaYesNo()
+	#		ERRCOUNT = 0
+	#		if comp.contains(book.Tags,"no scan info",COMPARE_CASE_INSENSITIVE) == True and comp.equals(book.ScanInformation,"", COMPARE_CASE_INSENSITIVE):
+	#			myOldVal = unicode(book.ScanInformation)
+	#			try:
+	#				book.ScanInformation = dmString.add(book.ScanInformation,"no scan info",book)
+	#			except Exception, err:
+	#				print str(err)
+	#				ERRCOUNT += 1
+	#				userIni.write("LastScanErrors",str(ERRCOUNT))
+	#			myNewVal = unicode(book.ScanInformation)
+	#			if myNewVal <> myOldVal:
+	#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
+	#			else:
+	#				pass
+	#			myOldVal = unicode(book.Tags)
+	#			try:
+	#				book.Tags = multiValue.remove(book.Tags,"no scan info",book)
+	#			except Exception, err:
+	#				print str(err)
+	#				ERRCOUNT += 1
+	#			myNewVal = unicode(book.Tags)
+	#			if myNewVal <> myOldVal:
+	#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
+	#			else:
+	#				pass
+	#	except Exception,err:
+	#		MessageBox.Show ("Error in code generation: %s" % str(err))
+
 
 	#return
-	
-#	from dmutils import parser
-#	myParser = parser()
-#	
-#	for book in books:
-#		ret = myParser.castType('{Manga}',str,book)
-#		print ret
-#		print eval(ret)
-#		
-#	return
-	
-
-#	dateTime = System.DateTime(1979, 07, 28, 22, 35, 5, 15)
-#	dateTime = System.DateTime(2013,1,1)
-#	
-#	dateTime = System.DateTime.Parse('2013-05-01')
-#	print dateTime
-#
-#	for book in books:
-#		print book.AddedTime > System.DateTime.Parse('2013/01/01')
-#		print book.Published  
-#		book.AddedTime = System.DateTime.Parse('2011/12/12 23:59:59')
-#		print book.AddedTime
-##		print book.AddedTime.Date > datum
-##		print dir(book.AddedTime)
-#		
-#	return
-#
-#	for book in books:
-#		# book.AddedTime = None
-#		book.AddedTime = System.DateTime.MinValue
-#	return
 
 	ERROR_LEVEL = 0
 
