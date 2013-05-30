@@ -125,6 +125,10 @@ r 183 (1.1.0)
 fix - modifier Add raises error if no field variable {field} is used
 change - includes GUI r48
 
+r 186 (1.1.0)
+change - the action which raised an error is written to the logfile
+fixed - backgroundWorker can be cancelled only after the complete ruleset collection on a book is finished  (issue 88)
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()

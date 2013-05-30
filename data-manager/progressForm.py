@@ -12,7 +12,14 @@ from globalvars import *
 import dmutils
 from dmutils import *
 
+
 dmString = dmString()
+userIni = iniFile(globalvars.USERINI)
+userIni.write('LastScanErrors',0)
+stop_the_Worker = False
+ERRCOUNT = 0
+
+theLog = ""
 
 # initialize this with
 # 1.) for the run over the books:
@@ -35,8 +42,9 @@ class progressForm(Form):
 		self.cancelledByUser = False
 		self.stepsPerformed = 0
 		self.maxVal = 0
-		theIni = iniFile(globalvars.USERINI)
-		self.dateTimeFormat = theIni.read('DateTimeFormat')	
+		userIni = iniFile(globalvars.USERINI)
+		self.dateTimeFormat = userIni.read('DateTimeFormat')	
+		globals()['stop_the_Worker'] = False
 	
 	def InitializeComponent(self):
 		self._progressBar = System.Windows.Forms.ProgressBar()
@@ -70,6 +78,7 @@ class progressForm(Form):
 		self._backgroundWorker1.DoWork += self.BackgroundWorker1DoWork
 		self._backgroundWorker1.ProgressChanged += self.BackgroundWorker1ProgressChanged
 		self._backgroundWorker1.RunWorkerCompleted += self.BackgroundWorker1RunWorkerCompleted
+		#self._backgroundWorker1.CancellationPending += self.BackgroundWorker1Cancellation
 		# 
 		# buttonCancel
 		# 
@@ -104,6 +113,9 @@ class progressForm(Form):
 	def ProgressFormLoad(self, sender, e):
 		pass
 	
+
+
+
 
 	def BackgroundWorker1DoWork(self, sender, e):
 
@@ -140,10 +152,18 @@ class progressForm(Form):
 			writeCode('dmNumeric = dmNumeric()',1,True)
 			writeCode('dmYesNo = dmYesNo()',1,True)
 			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)	
+			#writeCode('try:',1,True)
+			#writeCode('global ERRCOUNT',2,True)
+			#writeCode('except Exception, err:',1,True)
+			#writeCode('pass',2,True)
 			writeCode('ERRCOUNT = 0',1,True)
+			writeCode('def writeError(f,error, action):',1,True)
+			writeCode	("f.write('\\t*************************************************\\n')",2,True)
+			writeCode	("f.write('\\tan error happened here! Please check your actions\\n')",2,True)
+			writeCode	("f.write('\\taction: %s\\n' % action)",2,True)
+			writeCode	("f.write('\\terror : %s\\n' % str(error))",2,True)
+			writeCode	("f.write('\\t*************************************************\\n')",2,True)
 			
-			
-
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
 			self._progressBar.Maximum = self.maxVal
@@ -169,7 +189,6 @@ class progressForm(Form):
 					except Exception, err:
 						pass
 				else:
-					# MessageBox.Show('Cancellation by user.')
 					self.cancelledByUser = True
 					return
 				
@@ -199,6 +218,7 @@ class progressForm(Form):
 						for line in globalvars.THECODE:
 							if line.strip() <> '':
 								myCode += line
+						# print the generated code once to the debug window:
 						if self.stepsPerformed == 1: print myCode
 						exec(myCode)
 
@@ -217,9 +237,8 @@ class progressForm(Form):
 				
 			f.close()				# close logfile
 
-			if int(userIni.read('LastScanErrors')) > 0:
+			if userIni.read('LastScanErrors') <> 0:
 				MessageBox.Show('There were errors in your rules. You really should check the logfile!')
-				userIni.write('LastScanErrors',0)
 		return
 			
 
@@ -246,9 +265,13 @@ class progressForm(Form):
 	
 	def ProgressFormFormClosed(self, sender, e):
 		self._backgroundWorker1.CancelAsync()
+
 		
 	def ProgressFormFormClosing(self, sender, e):
 		self._backgroundWorker1.CancelAsync()
+
+	def BackgroundWorker1Cancellation(self, sender, e):
+		globals()['stop_the_Worker'] = True
 
 
 def parseString(s):
@@ -280,6 +303,13 @@ def parseString(s):
 		return 0
 	
 	a = s.split("=>")
+
+	# this will be used later when an error is written to the logfile:
+	theActionString = a[1]
+	theActionString = theActionString.replace('\'','`')
+	theActionString = theActionString.replace('\\','\\\\')
+
+	writeCode('theActionString = \"%s\"' % theActionString, 1, True)
 
 	# todo: checked up here
 	
@@ -512,9 +542,10 @@ def parseString(s):
 					myCrit = myCrit + ("book.%s %s %s and " % (myKey, myOperator, myVal))
 				
 			
-	myCrit = "if " + String.rstrip(myCrit, " and") + ":"
+	myCrit = "if globals()['stop_the_Worker'] == False and " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
 
+	writeCode("print 'rule was executed'",2,True)
 	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % unicode(a[0]), 2, True)
 	
 	# ----------------------------------------------------------------
@@ -578,7 +609,8 @@ def parseString(s):
 				# old:
 				# writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
 				# new:
-				writeCode('book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal), 3, True)
+				theAction = 'book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal)
+				#writeCode('book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal), 3, True)
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					
@@ -587,51 +619,65 @@ def parseString(s):
 					else:
 						myVal = myParser.parseCalc(myVal, int)
 					if myKey in pseudoNumericalKeys:	# == 'Number':
-						writeCode("book.%s = str(%s)" % (myKey, myVal), 3, True)
+						theAction = "book.%s = str(%s)" % (myKey, myVal)
+						#writeCode("book.%s = str(%s)" % (myKey, myVal), 3, True)
 					else:
-						writeCode("book.%s = %s" % (myKey, myVal), 3, True)
+						theAction = "book.%s = %s" % (myKey, myVal)
+						#writeCode("book.%s = %s" % (myKey, myVal), 3, True)
 						
 				if str.lower(myModifier) == "add":
 					if myKey in multiValueKeys:
-						writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
+						theAction = 'book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal)
+						#writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 					else: 
-						writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 3, True)
+						theAction = 'book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal)
+						#writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 3, True)
 
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
 					if myKey in multiValueKeys:
-						writeCode ('book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
+						theAction = 'book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
+						#writeCode ('book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
 					else:
-						writeCode('book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
+						'book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
+						#writeCode('book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
 							
 				if str.lower(myModifier) == "remove":
 					if myKey in multiValueKeys:
-						writeCode('book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 3, True)
+						theAction = 'book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal)
+						#writeCode('book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 3, True)
 					else:
-						writeCode('book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
+						theAction = 'book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal)
+						#writeCode('book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				if myModifier.lower() == 'removeleading':
-					writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
+					theAction = 'book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal)
+					#writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 
 			else:	# myModifier == 'SetValue'
 				if myKey in dateTimeKeys:
-					writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
+					theAction = 'book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal)
+					#writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in numericalKeys:
-					writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
+					theAction = 'book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal)
+					#writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in yesNoKeys:
-					writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
+					theAction = 'book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal)
+					#writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in mangaYesNoKeys:
-					writeCode('book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
+					theAction = 'book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal)
+					#writeCode('book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
 				else:
-					writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 3, True)
-				myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
+					theAction = 'book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal)
+					#writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 3, True)
+			writeCode(theAction, 3, True)
+			myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			writeCode('except Exception, err:',2,True)
-			writeCode('print str(err)',3,True)
-			writeCode('ERRCOUNT += 1',3,True)
-			writeCode('userIni.write("LastScanErrors",str(ERRCOUNT))',3,True)
-			writeCode("f.write('\\t*************************************************\\n')",3,True)
-			writeCode("f.write('\\tan error happened here! Please check your actions\\n')",3,True)
-			writeCode("f.write('\\t*************************************************\\n')",3,True)
+
+			writeCode	('ERRCOUNT += 1',3,True)
+			writeCode	('if ERRCOUNT == 0:',3,True)
+			writeCode		('userIni.write("LastScanErrors",str(ERRCOUNT))',4,True)
+			writeCode	('writeError(f,str(err),theActionString)',3,True)
 
 			# this raised an error (issue 80) when used without unicode():
 			if myKey.lower().startswith('custom'):
@@ -641,12 +687,14 @@ def parseString(s):
 				writeCode("myNewVal = unicode(book.%s)" % myKey, 2, True)
 
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
-			writeCode("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
-			writeCode("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
-			writeCode("book.SetCustomValue(\'DataManager.processed\',strftime(\'%Y-%m-%d\', localtime()))", 3, True)
+			writeCode	("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode	("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode	("book.SetCustomValue(\'DataManager.processed\',strftime(\'%Y-%m-%d\', localtime()))", 3, True)
 			
 			writeCode("else:", 2, True)
-			writeCode("pass",3,True)
+			writeCode	("pass",3,True)
+			#writeCode("if globals()['stop_the_Worker'] == True:",2,True)
+			#writeCode("return",3,True)
 			# writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
 	return -1
 	
