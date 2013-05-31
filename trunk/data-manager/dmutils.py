@@ -8,6 +8,9 @@ import clr
 import re
 import globalvars
 
+clr.AddReference("ComicRack.Engine")
+from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+
 
 class customFields:
 	
@@ -101,10 +104,11 @@ class comparer(object):
 	"""description of class"""
 	
 	def __init__(self):
-		clr.AddReference("ComicRack.Engine")
-		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
-		self.myYesNo = YesNo
-		self.myMangaYesNo = MangaYesNo
+		#clr.AddReference("ComicRack.Engine")
+		#from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+		#self.myYesNo = YesNo
+		#self.myMangaYesNo = MangaYesNo
+		pass
 
 	def yesNo(self,myField,myVal):
 		'''
@@ -115,10 +119,10 @@ class comparer(object):
 		book.SeriesComplete is YesNo.Yes		
 		'''
 		myVal = myVal.lower()
-		if myVal == 'yes': return myField == self.myYesNo.Yes
-		elif myVal == 'no': return myField == self.myYesNo.No
-		elif myVal == 'unknown' : return myField == self.myYesNo.Unknown
-		elif myVal == '' : return myField == self.myYesNo.Unknown
+		if myVal == 'yes': return myField == YesNo.Yes
+		elif myVal == 'no': return myField == YesNo.No
+		elif myVal == 'unknown' : return myField == YesNo.Unknown
+		elif myVal == '' : return myField == YesNo.Unknown
 		else : return False
 		
 	def mangaYesNo(self,myField,myVal):
@@ -130,11 +134,11 @@ class comparer(object):
 		book.Manga is MangaYesNo.Yes		
 		'''
 		myVal = myVal.lower()
-		if myVal == 'yes': return myField == self.myMangaYesNo.Yes
-		elif myVal == 'no': return myField == self.myMangaYesNo.No
-		elif myVal == 'unknown' : return myField == self.myMangaYesNo.Unknown
-		elif myVal == '' : return myField == self.myMangaYesNo.Unknown
-		elif myVal == 'yesandrighttoleft' : return myField == self.myMangaYesNo.YesAndRightToLeft
+		if myVal == 'yes': return myField == MangaYesNo.Yes
+		elif myVal == 'no': return myField == MangaYesNo.No
+		elif myVal == 'unknown' : return myField == MangaYesNo.Unknown
+		elif myVal == '' : return myField == MangaYesNo.Unknown
+		elif myVal == 'yesandrighttoleft' : return myField == MangaYesNo.YesAndRightToLeft
 		else : return False
 		
 	
@@ -163,7 +167,7 @@ class comparer(object):
 		# example <<myString.IsAnyOf:val1,val2,val3>> 
 		# or: <<Batman.IsAnyOf:Batman,Robin,Joker>>
 		myString = unicode(myString).strip()
-		myString = myString.strip()
+		#myString = myString.strip()
 		myVals = unicode(myVals)
 		if caseInsensitive:
 			myVals = myVals.lower()
@@ -374,30 +378,30 @@ class multiValue(object):
 	
 class dmString():
 	def __init__(self):
-		clr.AddReference("ComicRack.Engine")
-		from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
+		#clr.AddReference("ComicRack.Engine")
+		#from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
 		from System import DateTime
 		self.myYesNo = YesNo
-		self.myMangaYesNo = MangaYesNo
+		#self.myMangaYesNo = MangaYesNo
 		theIni = iniFile(globalvars.USERINI)
 		self.dateTimeFormat = theIni.read('DateTimeFormat')
 		self.myParser = parser()
 	
 	def yesNo(self,myVal):
 		myVal = myVal.lower()
-		if myVal == 'yes': return self.myYesNo.Yes
-		elif myVal == 'no': return self.myYesNo.No
-		elif myVal == 'unknown': return self.myYesNo.Unknown
-		elif myVal == '': return self.myYesNo.Unknown
+		if myVal == 'yes': return YesNo.Yes
+		elif myVal == 'no': return YesNo.No
+		elif myVal == 'unknown': return YesNo.Unknown
+		elif myVal == '': return YesNo.Unknown
 		pass
 	
 	def mangaYesNo(self,myVal):
 		myVal = myVal.lower()
-		if myVal == 'yes': return self.myMangaYesNo.Yes
-		elif myVal == 'no': return self.myMangaYesNo.No
-		elif myVal == 'unknown': return self.myMangaYesNo.Unknown
-		elif myVal == 'yesandlefttoright' : return self.myMangaYesNo.YesAndLeftToRight
-		elif myVal == '': return self.myMangaYesNo.Unknown
+		if myVal == 'yes': return MangaYesNo.Yes
+		elif myVal == 'no': return MangaYesNo.No
+		elif myVal == 'unknown': return MangaYesNo.Unknown
+		elif myVal == 'yesandlefttoright' : return MangaYesNo.YesAndLeftToRight
+		elif myVal == '': return myMangaYesNo.Unknown
 		pass
 	
 	def toFloat(self, myVal):

@@ -128,9 +128,12 @@ change - includes GUI r48
 r 186 (1.1.0)
 change - the action which raised an error is written to the logfile
 fixed - backgroundWorker can be cancelled only after the complete ruleset collection on a book is finished  (issue 88)
+changed - minor performance improvements
 
 r 1.. (1.1.0)
 change - BreakAfterFirstError in user.ini defines if DataMan should stop executing when an error is found
+change - logfile results are written to memory instead of file
+change - references to ComicRack.Engine removed from comparer.init and dmString.init
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
