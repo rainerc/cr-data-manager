@@ -151,11 +151,14 @@ class progressForm(Form):
 			writeCode('dmDateTime = dmDateTime()',1,True)
 			writeCode('dmNumeric = dmNumeric()',1,True)
 			writeCode('dmYesNo = dmYesNo()',1,True)
-			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)	
+			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)
+			writeCode('theLog = ""',1,True)			
 			#writeCode('try:',1,True)
 			#writeCode('global ERRCOUNT',2,True)
 			#writeCode('except Exception, err:',1,True)
 			#writeCode('pass',2,True)
+			writeCode('breakAfterFirstError = userIni.read("BreakAfterFirstError")',1,True)
+			writeCode('print "breakAfterFirstError: %s" % breakAfterFirstError',1,True)
 			writeCode('ERRCOUNT = 0',1,True)
 			writeCode('def writeError(f,error, action):',1,True)
 			writeCode	("f.write('\\t*************************************************\\n')",2,True)
@@ -163,6 +166,7 @@ class progressForm(Form):
 			writeCode	("f.write('\\taction: %s\\n' % action)",2,True)
 			writeCode	("f.write('\\terror : %s\\n' % str(error))",2,True)
 			writeCode	("f.write('\\t*************************************************\\n')",2,True)
+
 			
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -237,7 +241,7 @@ class progressForm(Form):
 				
 			f.close()				# close logfile
 
-			if userIni.read('LastScanErrors') <> 0:
+			if userIni.read('LastScanErrors') <> '0':
 				MessageBox.Show('There were errors in your rules. You really should check the logfile!')
 		return
 			
@@ -554,8 +558,13 @@ def parseString(s):
 
 	for n in [n for n in newValues if n.strip() <> '']:
 
+
 		if len(n) > 0:
 			n = n.replace('<<','').lstrip()
+			theActionString = n
+			theActionString = theActionString.replace('\'','`')
+			theActionString = theActionString.replace('\\','\\\\')
+			writeCode('theActionString = \"%s\"' % theActionString, 2, True)
 			str.lower(n).replace('.setvalue','')		# SetValue is default
 			
 			# -------------------------------------------------
@@ -669,15 +678,19 @@ def parseString(s):
 				else:
 					theAction = 'book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal)
 					#writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 3, True)
-			writeCode(theAction, 3, True)
+			writeCode('if globals()["stop_the_Worker"] == False:',3,True)
+			writeCode	(theAction, 4, True)
 			myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			writeCode('except Exception, err:',2,True)
-
+			writeCode	('print "%s" % str(err)',3,True)
 			writeCode	('ERRCOUNT += 1',3,True)
-			writeCode	('if ERRCOUNT == 0:',3,True)
+			writeCode	('if ERRCOUNT == 1:',3,True)
 			writeCode		('userIni.write("LastScanErrors",str(ERRCOUNT))',4,True)
 			writeCode	('writeError(f,str(err),theActionString)',3,True)
+			writeCode	("if breakAfterFirstError == 'True':",3,True)
+			writeCode		("globals()['stop_the_Worker'] = True",4,True)
+			writeCode		('f.write("Data Manager stopped after first error.")',4,True)
 
 			# this raised an error (issue 80) when used without unicode():
 			if myKey.lower().startswith('custom'):
@@ -718,45 +731,4 @@ def writeCode(s, level, linebreak = True):
 	if linebreak == True: s += '\n'
 	globalvars.THECODE.append(s)
 	return
-
-
-# todo: move stringToFloat to utils.py
-#def stringToFloat(myVal):
-#	# tries to convert a string myVal to float
-#	# returns None if not possible or string myVal is empty
-#
-#	try:
-#		return float(myVal)
-#	except Exception, err:
-#		pass
-#
-#	s = myVal
-#
-#	try:
-#		s = str(myVal).lower().strip()
-#		if s == '': return None
-#	except Exception, err:
-#		pass
-#	
-#	s = s.replace(chr(188),'.25')
-#	s = s.replace(chr(189),'.5')
-#	s = s.replace(u'\u221e','9999999')			# infinite symbol (∞)
-#
-#	if s.startswith('minus'): s = s.replace('minus','-')
-#
-#	try:
-#		return float(s)
-#	except Exception, err:
-#		tmp = ''
-#		for c in s:
-#			if c in ('.','-') or c.isdigit():
-#				tmp += c
-#			else:
-#				break
-#		try:
-#			return float(tmp)
-#		except Exception, err:
-#			return None
-
-
 

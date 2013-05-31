@@ -129,6 +129,9 @@ r 186 (1.1.0)
 change - the action which raised an error is written to the logfile
 fixed - backgroundWorker can be cancelled only after the complete ruleset collection on a book is finished  (issue 88)
 
+r 1.. (1.1.0)
+change - BreakAfterFirstError in user.ini defines if DataMan should stop executing when an error is found
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
@@ -260,52 +263,58 @@ def dataManagerConfig():
 
 def replaceData(books):
 
-	#for book in books:
-	#	try:
-	#		import System
-	#		from System.Windows.Forms import MessageBox
-	#		from time import localtime, strftime
-	#		from globalvars import *
-	#		from dmutils import *
-	#		import dmutils.dmString
-	#		userIni = iniFile(globalvars.USERINI)
-	#		comp = comparer()
-	#		dmString = dmString()
-	#		multiValue = multiValue()
-	#		dmDateTime = dmDateTime()
-	#		dmNumeric = dmNumeric()
-	#		dmYesNo = dmYesNo()
-	#		dmMangaYesNo = dmMangaYesNo()
-	#		ERRCOUNT = 0
-	#		if comp.contains(book.Tags,"no scan info",COMPARE_CASE_INSENSITIVE) == True and comp.equals(book.ScanInformation,"", COMPARE_CASE_INSENSITIVE):
-	#			myOldVal = unicode(book.ScanInformation)
-	#			try:
-	#				book.ScanInformation = dmString.add(book.ScanInformation,"no scan info",book)
-	#			except Exception, err:
-	#				print str(err)
-	#				ERRCOUNT += 1
-	#				userIni.write("LastScanErrors",str(ERRCOUNT))
-	#			myNewVal = unicode(book.ScanInformation)
-	#			if myNewVal <> myOldVal:
-	#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
-	#			else:
-	#				pass
-	#			myOldVal = unicode(book.Tags)
-	#			try:
-	#				book.Tags = multiValue.remove(book.Tags,"no scan info",book)
-	#			except Exception, err:
-	#				print str(err)
-	#				ERRCOUNT += 1
-	#			myNewVal = unicode(book.Tags)
-	#			if myNewVal <> myOldVal:
-	#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
-	#			else:
-	#				pass
-	#	except Exception,err:
-	#		MessageBox.Show ("Error in code generation: %s" % str(err))
+#	from dmutils import comparer, dmString, multiValue, dmDateTime, dmNumeric, dmYesNo, dmMangaYesNo
+#	stop_the_Worker = False
+#	COMPARE_CASE_INSENSITIVE = True
+#	for book in books:
+#
+##		import System
+##		from System.Windows.Forms import MessageBox
+##		from time import localtime, strftime
+##		from globalvars import *
+##		from dmutils import *
+#		userIni = iniFile(globalvars.USERINI)
+#		comp = comparer()
+#		dmString = dmString()
+#		multiValue = multiValue()
+#		dmDateTime = dmDateTime()
+#		dmNumeric = dmNumeric()
+#		dmYesNo = dmYesNo()
+#		dmMangaYesNo = dmMangaYesNo()
+#		breakAfterFirstError = userIni.read("BreakAfterFirstError")
+#		print "breakAfterFirstError: %s" % breakAfterFirstError
+#		ERRCOUNT = 0
+#
+##		def writeError(f,error, action):
+##			f.write('\t*************************************************\n')
+##			f.write('\tan error happened here! Please check your actions\n')
+##			f.write('\taction: %s\n' % action)
+##			f.write('\terror : %s\n' % str(error))
+##			f.write('\t*************************************************\n')
+#
+#		theActionString = " <<Inker.Add:xxx>>"
+#		if stop_the_Worker == False and comp.notEq(book.Series,"", COMPARE_CASE_INSENSITIVE):
+#			print 'rule was executed'
+##			f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.Not:>>)\n')
+#			myOldVal = unicode(book.Inker)
+#			try:
+#				book.Inker = multiValue.add(book.Inker,"xxx", book)
+#			except Exception, err:
+#				print str(err)
+#				ERRCOUNT += 1
+#				if ERRCOUNT == 0:
+#					userIni.write("LastScanErrors",str(ERRCOUNT))
+##				writeError(f,str(err),theActionString)
+#				if breakAfterFirstError == 'True': stop_the_Worker = True
+#			myNewVal = unicode(book.Inker)
+#			if myNewVal <> myOldVal:
+##				f.write('\tbook.Inker - old value: ' + myOldVal.encode('utf-8') + '\n')
+##				f.write('\tbook.Inker - new value: ' + myNewVal.encode('utf-8') + '\n')
+#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
+#			else:
+#				pass
 
-
-	#return
+#	return
 
 	ERROR_LEVEL = 0
 

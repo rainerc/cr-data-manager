@@ -611,16 +611,19 @@ class parser(object):
 			else: return 'unicode(book.%s)' % myField
 			
 		elif myType == int:
-			return 'int(self.dmString.toFloat(book.%s))' % myField
+#			return 'int(self.dmString.toFloat(book.%s))' % myField
+			return 'int(dmString.toFloat(book.%s))' % myField
 		
 		elif myType == DateTime:
 			return 'System.DateTime.Parse(book.%s)' % myField
 			
 		elif myType == self.YesNo:
-			return 'self.dmString.YesNo(book.%s)' % myField
-		
+#			return 'self.dmString.YesNo(book.%s)' % myField
+			return 'dmString.YesNo(book.%s)' % myField
+
 		elif myType == self.MangaYesNo:
-			return 'self.dmString.MangaYesNo(book.%s)' % myField
+#			return 'self.dmString.MangaYesNo(book.%s)' % myField
+			return 'dmString.MangaYesNo(book.%s)' % myField
 	
 		pass
 	
