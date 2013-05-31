@@ -152,21 +152,15 @@ class progressForm(Form):
 			writeCode('dmNumeric = dmNumeric()',1,True)
 			writeCode('dmYesNo = dmYesNo()',1,True)
 			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)
-			writeCode('theLog = ""',1,True)			
-			#writeCode('try:',1,True)
-			#writeCode('global ERRCOUNT',2,True)
-			#writeCode('except Exception, err:',1,True)
-			#writeCode('pass',2,True)
 			writeCode('breakAfterFirstError = userIni.read("BreakAfterFirstError")',1,True)
-			writeCode('print "breakAfterFirstError: %s" % breakAfterFirstError',1,True)
 			writeCode('ERRCOUNT = 0',1,True)
 			writeCode('def writeError(f,error, action):',1,True)
-			writeCode	("f.write('\\t*************************************************\\n')",2,True)
-			writeCode	("f.write('\\tan error happened here! Please check your actions\\n')",2,True)
-			writeCode	("f.write('\\taction: %s\\n' % action)",2,True)
-			writeCode	("f.write('\\terror : %s\\n' % str(error))",2,True)
-			writeCode	("f.write('\\t*************************************************\\n')",2,True)
-
+			writeCode	("myLog = ('\\t*************************************************\\n')",2,True)
+			writeCode	("myLog += ('\\tan error happened here! Please check your actions\\n')",2,True)
+			writeCode	("myLog += ('\\taction: %s\\n' % action)",2,True)
+			writeCode	("myLog += ('\\terror : %s\\n' % str(error))",2,True)
+			writeCode	("myLog += ('\\t*************************************************\\n')",2,True)
+			writeCode	("return myLog",2,True)
 			
 			s = File.ReadAllLines(globalvars.DATFILE)
 			self.maxVal = len(s)
@@ -200,13 +194,18 @@ class progressForm(Form):
 
 			writeCode('except Exception,err:', 0, True)
 			writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
+
+			#writeCode('global theLog',0,True)
+
 			self.Close()
 				
 
 		# ------------------------------------------------------
 		# run the parsed code over the books:
 		# ------------------------------------------------------
-		
+		userIni = iniFile(globalvars.USERINI)
+		dtStarted = System.DateTime.Now
+
 		if self.theProcess == globalvars.PROCESS_BOOKS:
 			self.maxVal = self.theBooks.Length
 			self._progressBar.Maximum = self.maxVal
@@ -235,14 +234,24 @@ class progressForm(Form):
 						break
 					
 				else:
-					f.write('\n\nExcecution cancelled by user.')
+					theLog += ('\n\nExcecution cancelled by user.')
 					self.cancelledByUser = True
 					break
 				
-			f.close()				# close logfile
+			#f.close()				# close logfile
+
+			dtEnded = System.DateTime.Now
+			dtDuration = dtEnded - dtStarted
+			userIni.write('ParserStarted',str(dtStarted))
+			userIni.write('ParserEnded',str(dtEnded))
+			userIni.write('ParserDuration',str(dtDuration))
 
 			if userIni.read('LastScanErrors') <> '0':
 				MessageBox.Show('There were errors in your rules. You really should check the logfile!')
+
+			#MessageBox.Show(theLog)
+			f.write(theLog)
+			f.close()
 		return
 			
 
@@ -426,9 +435,6 @@ def parseString(s):
 				if myVal.strip() == '': 
 					myCrit += 'book.GetCustomValue(\'%s\') %s None' % (myKeyName,myOperator)
 				else:
-#					if myVal.startswith('book.')	# check if field variable is used
-#						myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s unicode(%s).lower()' % (myKeyName,myOperator,myVal)
-#					else:
 					myCrit += 'str(book.GetCustomValue(\'%s\')).lower() %s \'%s\'.lower()' % (myKeyName,myOperator,myVal)
 			elif myOperator == "in range":		# must only be used with numerical keys
 				
@@ -515,7 +521,7 @@ def parseString(s):
 					myCrit += 'book.%s %s System.DateTime.MinValue and ' % (myKey, myOperator)
 				else:
 					myCrit += 'book.%s %s System.DateTime.Parse(\'%s\') and ' % (myKey, myOperator, myVal)
-					print myCrit
+					#print myCrit
 			elif myOperator == '==' and myKey not in numericalKeys:
 				if myKey in yesNoKeys:
 					myCrit += "comp.yesNo(book.%s,\"%s\") and " % (myKey, myVal)
@@ -549,8 +555,8 @@ def parseString(s):
 	myCrit = "if globals()['stop_the_Worker'] == False and " + String.rstrip(myCrit, " and") + ":"
 	writeCode(myCrit,1,True)
 
-	writeCode("print 'rule was executed'",2,True)
-	writeCode("f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % unicode(a[0]), 2, True)
+	#writeCode("print 'rule was executed'",2,True)
+	writeCode("theLog += (book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \\t(%s)\\n')" % unicode(a[0]), 2, True)
 	
 	# ----------------------------------------------------------------
 	# iterate through each of the newValues
@@ -615,11 +621,7 @@ def parseString(s):
 				myVal = myParser.getField(myVal)
 				if not myVal.startswith('book.'):
 					myVal = '\'%s\'' % myVal
-				# old:
-				# writeCode('book.SetCustomValue(\'%s\',%s)' % (myKeyName,myVal), 2, True)
-				# new:
 				theAction = 'book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal)
-				#writeCode('book.SetCustomValue(\'%s\',str(%s))' % (myKeyName,myVal), 3, True)
 			elif myModifier <> "":
 				if str.lower(myModifier) == "calc":
 					
@@ -629,68 +631,53 @@ def parseString(s):
 						myVal = myParser.parseCalc(myVal, int)
 					if myKey in pseudoNumericalKeys:	# == 'Number':
 						theAction = "book.%s = str(%s)" % (myKey, myVal)
-						#writeCode("book.%s = str(%s)" % (myKey, myVal), 3, True)
 					else:
 						theAction = "book.%s = %s" % (myKey, myVal)
-						#writeCode("book.%s = %s" % (myKey, myVal), 3, True)
 						
 				if str.lower(myModifier) == "add":
 					if myKey in multiValueKeys:
 						theAction = 'book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal)
-						#writeCode('book.%s = multiValue.add(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 					else: 
 						theAction = 'book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal)
-						#writeCode('book.%s = dmString.add(book.%s,"%s",book)' %  (myKey, myKey, myVal), 3, True)
 
 				if str.lower(myModifier) == "replace":
 					tmpVal = myVal.split(',')
 					if myKey in multiValueKeys:
 						theAction = 'book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
-						#writeCode ('book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
 					else:
 						'book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
-						#writeCode('book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1]), 3, True)
 							
 				if str.lower(myModifier) == "remove":
 					if myKey in multiValueKeys:
 						theAction = 'book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal)
-						#writeCode('book.%s = multiValue.remove(book.%s,"%s\",book)' % (myKey, myKey, myVal), 3, True)
 					else:
 						theAction = 'book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal)
-						#writeCode('book.%s = dmString.remove(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				if myModifier.lower() == 'removeleading':
 					theAction = 'book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal)
-					#writeCode('book.%s = dmString.removeLeading(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 
 			else:	# myModifier == 'SetValue'
 				if myKey in dateTimeKeys:
 					theAction = 'book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal)
-					#writeCode('book.%s = dmDateTime.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in numericalKeys:
 					theAction = 'book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal)
-					#writeCode('book.%s = dmNumeric.setValue(book.%s,"%s", book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in yesNoKeys:
 					theAction = 'book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal)
-					#writeCode('book.%s = dmYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
 				elif myKey in mangaYesNoKeys:
 					theAction = 'book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal)
-					#writeCode('book.%s = dmMangaYesNo.setValue(book.%s,"%s",book)' % (myKey, myKey, myVal), 3, True)
 				else:
 					theAction = 'book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal)
-					#writeCode('book.%s = dmString.setValue("%s",book)\n' % (myKey, myVal), 3, True)
 			writeCode('if globals()["stop_the_Worker"] == False:',3,True)
 			writeCode	(theAction, 4, True)
 			myNewVal = myNewVal + ("\t\tbook.%s = unicode(\"%s\")" % (myKey, myVal)) 
 
 			writeCode('except Exception, err:',2,True)
-			writeCode	('print "%s" % str(err)',3,True)
 			writeCode	('ERRCOUNT += 1',3,True)
 			writeCode	('if ERRCOUNT == 1:',3,True)
 			writeCode		('userIni.write("LastScanErrors",str(ERRCOUNT))',4,True)
-			writeCode	('writeError(f,str(err),theActionString)',3,True)
+			writeCode	('theLog += writeError(f,str(err),theActionString) + "\\n"',3,True)
 			writeCode	("if breakAfterFirstError == 'True':",3,True)
 			writeCode		("globals()['stop_the_Worker'] = True",4,True)
-			writeCode		('f.write("Data Manager stopped after first error.")',4,True)
+			writeCode		('theLog += ("Data Manager stopped after first error.\\n")',4,True)
 
 			# this raised an error (issue 80) when used without unicode():
 			if myKey.lower().startswith('custom'):
@@ -700,15 +687,13 @@ def parseString(s):
 				writeCode("myNewVal = unicode(book.%s)" % myKey, 2, True)
 
 			writeCode("if myNewVal <> myOldVal:", 2, True)	
-			writeCode	("f.write('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
-			writeCode	("f.write('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode	("theLog += ('\\tbook.%s - old value: ' + myOldVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
+			writeCode	("theLog += ('\\tbook.%s - new value: ' + myNewVal.encode('utf-8') + '\\n')" % (myKey), 3, True)
 			writeCode	("book.SetCustomValue(\'DataManager.processed\',strftime(\'%Y-%m-%d\', localtime()))", 3, True)
 			
-			writeCode("else:", 2, True)
-			writeCode	("pass",3,True)
-			#writeCode("if globals()['stop_the_Worker'] == True:",2,True)
-			#writeCode("return",3,True)
-			# writeCode("f.write('\\t%s - old value was same as new value\\n')" % (myKey), 3, True)
+			writeCode("else: pass", 2, True)
+			#writeCode	("pass",3,True)
+
 	return -1
 	
 
