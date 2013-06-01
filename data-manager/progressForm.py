@@ -645,7 +645,7 @@ def parseString(s):
 					if myKey in multiValueKeys:
 						theAction = 'book.%s = multiValue.replace(book.%s,"%s","%s", book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
 					else:
-						'book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
+						theAction = 'book.%s = dmString.replace(book.%s,"%s","%s",book)' % (myKey, myKey, tmpVal[0], tmpVal[1])
 							
 				if str.lower(myModifier) == "remove":
 					if myKey in multiValueKeys:
