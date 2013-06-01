@@ -134,6 +134,10 @@ r 188 (1.1.0)
 change - BreakAfterFirstError in user.ini defines if DataMan should stop executing when an error is found
 change - logfile results are written to memory first instead of file
 change - references to ComicRack.Engine removed from comparer.init and dmString.init
+change - includes GUI r49
+
+r190 (1.1.0)
+fixed - error when modifier Replace is used
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
