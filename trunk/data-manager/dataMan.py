@@ -139,6 +139,10 @@ change - includes GUI r49
 r190 (1.1.0)
 fixed - error when modifier Replace is used
 
+r1.. (1.2.0)
+change - re-writing of parser started
+change - new modifier NotContainsAllOf
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
@@ -175,6 +179,7 @@ import globalvars
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
 from progressForm import progressForm
+from dmProgressForm import dmProgressForm
 from startupForm import startupForm
 from configuratorForm import configuratorForm
 
@@ -186,6 +191,8 @@ bodyname = System.Text.Encoding.Default.BodyName
 sys.setdefaultencoding(bodyname)
 
 DEBUG__ = False
+
+OLD_VERSION = False
 
 #sys.path.append(globalvars.FOLDER)
 
@@ -270,58 +277,9 @@ def dataManagerConfig():
 
 def replaceData(books):
 
-#	from dmutils import comparer, dmString, multiValue, dmDateTime, dmNumeric, dmYesNo, dmMangaYesNo
-#	stop_the_Worker = False
-#	COMPARE_CASE_INSENSITIVE = True
-#	for book in books:
-#
-##		import System
-##		from System.Windows.Forms import MessageBox
-##		from time import localtime, strftime
-##		from globalvars import *
-##		from dmutils import *
-#		userIni = iniFile(globalvars.USERINI)
-#		comp = comparer()
-#		dmString = dmString()
-#		multiValue = multiValue()
-#		dmDateTime = dmDateTime()
-#		dmNumeric = dmNumeric()
-#		dmYesNo = dmYesNo()
-#		dmMangaYesNo = dmMangaYesNo()
-#		breakAfterFirstError = userIni.read("BreakAfterFirstError")
-#		print "breakAfterFirstError: %s" % breakAfterFirstError
-#		ERRCOUNT = 0
-#
-##		def writeError(f,error, action):
-##			f.write('\t*************************************************\n')
-##			f.write('\tan error happened here! Please check your actions\n')
-##			f.write('\taction: %s\n' % action)
-##			f.write('\terror : %s\n' % str(error))
-##			f.write('\t*************************************************\n')
-#
-#		theActionString = " <<Inker.Add:xxx>>"
-#		if stop_the_Worker == False and comp.notEq(book.Series,"", COMPARE_CASE_INSENSITIVE):
-#			print 'rule was executed'
-##			f.write(book.Series.encode('utf-8') + ' v' + str(book.Volume) + ' #' + book.Number.encode('utf-8') + ' was touched \t(<<Series.Not:>>)\n')
-#			myOldVal = unicode(book.Inker)
-#			try:
-#				book.Inker = multiValue.add(book.Inker,"xxx", book)
-#			except Exception, err:
-#				print str(err)
-#				ERRCOUNT += 1
-#				if ERRCOUNT == 0:
-#					userIni.write("LastScanErrors",str(ERRCOUNT))
-##				writeError(f,str(err),theActionString)
-#				if breakAfterFirstError == 'True': stop_the_Worker = True
-#			myNewVal = unicode(book.Inker)
-#			if myNewVal <> myOldVal:
-##				f.write('\tbook.Inker - old value: ' + myOldVal.encode('utf-8') + '\n')
-##				f.write('\tbook.Inker - new value: ' + myNewVal.encode('utf-8') + '\n')
-#				book.SetCustomValue('DataManager.processed',strftime('%Y-%m-%d', localtime()))
-#			else:
-#				pass
-
-#	return
+	#for book in books:
+	#	print 'custom: %s ' % book.GetCustomValue('orig filename')
+	#	return
 
 	ERROR_LEVEL = 0
 
@@ -350,42 +308,51 @@ def replaceData(books):
 		File.Delete(globalvars.ERRFILE)
 		File.Delete(globalvars.LOGFILE)
 	except Exception, err:
-		MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nPlease restart ComicRack.')
-		return
+		if OLD_VERSION:
+			MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nPlease restart ComicRack.')
+			return
+		else:
+			#MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nYou should consider restarting ComicRack.')
+			pass
 
 	# check if the default ruleset collection exists
 	if not File.Exists(globalvars.DATFILE):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % globalvars.VERSION)
 		return
 
-	try:
-		progBar = progressForm(globalvars.PROCESS_CODE)
-		progBar.ShowDialog()
+	if OLD_VERSION:
+		try:
+			progBar = progressForm(globalvars.PROCESS_CODE)
+			progBar.ShowDialog()
 						
-	except Exception, err:
-		MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
-		progBar.Dispose()
+		except Exception, err:
+			MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
+			progBar.Dispose()
 
-	if progBar.errorLevel == 0 and progBar.cancelledByUser == False:
-
-		progBar = progressForm(globalvars.PROCESS_BOOKS, books)
-		progBar.ShowDialog()
-		
-		if progBar.errorLevel == 0:
-			msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (progBar.stepsPerformed)
 	
-			form = displayResultsForm()
-			form.configure(msg)
+		if progBar.errorLevel == 0 and progBar.cancelledByUser == False:
+			progBar = progressForm(globalvars.PROCESS_BOOKS, books)
+			progBar.ShowDialog()
+
+	else:	# use new version
+		progBar = dmProgressForm(globalvars.PROCESS_BOOKS, books)		
+		progBar.ShowDialog()
+
+	if progBar.errorLevel == 0:
+		msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (progBar.stepsPerformed)
+	
+		form = displayResultsForm()
+		form.configure(msg)
+		form.ShowDialog(ComicRack.MainWindow)
+		form.Dispose()
+
+		if form.DialogResult == DialogResult.Yes:
+	
+			form = configuratorForm()
+			form.setFile(globalvars.LOGFILE)
+			form.Text = 'Data Manager Logfile %s' % globalvars.VERSION
 			form.ShowDialog(ComicRack.MainWindow)
 			form.Dispose()
-
-			if form.DialogResult == DialogResult.Yes:
-	
-				form = configuratorForm()
-				form.setFile(globalvars.LOGFILE)
-				form.Text = 'Data Manager Logfile %s' % globalvars.VERSION
-				form.ShowDialog(ComicRack.MainWindow)
-				form.Dispose()
 
 	try:
 		#File.Delete(TMPFILE)

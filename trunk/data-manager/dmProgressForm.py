@@ -1,7 +1,5 @@
 ﻿'''
-old verion of progressForm.py
-this is running but will be replaced by
-dmProgressForm.py
+new version of progressForm.py
 '''
 
 import System.Drawing
@@ -18,6 +16,9 @@ from globalvars import *
 import dmutils
 from dmutils import *
 
+import dmparser
+from dmparser import dmParser
+dmParser = dmParser()
 
 dmString = dmString()
 userIni = iniFile(globalvars.USERINI)
@@ -34,7 +35,7 @@ theLog = ""
 # theForm = progressForm(PROCESS_CODE)
 
 
-class progressForm(Form):
+class dmProgressForm(Form):
 	def __init__(self, theProcess = 0, books = None):
 		self.InitializeComponent()
 		#self.progValue = 0
@@ -125,6 +126,8 @@ class progressForm(Form):
 
 	def BackgroundWorker1DoWork(self, sender, e):
 
+		theLog = ''
+
 		if self.theProcess == 0:		# just for testing
 			i = 0
 			while i <= 100:
@@ -134,77 +137,6 @@ class progressForm(Form):
 				# Simulate long task
 				System.Threading.Thread.Sleep(100)
 			return
-
-		# ------------------------------------------------------
-		# parse the code line by line:
-		# ------------------------------------------------------
-		
-		if self.theProcess == globalvars.PROCESS_CODE:
-
-			globalvars.THECODE = []
-			userIni = iniFile(globalvars.USERINI)
-			userIni.write('LastScanErrors',0)
-			writeCode('try:', 0, True)	
-			writeCode('import System',1,True)
-			writeCode('from System.Windows.Forms import MessageBox',1,True)
-			writeCode('from time import localtime, strftime',1,True)
-			writeCode('from globalvars import *',1,True)
-			writeCode('from dmutils import *',1,True)
-			writeCode('userIni = iniFile(globalvars.USERINI)',1,True)
-			writeCode('comp = comparer()',1,True)
-			writeCode('dmString = dmString()',1,True)
-			writeCode('multiValue = multiValue()',1,True)
-			writeCode('dmDateTime = dmDateTime()',1,True)
-			writeCode('dmNumeric = dmNumeric()',1,True)
-			writeCode('dmYesNo = dmYesNo()',1,True)
-			writeCode('dmMangaYesNo = dmMangaYesNo()',1,True)
-			writeCode('breakAfterFirstError = userIni.read("BreakAfterFirstError")',1,True)
-			writeCode('ERRCOUNT = 0',1,True)
-			writeCode('def writeError(f,error, action):',1,True)
-			writeCode	("myLog = ('\\t*************************************************\\n')",2,True)
-			writeCode	("myLog += ('\\tan error happened here! Please check your actions\\n')",2,True)
-			writeCode	("myLog += ('\\taction: %s\\n' % action)",2,True)
-			writeCode	("myLog += ('\\terror : %s\\n' % str(error))",2,True)
-			writeCode	("myLog += ('\\t*************************************************\\n')",2,True)
-			writeCode	("return myLog",2,True)
-			
-			s = File.ReadAllLines(globalvars.DATFILE)
-			self.maxVal = len(s)
-			self._progressBar.Maximum = self.maxVal
-			self._progressBar.Step = 1
-#			i = 0
-			for line in s:
-				if not self._backgroundWorker1.CancellationPending: 
-					self.stepsPerformed += 1
-					# note that ReportProgress needs an argument!
-					self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
-	
-					try:
-						if not line.StartsWith('#') and not line.strip() == '':	# don't run this on commentary lines
-																				# todo: handle parser directives starting with #@
-	
-							if not parseString(line):	# syntax error found, break parsing the rule set
-								error_message = unicode(File.ReadAllText(globalvars.ERRFILE))
-								MessageBox.Show("Error in line %d!\n%s" % (self.stepsPerformed, error_message),"CR Data Manager %s - Parse error" % globalvars.VERSION)
-								self.errorLevel = 1
-								break
-						if line.startswith('#@ END_RULES'):
-							break
-					except Exception, err:
-						pass
-				else:
-					self.cancelledByUser = True
-					return
-				
-			#progBar.Dispose()
-
-			writeCode('except Exception,err:', 0, True)
-			writeCode('MessageBox.Show (\"Error in code generation: %s\" % str(err))', 1, True)
-
-			#writeCode('global theLog',0,True)
-
-			self.Close()
-				
 
 		# ------------------------------------------------------
 		# run the parsed code over the books:
@@ -218,27 +150,36 @@ class progressForm(Form):
 			self._progressBar.Step = 1
 			f=open(globalvars.LOGFILE, "w")	# open logfile
 
+			s = File.ReadAllLines(globalvars.DATFILE)
+			lines = []
+			for line in s:
+				if line == '#@ END_RULES': break
+				if (not line.startswith('#')) and line.strip() <> '': lines.append(line)
+			#print lines
+
 			for book in self.theBooks:
 				if not self._backgroundWorker1.CancellationPending: 
+				# if stop_the_Worker == False:
 					self.stepsPerformed += 1
 					self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
-					try:
-						myCode = ''
-						for line in globalvars.THECODE:
-							if line.strip() <> '':
-								myCode += line
-						# print the generated code once to the debug window:
-						if self.stepsPerformed == 1: print myCode
-						exec(myCode)
-
-
-						
-					except Exception, err:
-						print str(Exception.args)
-						MessageBox.Show('An unhandled error occurred while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
-						self.errorLevel = 1
-						break
 					
+					theOriginalBook = book.Clone()	# to retrieve the original values later
+						
+					for line in lines:
+						if stop_the_Worker == True: break
+						try:
+
+							if dmParser.matchAllRules(line,book):
+								theLog += '%s (%s) #%s was touched\t%s%s' % (book.Series,book.Volume,book.Number,dmParser.rules,System.Environment.NewLine)
+								dmParser.executeAllActions(book)
+
+						except Exception, err:
+							print str(Exception.args)
+							MessageBox.Show('An unhandled error occurred while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
+							self.errorLevel = 1
+							break
+					
+					# todo: compare the touchedFields here
 				else:
 					theLog += ('\n\nExcecution cancelled by user.')
 					self.cancelledByUser = True
@@ -290,7 +231,7 @@ class progressForm(Form):
 		self._backgroundWorker1.CancelAsync()
 
 	def BackgroundWorker1Cancellation(self, sender, e):
-		globals()['stop_the_Worker'] = True
+		stop_the_Worker = True
 
 
 def parseString(s):
