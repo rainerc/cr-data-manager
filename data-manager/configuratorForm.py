@@ -710,8 +710,8 @@ to visual editor""")
 #			self._panelGUI.Visible = False
 
 
-		i = 0
-		return
+		#i = 0
+		#return
 	
 	def setEditorMode(self,editormode):
 		if editormode == self.EDITOR_MODE_TEXT:
@@ -910,9 +910,10 @@ to visual editor""")
 		pass
 
 	def ComboCriteriaFieldsSelectedIndexChanged(self, sender, e):
-		self.setComboModifiers()
+		#self.setComboModifiers()
 #		myKey = self._comboCriteriaFields.SelectedValue
 #		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))
+		pass
 
 
 	def ComboValueFieldsSelectedIndexChanged(self, sender, e):

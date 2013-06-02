@@ -21,10 +21,11 @@ class customFields:
 		
 	def parseRule(self,theRule):
 		try:
+			theRule = theRule.strip()
 			theRule = theRule.replace('<<','')
 			theRule = theRule.replace('>>','')
 			tmp = theRule.split(')',1)			# this will return 'Custom(MyHero','.Is:Batman'
-			self.theKey = tmp[0] + ')'				# this is 'Custom(Hero'
+			self.theKey = tmp[0] + ')'			# this is 'Custom(Hero'
 			tmp2 = tmp[1].split(':')			# this is '.Is','Batman'
 			self.theModifier = tmp2[0][1:]		# this is 'Is'
 			if self.theModifier == '': self.theModifier = 'Is'			
@@ -46,7 +47,11 @@ class customFields:
 			print str(err)	
 
 	def customFieldName(self, myString):
-		# get the field name of Custom(myField)
+		'''
+		get the field name of Custom(myField)
+		example: dmCustomFields.customFieldName('Custom(myField)')
+		returns: myField
+		'''
 		myString = myString.replace('Custom(','')
 		myString = myString.replace(')','')
 		return myString
@@ -142,7 +147,7 @@ class comparer(object):
 		else : return False
 		
 	
-	def inList(self,myString,myVal,caseInsensitive):
+	def inList(self,myString,myVal,caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
@@ -151,7 +156,7 @@ class comparer(object):
 			if String.Trim(word) == String.Trim(myString): return True
 		return False
 
-	def startsWithAnyOf(self, myString, myVals, caseInsensitive):
+	def startsWithAnyOf(self, myString, myVals, caseInsensitive = True):
 		myString = myString.strip()
 		theVals = myVals.strip(',').split(',')
 		for word in theVals:
@@ -163,7 +168,7 @@ class comparer(object):
 					return True
 		return False
 
-	def isAnyOf(self,myString,myVals,caseInsensitive):
+	def isAnyOf(self,myString,myVals,caseInsensitive = True):
 		# example <<myString.IsAnyOf:val1,val2,val3>> 
 		# or: <<Batman.IsAnyOf:Batman,Robin,Joker>>
 		myString = unicode(myString).strip()
@@ -179,7 +184,7 @@ class comparer(object):
 		return False
 
 
-	def containsAnyOf(self, myString, myVals,caseInsensitive):
+	def containsAnyOf(self, myString, myVals,caseInsensitive = True):
 		# example <<myString.containsAnyOf:val1,val2,val3>> 
 		# or: <<The Adventures of Batman.ContainsAnyOf:Batman,Robin,Joker>>
 
@@ -194,7 +199,7 @@ class comparer(object):
 		return False
 
 	# todo: this is redundant
-	def notContainsAnyOf(self, myString,myVals,caseInsensitive):
+	def notContainsAnyOf(self, myString,myVals,caseInsensitive = True):
 		myString = myString.strip()
 		if caseInsensitive:
 			myVals = myVals.lower()
@@ -205,7 +210,7 @@ class comparer(object):
 			if word.strip() in myString: return False
 		return True
 
-	def containsAllOf(self, myString, myVals,caseInsensitive):
+	def containsAllOf(self, myString, myVals,caseInsensitive = True):
 		# example <<myString.containsAllOf:val1,val2,val3>> 
 		# or: <<The Adventures of Batman.ContainsAllOf:Batman,Robin,Joker>>
 
@@ -219,7 +224,7 @@ class comparer(object):
 			if not word.strip() in myString: return False
 		return True			
 
-	def contains(self, myString, myVal, caseInsensitive):
+	def contains(self, myString, myVal, caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
@@ -227,13 +232,13 @@ class comparer(object):
 
 	
 	# todo: this is redundant
-	def containsNot(self, myString, myVal, caseInsensitive):
+	def containsNot(self, myString, myVal, caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)	
 		return myVal.strip() not in myString			
 	
-	def equals(self, myString, myVal, caseInsensitive):
+	def equals(self, myString, myVal, caseInsensitive = True):
 		myString = unicode(myString)
 		myVal = unicode(myVal)
 		if caseInsensitive == True:
@@ -242,41 +247,51 @@ class comparer(object):
 		ret = myString.strip() == myVal.strip()
 		return myString.strip() == myVal.strip()
 
-	def startsWith(self, myString, myVal, caseInsensitive):
+	def startsWith(self, myString, myVal, caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString.startswith(myVal.strip())
 	
-	def less(self,myString,myVal,caseInsensitive):
+	def less(self,myString,myVal,caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString < myVal
 
-	def lessEq(self,myString,myVal,caseInsensitive):
+	def lessEq(self,myString,myVal,caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString <= myVal
 
-	def greater(self,myString,myVal,caseInsensitive):
+	def greater(self,myString,myVal,caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString > myVal
 
-	def greaterEq(self,myString,myVal,caseInsensitive):
+	def greaterEq(self,myString,myVal,caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString >= myVal
 
-	def notEq(self, myString, myVal, caseInsensitive):
+	def notEq(self, myString, myVal, caseInsensitive = True):
 		if caseInsensitive == True:
 			myString = str.lower(myString)
 			myVal = str.lower(myVal)
 		return myString <> myVal
+
+	def rangeNumeric(self, myString, minVal, maxVal):
+		minVal = dmString.toFloat(minVal)
+		maxVal = dmString.toFloat(maxVal) 
+		return myString >= minVal and myString <= maxVal 
+
+	def rangeDateTime(self,myString, minVal, maxVal):
+		minVal = System.DateTime.Parse(minVal)
+		maxVal = System.DateTime.Parse(maxVal + ' 23:59:59')
+		return myString >= minVal and myString <= maxVal
 
 def nullToZero(s):
 #	if String.Trim(str(s)) == '': return 0
@@ -334,24 +349,50 @@ class multiValue(object):
 		myField = myField.strip(',')
 		return myField
 
-	def replace(self, myList, oldVal, myVal, book):	# , caseinsensitive = True):
+	def addMulti(self,myField,myVals):
+		theList = myField.lower()				# create temp string from myField with all lower chars
+		theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
+		theList = theList.replace(', ',',')
+		myList = theList.split(',')				# create list from temp string
+		for v in myVals:						# run through every value in theVals
+			if v.lower().strip() not in myList and v <> '':		# if value not in temp list
+				myField += ',%s' % v			# ... then add value to myField
+		myField = myField.strip(',')
+		return myField
+
+
+	def replace(self, myList, oldVal, newVal, book):	# , caseinsensitive = True):
 #		myParser = parser()
 		oldVal = String.Trim(str(oldVal))
-		myVal = String.Trim(str(myVal))
+		newVal = String.Trim(str(newVal))
 		newList = []
 		theList = myList.strip(',').split(',')
 		if '{' in oldVal:
 			oldVal = eval(self.myParser.parseCalc(oldVal,str))
 		if '{' in myVal:
-			myVal = eval(self.myParser.parseCalc(myVal,str))
+			newVal = eval(self.myParser.parseCalc(newVal,str))
 		for l in theList:			# iterate through every value of the old list
 			l = String.Trim(l)
 			# if caseinsensitive == True:
-			if l.lower() == oldVal.lower(): l = myVal
+			if l.lower() == oldVal.lower(): l = newVal
 			if newList.count(l) == 0:
 				newList.Add(l)
 		return ','.join(newList)
 	
+	def replaceMulti(self,myField,myVals):
+		theList = myField.strip(',').split(',')
+		newList = []
+		oldVal = myVals[0]
+		newVal = myVals[1]
+		for l in theList:
+			l = l.strip()
+			if l.lower() == oldVal.lower(): l = newVal
+			if newList.count(l) == 0:
+				newList.Add(l)
+		return ','.join(newList)
+
+
+
 	def remove(self, myField, myVals, book):  # , caseinsensitive = True):
 		'''
 		remove value or multiple values from a multi value field
@@ -375,6 +416,20 @@ class multiValue(object):
 		cleanedList = cleanedList.strip(',').strip()	# check for leading or trailing blanks and commas
 		return cleanedList
 
+	def removeMulti(self, myField, theVals):
+		myList = myField.split(',')
+		tmpField = []
+		for l in myList:
+			for v in theVals:
+				if v.lower().strip() == l.lower().strip():
+					l = ''
+					break
+			tmpField.Add(l)
+		cleanedList = ','.join(tmpField)
+		while ',,' in cleanedList:
+			cleanedList = cleanedList.replace(',,',',')
+		cleanedList = cleanedList.strip(',').strip()
+		return cleanedList
 	
 class dmString():
 	def __init__(self):
@@ -440,20 +495,27 @@ class dmString():
 				return float(tmp)
 			except Exception, err:
 				return None
-			
+	
+	# obsolete but still needed for old version:				
 	def add(self, myKey, myVal, book):
 		if '{' in myVal:
 			myVal = eval(self.myParser.parseCalc(myVal,str))
 		return str(myKey) + str(myVal) 
-	
+
 	def replace(self, myKey,oldVal,newVal,book):
 		if '{' in oldVal: oldVal = eval(self.myParser.parseCalc(oldVal,str))
 		if '{' in newVal: newVal = eval(self.myParser.parseCalc(newVal,str))
 		return ireplace(myKey, oldVal, newVal).lstrip()
+
+	def replaceString(self,myKey,myVals):
+		return ireplace(myKey,myVals[0],myVals[1])
 	
 	def remove(self, myKey,myVal, book):  
 		if '{' in myVal: myVal = eval(self.myParser.parseCalc(myVal,str))
 		return ireplace(myKey,myVal,'').lstrip()
+
+	def removeString(self,myKey,myVal):
+		return ireplace(myKey,myVal[0],'').lstrip()
 	
 	def removeLeading(self, myKey,myVal, book):
 		if '{' in myVal: myVal = eval(self.myParser.parseCalc(myVal,str))
@@ -462,6 +524,12 @@ class dmString():
 		else:
 			return myKey
 		
+	def removeLeadingString(self, myKey,myVal):
+		if myKey.lower().startswith(toRemove.lower()):
+			return myKey[len(myVal[0]):].lstrip()
+		else:
+			return myKey
+
 	def setValue(self,myVal,book):
 		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
 		return myVal
@@ -531,6 +599,9 @@ class dmMangaYesNo(object):
 		
 class parser(object):
 	
+	'''
+	this class will be obselete with new version
+	'''
 	def __init__(self):
 		self.err = False
 		self.error = ''
