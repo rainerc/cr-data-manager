@@ -515,7 +515,7 @@ class dmString():
 		return ireplace(myKey,myVal,'').lstrip()
 
 	def removeString(self,myKey,myVal):
-		return ireplace(myKey,myVal[0],'').lstrip()
+		return ireplace(myKey,myVal,'').lstrip()
 	
 	def removeLeading(self, myKey,myVal, book):
 		if '{' in myVal: myVal = eval(self.myParser.parseCalc(myVal,str))
@@ -526,7 +526,7 @@ class dmString():
 		
 	def removeLeadingString(self, myKey,myVal):
 		if myKey.lower().startswith(toRemove.lower()):
-			return myKey[len(myVal[0]):].lstrip()
+			return myKey[len(myVal):].lstrip()
 		else:
 			return myKey
 
@@ -749,6 +749,7 @@ class ruleFile(object):
 		#self.allowedValsMulti = myIni.read('allowedValsMulti').split(',')
 		self.allowedValModifiers = myIni.read('allowedValModifiers').split(',')
 		self.allowedValModifiersMulti = myIni.read('allowedValModifiersMulti').split(',')
+		self.multipleParamKeyModifiers = myIni.read('multipleParamKeyModifiers').split(',')
 		
 		# -------------------------------------------------------------------------------------------
 		# todo: not sure if this is necessary

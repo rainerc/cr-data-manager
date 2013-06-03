@@ -1,0 +1,466 @@
+#Created by CR Data Manager GUI 
+#Do Not Edit Manually unless you know what you are doing
+#
+#
+#
+#@ AUTHOR docdoom
+# -------------------------------
+#@ GROUP rule section
+# -------------------------------
+# -------------------------------
+#@ GROUP run this first
+# -------------------------------
+#@ NAME set orig filename
+<<Custom(orig filename).Is:>> => <<Custom(orig filename).SetValue:{FileName}>>
+#@ NAME remove inc from scan info
+<<Series.Contains:inc>> <<Series.NotContains:incompl>> => <<ScanInformation.Remove:; inc>> <<ScanInformation.Remove:inc;>>
+#@ NAME remove inc from scan info 2
+<<Series.Contains:inc>> <<Series.NotContains:incompl>> <<ScanInformation.Is:inc>> => <<ScanInformation.SetValue:>>
+#@ NAME remove Crossover from Format
+<<Format.Is:Crossover>> => <<Format.SetValue:>>
+#@ NAME remove scan info from Tags
+<<Tags.Contains:no scan info>> <<ScanInformation.Is:>> => <<ScanInformation.Add:no scan info>> <<Tags.Remove:no scan info>>
+#@ NAME replace non valid series name
+<<Series.IsAnyOf:Non-English_Scans,Adult_Comic_Scans,2009-2012>> => <<Series.Calc:{FileName}>>
+#@ NAME complete series by count
+<<Count.GreaterEq:30>> => <<Count.SetValue:>> <<SeriesComplete.SetValue:Yes>>
+#@ NAME remove GA tag
+<<Tags.Contains:Golden Age>> => <<Tags.Remove:Golden Age>>
+#@ NAME BD Fr
+<<FileName.Contains:[BD Fr]>> => <<Tags.Add:BD Fr>> <<Series.RemoveLeading:[BD Fr]>>
+#@ END_GROUP run this first
+# -------------------------------
+# -------------------------------
+#@ GROUP CV errors
+# -------------------------------
+# -------------------------------
+#@ GROUP Publishers
+# -------------------------------
+#@ NAME St. John
+<<Publisher.StartsWith:St. Johns Publishing>> => <<Publisher.SetValue:St. John>>
+#@ NAME Curtis
+<<Publisher.Is:Curtis Magazines>> => <<Publisher.SetValue:Marvel>> <<Imprint.SetValue:Curtis Magazines>>
+#@ NAME remove DC Universe from Imprint
+<<Imprint.Is:DC Universe>> => <<Imprint.SetValue:>>
+#@ NAME Ziff-Davis
+<<Publisher.IsAnyOf:Ziff,Ziff Davis Media>> => <<Publisher.SetValue:Ziff-Davis>>
+#@ END_GROUP Publishers
+# -------------------------------
+# -------------------------------
+#@ GROUP multiple volumes
+# -------------------------------
+# -------------------------------
+#@ GROUP Injustice
+# -------------------------------
+#@ NAME Injustice 1
+<<Series.Is:Injustice: Gods Among Us>> <<Volume.Is:2013>> <<PageCount.Less:30>> => <<Series.SetValue:Injustice: Gods Among Us [digital first]>>
+#@ NAME Injustice 2
+<<Series.Is:Injustice: Gods Among Us>> <<Volume.Is:2013>> => <<Series.SetValue:Injustice: Gods Among Us [print edition]>>
+#@ END_GROUP Injustice
+# -------------------------------
+# -------------------------------
+#@ GROUP Legends of the Dark Knight 2012
+# -------------------------------
+#@ NAME Legends Dark Knight 1
+<<Series.Is:Legends of the Dark Knight>> <<Volume.Is:2012>> <<PageCount.Less:30>> => <<Series.SetValue:Legends of the Dark Knight [digital first]>>
+#@ NAME Legends Dark Knight 2
+<<Series.Is:Legends of the Dark Knight>> <<Volume.Is:2012>> => <<Series.SetValue:Legends of the Dark Knight [print edition]>>
+#@ END_GROUP Legends of the Dark Knight 2012
+# -------------------------------
+# -------------------------------
+#@ GROUP Steed & Peel
+# -------------------------------
+#@ NAME Steed & Peel v1
+<<Series.Is:Steed and Mrs. Peel>> <<Volume.Is:2012>> <<Month.Less:10>> => <<Series.SetValue:Steed and Mrs. Peel [v1]>>
+#@ NAME Steed & Peel v2
+<<Series.Is:Steed and Mrs. Peel>> <<Volume.Is:2012>> => <<Series.SetValue:Steed and Mrs. Peel [v2]>>
+#@ END_GROUP Steed & Peel
+# -------------------------------
+#@ NAME Batman Dark Knight 1
+<<Series.Is:Batman: The Dark Knight>> <<Volume.Is:2011>> <<Month.LessEq:10>> <<Year.Is:2011>> => <<Count.SetValue:5>> <<Format.SetValue:Limited Series>>
+#@ END_GROUP multiple volumes
+# -------------------------------
+# -------------------------------
+#@ GROUP Walt Disney's Comics & Stories
+# -------------------------------
+#@ NAME WDCS Dell
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:1,263>> <<Volume.Is:1940>> => <<Publisher.SetValue:Dell>> <<Volume.SetValue:1940>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Gold Key
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:264,510>> <<Volume.Is:1940>> => <<Publisher.SetValue:Gold Key>> <<Volume.SetValue:1962>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Gladstone 1
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:511,547>> <<Volume.Is:1940>> => <<Publisher.SetValue:Gladstone>> <<Volume.SetValue:1986>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Disney
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:548,585>> <<Volume.Is:1940>> => <<Publisher.SetValue:Disney>> <<Volume.SetValue:1990>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Gladstone 2
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:586,633>> <<Volume.Is:1940>> => <<Publisher.SetValue:Gladstone>> <<Volume.SetValue:1993>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Gemstone
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.Range:634,698>> <<Volume.Is:1940>> => <<Publisher.SetValue:Gemstone>> <<Volume.SetValue:2003>> <<Series.SetValue:Walt Disney's Comics and Stories>>
+#@ NAME WDCS Boom!
+<<Series.IsAnyOf:Walt Disney's Comics & Stories,Walt Disney's Comics and Stories>> <<Number.GreaterEq:699>> <<Volume.Is:1940>> => <<Volume.SetValue:2009>> <<Series.SetValue:Walt Disney's Comics and Stories>> <<Publisher.SetValue:Boom! Studios>>
+#@ END_GROUP Walt Disney's Comics & Stories
+# -------------------------------
+# -------------------------------
+#@ GROUP Mighty Mouse Timely
+# -------------------------------
+#@ NAME Mighty Mouse St. John 1
+<<Publisher.Is:Marvel>> <<Series.Is:Mighty Mouse>> <<Volume.Is:1946>> <<Number.Range:5,22>> => <<Publisher.SetValue:St. John>> <<Volume.SetValue:1947>> <<Imprint.SetValue:>>
+#@ NAME Mighty Mouse St. John 2
+<<Publisher.Is:Marvel>> <<Series.Is:Mighty Mouse>> <<Volume.Is:1946>> <<Number.Range:23,67>> => <<Publisher.SetValue:St. John>> <<Volume.SetValue:1951>> <<Series.SetValue:Paul Terry's Mighty Mouse>> <<Imprint.SetValue:>>
+#@ END_GROUP Mighty Mouse Timely
+# -------------------------------
+# -------------------------------
+#@ GROUP incorrect titles
+# -------------------------------
+#@ NAME Curse of the Mumy
+<<Series.Is:Curse of the Mummy>> <<Volume.Is:2013>> <<Publisher.Contains:Bluewater>> => <<Series.SetValue:Curse of the Mumy>>
+#@ NAME Spectacular Spider-Man
+<<Publisher.Is:Marvel>> <<Series.Contains:Spectacular Spider-Man>> <<Volume.Is:1968>> => <<Series.SetValue:The Spectacular Spider-Man>>
+#@ END_GROUP incorrect titles
+# -------------------------------
+#@ NAME Action Planet 1
+<<Series.Is:Action Planet Comics>> <<Volume.Is:1996>> <<Number.LessEq:2>> => <<Publisher.SetValue:Action Planet Comics>>
+#@ NAME Action Planet 2
+<<Series.Is:Action Planet Comics>> <<Volume.Is:1996>> <<Number.Is:3>> => <<Volume.SetValue:1997>>
+#@ NAME Spider-Man 1999
+<<Series.Is:The Amazing Spider-Man>> <<Volume.Is:1963>> <<Number.Range:442,499>> => <<Volume.SetValue:1999>> <<Number.Calc:{Number}-441>>
+#@ NAME Doom Patrol 1987
+<<Series.Is:Doom Patrol>> <<Volume.Is:1987>> <<Number.Less:64>> => <<Publisher.SetValue:DC Comics>> <<Imprint.SetValue:>>
+#@ NAME Doom Patrol 1987
+<<Series.Is:Doom Patrol>> <<Volume.Is:1987>> <<Number.GreaterEq:64>> => <<Publisher.SetValue:DC Comics>> <<Imprint.SetValue:Vertigo>>
+#@ END_GROUP CV errors
+# -------------------------------
+# -------------------------------
+#@ GROUP Various MainCharacters
+# -------------------------------
+# -------------------------------
+#@ GROUP MC Marvel
+# -------------------------------
+# -------------------------------
+#@ GROUP MC Defenders
+# -------------------------------
+<<Series.Is:The Order>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Defenders>> <<MainCharacterOrTeam.SetValue:>>
+<<Series.StartsWithAnyOf:The Last Defenders,Secret Defenders,Day of the Defenders,Defenders,The Defenders,Fearless Defenders,Giant-Size Defenders>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Defenders>> <<MainCharacterOrTeam.SetValue:>>
+#@ END_GROUP MC Defenders
+# -------------------------------
+# -------------------------------
+#@ GROUP MC Doctor Strange
+# -------------------------------
+<<Series.Contains:Doctor Strange>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Doctor Strange>> <<MainCharacterOrTeam.SetValue:>>
+<<Series.Is:Strange>> <<Volume.Is:2010>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Doctor Strange>> <<MainCharacterOrTeam.SetValue:>>
+#@ END_GROUP MC Doctor Strange
+# -------------------------------
+#@ NAME Avengers
+<<Series.StartsWithAnyOf:Avengers,The Avengers,Dark Avengers,Secret Avengers,Uncanny Avengers,Young Avengers,West Coast Avengers,New Avengers,Marvel Universe vs. The Avengers>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Avengers>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Avengers
+<<Series.StartsWithAnyOf:Marvel Adventures: Avengers,The Mighty Avengers,The New Avengers, Solo Avengers>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Avengers>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Avengers
+<<Publisher.Is:Marvel>> <<Series.ContainsAnyOf:Pet Avengers,Coming of the Avengers,Giant-Size Avengers,Harley-Davidson/Avengers,Marvel's The Avengers>> => <<SeriesGroup.SetValue:Avengers>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Black Panther
+<<Series.StartsWith:Black Panther>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Black Panther>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Daredevil
+<<Series.StartsWith:Daredevil>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Daredevil>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Deadpool
+<<Series.StartsWithAnyOf:Deadpool,Lady Deadpool,Baby's First Deadpool,Encyclopædia Deadpoolica,Prelude to Deadpool Corps>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Deadpool>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Ghost Rider
+<<Series.Contains:Ghost Rider>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Ghost Rider>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Iron Man
+<<Series.Contains:Iron Man>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Iron Man>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Moon Knight
+<<Series.Contains:Moon Knight>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Moon Knight>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Punisher
+<<Series.ContainsAnyOf:Franken-Castle,Punisher>> <<Series.NotContains:Wolverine>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Punisher>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Sub-Mariner
+<<Series.StartsWithAnyOf:Sub-Mariner,Namor>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Sub-Mariner>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Avengers
+<<Series.ContainsAnyOf:Marvel Adventures Avengers>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Avengers>> <<MainCharacterOrTeam.SetValue:>>
+#@ END_GROUP MC Marvel
+# -------------------------------
+# -------------------------------
+#@ GROUP MC DC
+# -------------------------------
+#@ NAME Aquaman
+<<Series.Contains:Aquaman>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Aquaman>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Blue Beetle
+<<Series.Contains:Blue Beetle>> <<Publisher.Is:DC Comics>> => <<MainCharacterOrTeam.SetValue:>> <<SeriesGroup.SetValue:Blue Beetle>>
+#@ NAME Firestorm
+<<Series.Contains:Firestorm>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Firestorm>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Flash
+<<Series.Contains:Flash>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Flash>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Green Arrow
+<<Series.StartsWith:Arrow>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Green Arrow>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Green Arrow
+<<Series.Contains:Green Arrow>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Green Arrow>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Hawkman
+<<Series.Contains:Hawkman>> <<Series.NotStartsWith:Atom>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Hawkman>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Swamp Thing
+<<Series.Contains:Swamp Thing>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Swamp Thing>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Teen Titans
+<<Series.ContainsAnyOf:Teen Titan,Tiny Titans>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Teen Titan>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Teen Titans
+<<Series.StartsWith:Titans>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Teen Titans>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Watchmen
+<<Series.Contains:Watchmen>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Watchmen>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Wonder Woman
+<<Series.Contains:Wonder Woman>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Wonder Woman>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Starman
+<<Series.Contains:Starman>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Starman>>
+#@ END_GROUP MC DC
+# -------------------------------
+#@ END_GROUP Various MainCharacters
+# -------------------------------
+# -------------------------------
+#@ GROUP SeriesGroups Marvel
+# -------------------------------
+#@ NAME Dark Tower
+<<Series.Contains:Dark Tower>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Dark Tower>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Fantastic Four
+<<Series.StartsWithAnyOf:Doctor Doom,Dr. Doom,FF,Fantastic Four>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Fantastic Four>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Fantastic Four
+<<Series.ContainsAnyOf:Fantastic Four,Franklin Richards,Fantastic Five>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Fantastic Four>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Fantastic Four
+<<Series.Is:Big Town>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Fantastic Four>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Hulk
+<<Series.Contains:Hulk>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Hulk>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Spider-Man
+<<Series.ContainsAnyOf:Carnage,Spider-Girl,Venom,Scarlet Spider,Spider-Man,Spider-Men,Spidey,Spider-Woman>> <<Publisher.Is:Marvel>> <<Series.NotStartsWithAnyOf:Daredevil>> => <<SeriesGroup.SetValue:Spider-Man>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME X-Men
+<<Series.ContainsAnyOf:New Mutants,Magneto,Cyclops,Kitty Pryde,X-Factor,Wolverine,Cable,Phoenix,X-Men,X-Force,Gambit,X-Termination,X-Man,X-Pose>> <<Publisher.Is:Marvel>> <<Series.NotStartsWithAnyOf:Fantastic Four>> => <<SeriesGroup.SetValue:X-Men>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME X-Men 2
+<<Series.StartsWith:Marvel Girl>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:X-Men>>
+#@ NAME Marvel Cosmic
+<<Series.ContainsAnyOf:Thanos,Guardians of the Galaxy,Inhumans,Vulcan,Realm Kings,War Kings,Annihilation,Silver Surfer,Warlock,Captain Marvel,Drax,Infinity,Galactus,Annihilators>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Marvel Cosmic>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Marvel Cosmic
+<<Series.StartsWithAnyOf:Nova,The Man Called Nova>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Marvel Cosmic>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Asgard
+<<Series.ContainsAnyOf:Thor,Journey Into Mystery,Asgard,Loki,Valkyrie>> <<Publisher.Is:Marvel>> <<Series.NotStartsWithAnyOf:Wolverine,Avengers>> => <<SeriesGroup.SetValue:Asgard>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Captain America
+<<Series.ContainsAnyOf:Captain America,Steve Rogers,Red Skull,Winter Soldier>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Captain America>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Marvel Ultimate
+<<Series.StartsWith:Ultimate>> <<Publisher.Contains:Marvel>> => <<SeriesGroup.SetValue:Marvel Ultimate>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Marvel Ultimate
+<<Series.Contains:Ultimates>> <<Publisher.Contains:Marvel>> => <<SeriesGroup.SetValue:Marvel Ultimate>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Marvel Masterworks
+<<Series.StartsWith:Marvel Masterworks>> <<Publisher.Contains:Marvel>> => <<SeriesGroup.SetValue:Marvel Masterworks>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME What If
+<<Series.Startswith:What If>> <<Publisher.Contains:Marvel>> => <<SeriesGroup.SetValue:What If>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME What If 2
+<<Series.ContainsAllOf:What If,Venom,Deadpool>> => <<SeriesGroup.SetValue:What If>>
+#@ NAME Curtis Magazines
+<<Imprint.Is:Curtis Magazines>> => <<SeriesGroup.SetValue:Curtis Magazines>>
+#@ NAME Epic
+<<Publisher.Is:Marvel>> <<Imprint.Is:Epic>> => <<SeriesGroup.SetValue:Epic>>
+#@ NAME Epic 2
+<<Publisher.Is:Marvel>> <<Series.Is:Epic Illustrated>> => <<SeriesGroup.SetValue:Epic>>
+#@ NAME Ms. Marvel
+<<Publisher.Is:Marvel>> <<Series.ContainsAnyOf:Ms. Marvel,Ms Marvel>> => <<SeriesGroup.SetValue:Ms. Marvel>>
+#@ END_GROUP SeriesGroups Marvel
+# -------------------------------
+# -------------------------------
+#@ GROUP SeriesGroups DC
+# -------------------------------
+# -------------------------------
+#@ GROUP Vertigo
+# -------------------------------
+#@ NAME Vertigo 1
+<<Imprint.Is:Vertigo>> => <<SeriesGroup.SetValue:Vertigo>>
+#@ NAME SG: Constantine
+<<Series.ContainsAnyOf:Constantine,Hellblazer>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Vertigo>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Animal Man
+<<Series.Contains:Animal Man>> <<Publisher.Is:DC Comics>> => <<MainCharacterOrTeam.SetValue:>> <<SeriesGroup.SetValue:Vertigo>>
+#@ NAME SG: Fables
+<<Series.ContainsAnyOf:Fables,Faires>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Vertigo>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Sandman
+<<Series.Contains:Sandman>> <<Publisher.Is:DC Comics>> <<Volume.GreaterEq:1989>> => <<SeriesGroup.SetValue:Vertigo>>
+#@ END_GROUP Vertigo
+# -------------------------------
+#@ NAME Doom Patrol
+<<Series.Contains:Doom Patrol>> <<Publisher.Is:DC Comics>> <<Series.NotContainsAnyOf:Tangent Comics>> => <<SeriesGroup.SetValue:Doom Patrol>>
+#@ NAME DC Showcase
+<<Series.StartsWithAnyOf:DC Comics Presents,DC Comics Presents Annual,DC Universe Presents,Strange Adventures,My Greatest Adventure,House of Mystery,Joe Kubert Presents,1st Issue Special>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:DC Showcase>>
+#@ NAME DC Showcase
+<<Series.ContainsAnyOf:DC Universe,DCU>> <<Publisher.Is:DC Comics>> <<Series.NotContains:Crisis on Infinite Earths>> => <<SeriesGroup.SetValue:DC Showcase>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Gotham
+<<Series.ContainsAnyOf:Batman,Gotham,Nightwing,Catwoman,Batwing,Birds of Prey,Detective Comics,Dark Knight,Red Hood,Robin,Talon,Arkham,Azrael,Bruce Wayne,Batgirl,Batwoman,Penguin,Joker,Ra's Al Ghul,Harley Quinn>> <<Series.ContainsNot:Superman>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Gotham>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Justice League
+<<Series.ContainsAnyOf:Justice League,JLA>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Justice League>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Justice Society
+<<Series.ContainsAnyOf:Justice Society,JSA>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Justice Society>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Metropolis
+<<Series.ContainsNot:Batman>> <<Series.ContainsAnyOf:Adventure Comics,Superman,Superboy,Supergirl,PowerGirl,Action Comics,Krypton,Lois Lane,Metropolis,Smallville,JimmyOlsen,Lex Luthor,Daily Planet,Man of Steel>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Metropolis>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Kirby Characters
+<<Series.StartsWithAnyOf:Demon,The Demon>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Kirby Characters>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Kirby Characters
+<<Series.ContainsAnyOf:Kirby,Forever People,New Gods,Fourth World,Kamandi,Mister Miracle,Mr. Miracle,OMAC,O.M.A.C.>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Kirby Characters>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Legion
+<<Series.StartsWithAnyOf:Legion,The Legion>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Legion>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Legion
+<<Series.ContainsAnyOf:L.E.G.I.O.N.,Legends of the Legion>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Legion>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Oa
+<<Series.ContainsAnyOf:Green Lantern,Red Lantern,Emerald Warriors,Sinestro>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Oa>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Shazam
+<<Series.Contains:Shazam>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Shazam>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Just Imagine
+<<Series.StartsWith:Just Imagine>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Just Imagine>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Countdown Special
+<<Series.Contains:Countdown Special>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Countdown Special>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME Millennium Edition
+<<Series.StartsWith:Millennium Edition:>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Millennium Edition>> <<Number.SetValue:>>
+#@ NAME Tangent
+<<Publisher.Is:DC Comics>> <<Imprint.Contains:Tangent>> => <<SeriesGroup.SetValue:Tangent Comics>> <<MainCharacterOrTeam.SetValue:>>
+#@ END_GROUP SeriesGroups DC
+# -------------------------------
+# -------------------------------
+#@ GROUP ---Crossovers---
+# -------------------------------
+# -------------------------------
+#@ GROUP DC Crossovers @ COMMENT Edit these: Add Tag "Crossover" (Format must not be overwritten by "Crossover")
+# -------------------------------
+#@ NAME Flashpoint
+<<Series.Startswith:Flashpoint>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Flashpoint>> <<Tags.Add:Crossover>>
+#@ NAME Superman/Batman
+<<Series.ContainsAllOf:Batman,Superman>> => <<SeriesGroup.SetValue:Superman Batman>> <<Tags.Add:Crossover>>
+#@ NAME Superman/Batman
+<<Series.Is:Doom Link>> => <<SeriesGroup.SetValue:Superman Batman>> <<Tags.Add:Crossover>>
+#@ NAME Superman/Batman
+<<Series.ContainsAnyOf:World's Finest,Worlds' Finest>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Batman Superman>> <<Tags.Add:Crossover>>
+#@ NAME Blackest Night
+<<Series.StartsWith:Blackest Night>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Blackest Night>> <<Tags.Add:Crossover>>
+#@ NAME Brightest Day
+<<Series.StartsWith:Brightest Day>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Brightest Day>> <<Tags.Add:Crossover>>
+#@ NAME Final Crisis
+<<Series.StartsWith:Final Crisis>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Final Crisis>> <<Tags.Add:Crossover>>
+#@ NAME 52
+<<Series.StartsWith:52>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:52>> <<Tags.Add:Crossover>>
+#@ NAME Silver Age
+<<Series.StartsWith:Silver Age>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Silver Age>> <<Tags.Add:Crossover>>
+#@ NAME Crisis on Infinite Earths
+<<Series.Contains:Crisis on Infinite Earths>> <<Publisher.Is:DC Comics>> <<Series.NotContains:Millennium Edition>> => <<SeriesGroup.SetValue:Crisis on Infinite Earths>> <<Tags.Add:Crossover>>
+#@ END_GROUP DC Crossovers
+# -------------------------------
+# -------------------------------
+#@ GROUP Marvel Crossovers @ COMMENT Edit these: Add Tag "Crossover" (Format must not be overwritten by "Crossover")
+# -------------------------------
+#@ NAME Age of Ultron
+<<Series.StartsWith:Age of Ultron>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Age of Ultron>> <<Tags.Add:Crossover>>
+#@ NAME AVX
+<<Series.ContainsAnyOf:AVX,Avengers Vs. X-Men,A-Babies vs. X-Babies,A+X>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:AVX>> <<Tags.Add:Crossover>>
+#@ NAME AVX
+<<Series.ContainsAllOf:Avengers,X-Men>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:AVX>> <<Tags.Add:Crossover>>
+#@ NAME Chaos War
+<<Series.StartsWith:Chaos War>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Chaos War>> <<Tags.Add:Crossover>>
+#@ NAME Civil War
+<<Series.StartsWith:Civil War>> <<Publisher.Is:Marvel>> => <<Tags.Add:Crossover>> <<SeriesGroup.SetValue:Civil War>>
+#@ NAME Dark Reign
+<<Series.StartsWithAnyOf:Dark Reign,Marvel Spotlight: Dark Reign>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Dark Reign>> <<Tags.Add:Crossover>>
+#@ NAME Fear Itself
+<<Series.Startswith:Fear Itself>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Fear Itself>> <<Tags.Add:Crossover>>
+#@ NAME Heroic Age
+<<Series.StartsWithAnyOf:Heroic Age,The Heroic Age,Enter the Heroic Age>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Heroic Age>> <<Tags.Add:Crossover>>
+#@ NAME House of M
+<<Series.StartsWithAnyOf:Decimation: House of M,House of M, Secrets Of The House of M>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:House Of M>> <<Tags.Add:Crossover>>
+#@ NAME Siege
+<<Series.StartsWith:Siege>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Siege>> <<Tags.Add:Crossover>>
+#@ NAME Shadowland
+<<Series.StartsWith:Shadowland>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Shadowland>> <<Tags.Add:Crossover>>
+#@ NAME Secret Invasion
+<<Series.StartsWith:Secret Invasion>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Secret Invasion>> <<Tags.Add:Crossover>>
+#@ NAME Secret Wars
+<<Publisher.Is:Marvel>> <<Series.StartsWithAnyOf:Secret Wars,Marvel Super Heroes Secret Wars>> => <<SeriesGroup.SetValue:Secret Wars>> <<Tags.Add:Crossover>>
+#@ NAME Spider-Island
+<<Series.StartsWith:Spider-Island>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:Spider-Island>> <<Tags.Add:Crossover>>
+#@ NAME War of Kings
+<<Series.StartsWith:War of Kings>> <<Publisher.Is:Marvel>> => <<SeriesGroup.SetValue:War of Kings>> <<Tags.Add:Crossover>>
+#@ END_GROUP Marvel Crossovers
+# -------------------------------
+#@ END_GROUP ---Crossovers---
+# -------------------------------
+# -------------------------------
+#@ GROUP Marvel/DC Golden Age
+# -------------------------------
+#@ NAME Atlas/Timely/Male
+<<Publisher.Is:Marvel>> <<Imprint.ContainsAnyOf:Timely,Atlas,Male>> <<SeriesGroup.Is:>> => <<Tags.Add:Golden Age>> <<SeriesGroup.SetValue:>>
+#@ NAME series before 1960
+<<Publisher.Is:DC Comics>> <<SeriesGroup.Is:>> <<Volume.LessEq:1950>> <<Series.NotIsAnyOf:Adventure Comics,Strange Adventures>> <<Series.NotContainsAnyOf:Superman>> => <<Tags.Add:Golden Age>>
+#@ END_GROUP Marvel/DC Golden Age
+# -------------------------------
+# -------------------------------
+#@ GROUP Marvel/DC others
+# -------------------------------
+# -------------------------------
+#@ GROUP Marvel Showcase
+# -------------------------------
+#@ NAME Marvel Showcase
+<<Publisher.Is:Marvel>> <<SeriesGroup.Is:>> <<Tags.NotContains:Golden Age>> <<Series.StartsWithAnyOf:Marvel,Giant-Size Marvel>> => <<SeriesGroup.SetValue:Marvel Showcase>>
+#@ NAME Marvel Showcase
+<<Publisher.Is:Marvel>> <<SeriesGroup.Is:xxx - other>> <<Tags.NotContains:Golden Age>> <<Series.StartsWithAnyOf:Marvel,Giant-Size Marvel>> => <<SeriesGroup.SetValue:Marvel Showcase>>
+#@ NAME Marvel Showcase 1
+<<Publisher.Is:Marvel>> <<Series.StartsWithAnyOf:Marvel Super-Heroes,Marvel Team-Up,Marvel Two-in-One,Marvel Chillers,Tales of Suspense,Marvel Premiere,Marvel Presents,Marvel Preview,The Marvel Saga,Marvel Spotlight,Marvel Super Action>> <<SeriesGroup.NotIsAnyOf:Curtis Magazines>> => <<SeriesGroup.SetValue:Marvel Showcase>>
+#@ END_GROUP Marvel Showcase
+# -------------------------------
+#@ NAME Marvel/DC others
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<SeriesGroup.Is:>> <<Tags.NotContainsAnyOf:Crossover,Golden Age>> => <<SeriesGroup.SetValue:xxx - other>>
+#@ END_GROUP Marvel/DC others
+# -------------------------------
+# -------------------------------
+#@ GROUP Formats
+# -------------------------------
+#@ NAME Annual
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<Series.Contains:Annual>> => <<Format.SetValue:Annual>>
+#@ NAME TPB
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<FileName.Contains:TPB>> <<FileName.NotContains:tpbscan>> <<ScanInformation.NotContains:tpbscan>> => <<Format.SetValue:TPB>>
+#@ NAME Giant-Size
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<FileName.ContainsAnyOf:Giant Size,Giant-Size>> <<Format.NotIsAnyOf:cover only>> => <<Format.SetValue:Giant-Size>>
+#@ NAME One-Shot
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<Count.Is:1>> <<Format.NotIsAnyOf:cover only>> => <<Format.SetValue:One-Shot>>
+#@ NAME One-Shot
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<Number.Is:>> <<Format.NotIsAnyOf:cover only>> => <<Format.SetValue:One-Shot>>
+#@ NAME Limited Series
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<Count.Range:2,20>> <<Format.NotIsAnyOf:cover only>> => <<Format.SetValue:Limited Series>>
+#@ NAME Main Series
+<<Publisher.ContainsAnyOf:DC Comics,Marvel>> <<Count.Is:>> <<Format.NotIsAnyOf:cover only,Limited Series,TPB,Giant-Size,One-Shot,Graphic Novel,GN,original art,Annual,HC,Magazine>> => <<Format.SetValue:Main Series>>
+#@ END_GROUP Formats
+# -------------------------------
+# -------------------------------
+#@ GROUP revert entries
+# -------------------------------
+<<SeriesGroup.IsAnyOf:Just Imagine,Marvel Masterworks,What If>> => <<Format.SetValue:>>
+<<SeriesGroup.Not:>> => <<MainCharacterOrTeam.SetValue:>>
+#@ END_GROUP revert entries
+# -------------------------------
+#@ END_GROUP rule section
+# -------------------------------
+#@ END_RULES
+# -------------------------------
+# -------------------------------
+#@ GROUP test section
+# -------------------------------
+#@ NAME set orig filename
+<<Custom(orig filename).Is:>> => <<Custom(orig filename).SetValue:{FileName}>>
+#@ NAME Number range test
+<<Number.Range:1,20>> => <<Tags.Add:444>>
+#@ NAME Replace testing
+<<Series.ContainsNot:Superman>> => <<Series.Replace:and ,and >>
+#@ END_GROUP test section
+# -------------------------------
+# -------------------------------
+#@ GROUP Perfect Title Casing @ COMMENT All Prepositions Conjunctions and Articles lowercased unless at the beggining of a Title
+# -------------------------------
+#@ NAME Fix Casing @ COMMENT This will sanify casing of articles in Series Names, Series Groups, and Titles (http://www.grammar-monster.com/lessons/capital_letters_title_case.htm)
+<<Series.Not:>> => <<Series.Replace: Near , near >> <<Series.Replace: At , at >> <<Series.Replace: Of , of >> <<Series.Replace: Behind , behind >> <<Series.Replace: Like , like >> <<Series.Replace: Before , before >> <<Series.Replace: Around , around >> <<Series.Replace: Along , along >> <<Series.Replace: Since , since >> <<Series.Replace: Against , against >> <<Series.Replace: Off , off >> <<Series.Replace: Among , among >> <<Series.Replace: On , on >> <<Series.Replace: Into , into >> <<Series.Replace: Except , except >> <<Series.Replace: Beyond , beyond >> <<Series.Replace: For , for >> <<Series.Replace: Down , down >> <<Series.Replace: During , during >> <<Series.Replace: By , by >> <<Series.Replace: Between , between >> <<Series.Replace: Beneath , beneath >> <<Series.Replace: Inside , inside >> <<Series.Replace: Below , below >> <<Series.Replace: From , from >> <<Series.Replace: Beside , beside >> <<Series.Replace: In , in >> <<Series.Replace: A , a >> <<Series.Replace: But , but >> <<Series.Replace: Up , up >> <<Series.Replace: Under , under >> <<Series.Replace: Or , or >> <<Series.Replace: Until , until >> <<Series.Replace: With , with >> <<Series.Replace: Upon , upon >> <<Series.Replace: An , an >> <<Series.Replace: Above , above >> <<Series.Replace: And , and >> <<Series.Replace: Through , through >> <<Series.Replace: The , the >> <<Series.Replace: Within , within >> <<Series.Replace: To , to >> <<Series.Replace: Toward , toward >> <<Series.Replace: Across , across >> <<Series.Replace: About , about >> <<SeriesGroup.Replace: Until , until >> <<SeriesGroup.Replace: From , from >> <<SeriesGroup.Replace: For , for >> <<SeriesGroup.Replace: With , with >> <<SeriesGroup.Replace: Upon , upon >> <<SeriesGroup.Replace: To , to >> <<SeriesGroup.Replace: Since , since >> <<SeriesGroup.Replace: Into , into >> <<SeriesGroup.Replace: Inside , inside >> <<SeriesGroup.Replace: Except , except >> <<SeriesGroup.Replace: Through , through >> <<SeriesGroup.Replace: Of , of >> <<SeriesGroup.Replace: During , during >> <<SeriesGroup.Replace: Off , off >> <<SeriesGroup.Replace: Near , near >> <<SeriesGroup.Replace: Under , under >> <<SeriesGroup.Replace: Within , within >> <<SeriesGroup.Replace: In , in >> <<SeriesGroup.Replace: Up , up >> <<SeriesGroup.Replace: On , on >> <<SeriesGroup.Replace: Like , like >> <<SeriesGroup.Replace: Toward , toward >> <<SeriesGroup.Replace: Down , down >> <<SeriesGroup.Replace: About , about >> <<SeriesGroup.Replace: Before , before >> <<SeriesGroup.Replace: Along , along >> <<SeriesGroup.Replace: And , and >> <<SeriesGroup.Replace: Beneath , beneath >> <<SeriesGroup.Replace: Behind , behind >> <<SeriesGroup.Replace: Or , or >> <<SeriesGroup.Replace: At , at >> <<SeriesGroup.Replace: Among , among >> <<SeriesGroup.Replace: Against , against >> <<SeriesGroup.Replace: Around , around >> <<SeriesGroup.Replace: Above , above >> <<SeriesGroup.Replace: Beyond , beyond >> <<SeriesGroup.Replace: Below , below >> <<SeriesGroup.Replace: By , by >> <<SeriesGroup.Replace: But , but >> <<SeriesGroup.Replace: Across , across >> <<SeriesGroup.Replace: Beside , beside >> <<SeriesGroup.Replace: An , an >> <<SeriesGroup.Replace: Between , between >> <<SeriesGroup.Replace: The , the >> <<SeriesGroup.Replace: A , a >> <<Title.Replace: To , to >> <<Title.Replace: Toward , toward >> <<Title.Replace: About , about >> <<Title.Replace: Above , above >> <<Title.Replace: A , a >> <<Title.Replace: Upon , upon >> <<Title.Replace: Across , across >> <<Title.Replace: Up , up >> <<Title.Replace: Through , through >> <<Title.Replace: With , with >> <<Title.Replace: The , the >> <<Title.Replace: An , an >> <<Title.Replace: But , but >> <<Title.Replace: Under , under >> <<Title.Replace: Or , or >> <<Title.Replace: And , and >> <<Title.Replace: Until , until >> <<Title.Replace: Within , within >> <<Title.Replace: Beneath , beneath >> <<Title.Replace: From , from >> <<Title.Replace: Beside , beside >> <<Title.Replace: Inside , inside >> <<Title.Replace: Below , below >> <<Title.Replace: In , in >> <<Title.Replace: For , for >> <<Title.Replace: During , during >> <<Title.Replace: By , by >> <<Title.Replace: Down , down >> <<Title.Replace: Between , between >> <<Title.Replace: Except , except >> <<Title.Replace: Beyond , beyond >> <<Title.Replace: Behind , behind >> <<Title.Replace: Along , along >> <<Title.Replace: Off , off >> <<Title.Replace: Among , among >> <<Title.Replace: Since , since >> <<Title.Replace: Against , against >> <<Title.Replace: On , on >> <<Title.Replace: Of , of >> <<Title.Replace: Like , like >> <<Title.Replace: Before , before >> <<Title.Replace: Into , into >> <<Title.Replace: Around , around >> <<Title.Replace: Near , near >> <<Title.Replace: At , at >>
+#@ NAME Re-Fix Casing @ COMMENT Goes back and recapitalizes anything that falls after a ":". ";", "." or a"-"
+<<Series.Not:>> => <<Series.Replace: near ,: Near >> <<Series.Replace:- near ,- Near >> <<Series.Replace:; near ,; Near >> <<Series.Replace:. near ,. Near >> <<Series.Replace: at ,: At >> <<Series.Replace:- at ,- At >> <<Series.Replace:; at ,; At >> <<Series.Replace:. at ,. At >> <<Series.Replace: of ,: Of >> <<Series.Replace:- of ,- Of >> <<Series.Replace:; of ,; Of >> <<Series.Replace:. of ,. Of >> <<Series.Replace: behind ,: Behind >> <<Series.Replace:- behind ,- Behind >> <<Series.Replace:; behind ,; Behind >> <<Series.Replace:. behind ,. Behind >> <<Series.Replace: like ,: Like >> <<Series.Replace:- like ,- Like >> <<Series.Replace:; like ,; Like >> <<Series.Replace:. like ,. Like >> <<Series.Replace: before ,: Before >> <<Series.Replace:- before ,- Before >> <<Series.Replace:; before ,; Before >> <<Series.Replace:. before ,. Before >> <<Series.Replace: around ,: Around >> <<Series.Replace:- around ,- Around >> <<Series.Replace:; around ,; Around >> <<Series.Replace:. around ,. Around >> <<Series.Replace: along ,: Along >> <<Series.Replace:- along ,- Along >> <<Series.Replace:; along ,; Along >> <<Series.Replace:. along ,. Along >> <<Series.Replace: since ,: Since >> <<Series.Replace:- since ,- Since >> <<Series.Replace:; since ,; Since >> <<Series.Replace:. since ,. Since >> <<Series.Replace: against ,: Against >> <<Series.Replace:- against ,- Against >> <<Series.Replace:; against ,; Against >> <<Series.Replace:. against ,. Against >> <<Series.Replace: off ,: Off >> <<Series.Replace:- off ,- Off >> <<Series.Replace:; off ,; Off >> <<Series.Replace:. off ,. Off >> <<Series.Replace: among ,: Among >> <<Series.Replace:- among ,- Among >> <<Series.Replace:; among ,; Among >> <<Series.Replace:. among ,. Among >> <<Series.Replace: on ,: On >> <<Series.Replace:- on ,- On >> <<Series.Replace:; on ,; On >> <<Series.Replace:. on ,. On >> <<Series.Replace: into ,: Into >> <<Series.Replace:- into ,- Into >> <<Series.Replace:; into ,; Into >> <<Series.Replace:. into ,. Into >> <<Series.Replace: except ,: Except >> <<Series.Replace:- except ,- Except >> <<Series.Replace:; except ,; Except >> <<Series.Replace:. except ,. Except >> <<Series.Replace: beyond ,: Beyond >> <<Series.Replace:- beyond ,- Beyond >> <<Series.Replace:; beyond ,; Beyond >> <<Series.Replace:. beyond ,. Beyond >> <<Series.Replace: for ,: For >> <<Series.Replace:- for ,- For >> <<Series.Replace:; for ,; For >> <<Series.Replace:. for ,. For >> <<Series.Replace: down ,: Down >> <<Series.Replace:- down ,- Down >> <<Series.Replace:; down ,; Down >> <<Series.Replace:. down ,. Down >> <<Series.Replace: during ,: During >> <<Series.Replace:- during ,- During >> <<Series.Replace:; during ,; During >> <<Series.Replace:. during ,. During >> <<Series.Replace: by ,: By >> <<Series.Replace:- by ,- By >> <<Series.Replace:; by ,; By >> <<Series.Replace:. by ,. By >> <<Series.Replace: between ,: Between >> <<Series.Replace:- between ,- Between >> <<Series.Replace:; between ,; Between >> <<Series.Replace:. between ,. Between >> <<Series.Replace: beneath ,: Beneath >> <<Series.Replace:- beneath ,- Beneath >> <<Series.Replace:; beneath ,; Beneath >> <<Series.Replace:. beneath ,. Beneath >> <<Series.Replace: inside ,: Inside >> <<Series.Replace:- inside ,- Inside >> <<Series.Replace:; inside ,; Inside >> <<Series.Replace:. inside ,. Inside >> <<Series.Replace: below ,: Below >> <<Series.Replace:- below ,- Below >> <<Series.Replace:; below ,; Below >> <<Series.Replace:. below ,. Below >> <<Series.Replace: from ,: From >> <<Series.Replace:- from ,- From >> <<Series.Replace:; from ,; From >> <<Series.Replace:. from ,. From >> <<Series.Replace: beside ,: Beside >> <<Series.Replace:- beside ,- Beside >> <<Series.Replace:; beside ,; Beside >> <<Series.Replace:. beside ,. Beside >> <<Series.Replace: in ,: In >> <<Series.Replace:- in ,- In >> <<Series.Replace:; in ,; In >> <<Series.Replace:. in ,. In >> <<Series.Replace: a ,: A >> <<Series.Replace:- a ,- A >> <<Series.Replace:; a ,; A >> <<Series.Replace:. a ,. A >> <<Series.Replace: but ,: But >> <<Series.Replace:- but ,- But >> <<Series.Replace:; but ,; But >> <<Series.Replace:. but ,. But >> <<Series.Replace: up ,: Up >> <<Series.Replace:- up ,- Up >> <<Series.Replace:; up ,; Up >> <<Series.Replace:. up ,. Up >> <<Series.Replace: under ,: Under >> <<Series.Replace:- under ,- Under >> <<Series.Replace:; under ,; Under >> <<Series.Replace:. under ,. Under >> <<Series.Replace: or ,: Or >> <<Series.Replace:- or ,- Or >> <<Series.Replace:; or ,; Or >> <<Series.Replace:. or ,. Or >> <<Series.Replace: until ,: Until >> <<Series.Replace:- until ,- Until >> <<Series.Replace:; until ,; Until >> <<Series.Replace:. until ,. Until >> <<Series.Replace: with ,: With >> <<Series.Replace:- with ,- With >> <<Series.Replace:; with ,; With >> <<Series.Replace:. with ,. With >> <<Series.Replace: upon ,: Upon >> <<Series.Replace:- upon ,- Upon >> <<Series.Replace:; upon ,; Upon >> <<Series.Replace:. upon ,. Upon >> <<Series.Replace: an ,: An >> <<Series.Replace:- an ,- An >> <<Series.Replace:; an ,; An >> <<Series.Replace:. an ,. An >> <<Series.Replace: above ,: Above >> <<Series.Replace:- above ,- Above >> <<Series.Replace:; above ,; Above >> <<Series.Replace:. above ,. Above >> <<Series.Replace: and ,: And >> <<Series.Replace:- and ,- And >> <<Series.Replace:; and ,; And >> <<Series.Replace:. and ,. And >> <<Series.Replace: through ,: Through >> <<Series.Replace:- through ,- Through >> <<Series.Replace:; through ,; Through >> <<Series.Replace:. through ,. Through >> <<Series.Replace: the ,: The >> <<Series.Replace:- the ,- The >> <<Series.Replace:; the ,; The >> <<Series.Replace:. the ,. The >> <<Series.Replace: within ,: Within >> <<Series.Replace:- within ,- Within >> <<Series.Replace:; within ,; Within >> <<Series.Replace:. within ,. Within >> <<Series.Replace: to ,: To >> <<Series.Replace:- to ,- To >> <<Series.Replace:; to ,; To >> <<Series.Replace:. to ,. To >> <<Series.Replace: toward ,: Toward >> <<Series.Replace:- toward ,- Toward >> <<Series.Replace:; toward ,; Toward >> <<Series.Replace:. toward ,. Toward >> <<Series.Replace: across ,: Across >> <<Series.Replace:- across ,- Across >> <<Series.Replace:; across ,; Across >> <<Series.Replace:. across ,. Across >> <<Series.Replace: about ,: About >> <<Series.Replace:- about ,- About >> <<Series.Replace:; about ,; About >> <<Series.Replace:. about ,. About >> <<SeriesGroup.Replace: until ,: Until >> <<SeriesGroup.Replace:- until ,- Until >> <<SeriesGroup.Replace:; until ,; Until >> <<SeriesGroup.Replace:. until ,. Until >> <<SeriesGroup.Replace: from ,: From >> <<SeriesGroup.Replace:- from ,- From >> <<SeriesGroup.Replace:; from ,; From >> <<SeriesGroup.Replace:. from ,. From >> <<SeriesGroup.Replace: for ,: For >> <<SeriesGroup.Replace:- for ,- For >> <<SeriesGroup.Replace:; for ,; For >> <<SeriesGroup.Replace:. for ,. For >> <<SeriesGroup.Replace: with ,: With >> <<SeriesGroup.Replace:- with ,- With >> <<SeriesGroup.Replace:; with ,; With >> <<SeriesGroup.Replace:. with ,. With >> <<SeriesGroup.Replace: upon ,: Upon >> <<SeriesGroup.Replace:- upon ,- Upon >> <<SeriesGroup.Replace:; upon ,; Upon >> <<SeriesGroup.Replace:. upon ,. Upon >> <<SeriesGroup.Replace: to ,: To >> <<SeriesGroup.Replace:- to ,- To >> <<SeriesGroup.Replace:; to ,; To >> <<SeriesGroup.Replace:. to ,. To >> <<SeriesGroup.Replace: since ,: Since >> <<SeriesGroup.Replace:- since ,- Since >> <<SeriesGroup.Replace:; since ,; Since >> <<SeriesGroup.Replace:. since ,. Since >> <<SeriesGroup.Replace: into ,: Into >> <<SeriesGroup.Replace:- into ,- Into >> <<SeriesGroup.Replace:; into ,; Into >> <<SeriesGroup.Replace:. into ,. Into >> <<SeriesGroup.Replace: inside ,: Inside >> <<SeriesGroup.Replace:- inside ,- Inside >> <<SeriesGroup.Replace:; inside ,; Inside >> <<SeriesGroup.Replace:. inside ,. Inside >> <<SeriesGroup.Replace: except ,: Except >> <<SeriesGroup.Replace:- except ,- Except >> <<SeriesGroup.Replace:; except ,; Except >> <<SeriesGroup.Replace:. except ,. Except >> <<SeriesGroup.Replace: through ,: Through >> <<SeriesGroup.Replace:- through ,- Through >> <<SeriesGroup.Replace:; through ,; Through >> <<SeriesGroup.Replace:. through ,. Through >> <<SeriesGroup.Replace: of ,: Of >> <<SeriesGroup.Replace:- of ,- Of >> <<SeriesGroup.Replace:; of ,; Of >> <<SeriesGroup.Replace:. of ,. Of >> <<SeriesGroup.Replace: during ,: During >> <<SeriesGroup.Replace:- during ,- During >> <<SeriesGroup.Replace:; during ,; During >> <<SeriesGroup.Replace:. during ,. During >> <<SeriesGroup.Replace: off ,: Off >> <<SeriesGroup.Replace:- off ,- Off >> <<SeriesGroup.Replace:; off ,; Off >> <<SeriesGroup.Replace:. off ,. Off >> <<SeriesGroup.Replace: near ,: Near >> <<SeriesGroup.Replace:- near ,- Near >> <<SeriesGroup.Replace:; near ,; Near >> <<SeriesGroup.Replace:. near ,. Near >> <<SeriesGroup.Replace: under ,: Under >> <<SeriesGroup.Replace:- under ,- Under >> <<SeriesGroup.Replace:; under ,; Under >> <<SeriesGroup.Replace:. under ,. Under >> <<SeriesGroup.Replace: within ,: Within >> <<SeriesGroup.Replace:- within ,- Within >> <<SeriesGroup.Replace:; within ,; Within >> <<SeriesGroup.Replace:. within ,. Within >> <<SeriesGroup.Replace: in ,: In >> <<SeriesGroup.Replace:- in ,- In >> <<SeriesGroup.Replace:; in ,; In >> <<SeriesGroup.Replace:. in ,. In >> <<SeriesGroup.Replace: up ,: Up >> <<SeriesGroup.Replace:- up ,- Up >> <<SeriesGroup.Replace:; up ,; Up >> <<SeriesGroup.Replace:. up ,. Up >> <<SeriesGroup.Replace: on ,: On >> <<SeriesGroup.Replace:- on ,- On >> <<SeriesGroup.Replace:; on ,; On >> <<SeriesGroup.Replace:. on ,. On >> <<SeriesGroup.Replace: like ,: Like >> <<SeriesGroup.Replace:- like ,- Like >> <<SeriesGroup.Replace:; like ,; Like >> <<SeriesGroup.Replace:. like ,. Like >> <<SeriesGroup.Replace: toward ,: Toward >> <<SeriesGroup.Replace:- toward ,- Toward >> <<SeriesGroup.Replace:; toward ,; Toward >> <<SeriesGroup.Replace:. toward ,. Toward >> <<SeriesGroup.Replace: down ,: Down >> <<SeriesGroup.Replace:- down ,- Down >> <<SeriesGroup.Replace:; down ,; Down >> <<SeriesGroup.Replace:. down ,. Down >> <<SeriesGroup.Replace: about ,: About >> <<SeriesGroup.Replace:- about ,- About >> <<SeriesGroup.Replace:; about ,; About >> <<SeriesGroup.Replace:. about ,. About >> <<SeriesGroup.Replace: before ,: Before >> <<SeriesGroup.Replace:- before ,- Before >> <<SeriesGroup.Replace:; before ,; Before >> <<SeriesGroup.Replace:. before ,. Before >> <<SeriesGroup.Replace: along ,: Along >> <<SeriesGroup.Replace:- along ,- Along >> <<SeriesGroup.Replace:; along ,; Along >> <<SeriesGroup.Replace:. along ,. Along >> <<SeriesGroup.Replace: and ,: And >> <<SeriesGroup.Replace:- and ,- And >> <<SeriesGroup.Replace:; and ,; And >> <<SeriesGroup.Replace:. and ,. And >> <<SeriesGroup.Replace: beneath ,: Beneath >> <<SeriesGroup.Replace:- beneath ,- Beneath >> <<SeriesGroup.Replace:; beneath ,; Beneath >> <<SeriesGroup.Replace:. beneath ,. Beneath >> <<SeriesGroup.Replace: behind ,: Behind >> <<SeriesGroup.Replace:- behind ,- Behind >> <<SeriesGroup.Replace:; behind ,; Behind >> <<SeriesGroup.Replace:. behind ,. Behind >> <<SeriesGroup.Replace: or ,: Or >> <<SeriesGroup.Replace:- or ,- Or >> <<SeriesGroup.Replace:; or ,; Or >> <<SeriesGroup.Replace:. or ,. Or >> <<SeriesGroup.Replace: at ,: At >> <<SeriesGroup.Replace:- at ,- At >> <<SeriesGroup.Replace:; at ,; At >> <<SeriesGroup.Replace:. at ,. At >> <<SeriesGroup.Replace: among ,: Among >> <<SeriesGroup.Replace:- among ,- Among >> <<SeriesGroup.Replace:; among ,; Among >> <<SeriesGroup.Replace:. among ,. Among >> <<SeriesGroup.Replace: against ,: Against >> <<SeriesGroup.Replace:- against ,- Against >> <<SeriesGroup.Replace:; against ,; Against >> <<SeriesGroup.Replace:. against ,. Against >> <<SeriesGroup.Replace: around ,: Around >> <<SeriesGroup.Replace:- around ,- Around >> <<SeriesGroup.Replace:; around ,; Around >> <<SeriesGroup.Replace:. around ,. Around >> <<SeriesGroup.Replace: above ,: Above >> <<SeriesGroup.Replace:- above ,- Above >> <<SeriesGroup.Replace:; above ,; Above >> <<SeriesGroup.Replace:. above ,. Above >> <<SeriesGroup.Replace: beyond ,: Beyond >> <<SeriesGroup.Replace:- beyond ,- Beyond >> <<SeriesGroup.Replace:; beyond ,; Beyond >> <<SeriesGroup.Replace:. beyond ,. Beyond >> <<SeriesGroup.Replace: below ,: Below >> <<SeriesGroup.Replace:- below ,- Below >> <<SeriesGroup.Replace:; below ,; Below >> <<SeriesGroup.Replace:. below ,. Below >> <<SeriesGroup.Replace: by ,: By >> <<SeriesGroup.Replace:- by ,- By >> <<SeriesGroup.Replace:; by ,; By >> <<SeriesGroup.Replace:. by ,. By >> <<SeriesGroup.Replace: but ,: But >> <<SeriesGroup.Replace:- but ,- But >> <<SeriesGroup.Replace:; but ,; But >> <<SeriesGroup.Replace:. but ,. But >> <<SeriesGroup.Replace: across ,: Across >> <<SeriesGroup.Replace:- across ,- Across >> <<SeriesGroup.Replace:; across ,; Across >> <<SeriesGroup.Replace:. across ,. Across >> <<SeriesGroup.Replace: beside ,: Beside >> <<SeriesGroup.Replace:- beside ,- Beside >> <<SeriesGroup.Replace:; beside ,; Beside >> <<SeriesGroup.Replace:. beside ,. Beside >> <<SeriesGroup.Replace: an ,: An >> <<SeriesGroup.Replace:- an ,- An >> <<SeriesGroup.Replace:; an ,; An >> <<SeriesGroup.Replace:. an ,. An >> <<SeriesGroup.Replace: between ,: Between >> <<SeriesGroup.Replace:- between ,- Between >> <<SeriesGroup.Replace:; between ,; Between >> <<SeriesGroup.Replace:. between ,. Between >> <<SeriesGroup.Replace: the ,: The >> <<SeriesGroup.Replace:- the ,- The >> <<SeriesGroup.Replace:; the ,; The >> <<SeriesGroup.Replace:. the ,. The >> <<SeriesGroup.Replace: a ,: A >> <<SeriesGroup.Replace:- a ,- A >> <<SeriesGroup.Replace:; a ,; A >> <<SeriesGroup.Replace:. a ,. A >> <<Title.Replace: to ,: To >> <<Title.Replace:- to ,- To >> <<Title.Replace:; to ,; To >> <<Title.Replace:. to ,. To >> <<Title.Replace: toward ,: Toward >> <<Title.Replace:- toward ,- Toward >> <<Title.Replace:; toward ,; Toward >> <<Title.Replace:. toward ,. Toward >> <<Title.Replace: about ,: About >> <<Title.Replace:- about ,- About >> <<Title.Replace:; about ,; About >> <<Title.Replace:. about ,. About >> <<Title.Replace: above ,: Above >> <<Title.Replace:- above ,- Above >> <<Title.Replace:; above ,; Above >> <<Title.Replace:. above ,. Above >> <<Title.Replace: a ,: A >> <<Title.Replace:- a ,- A >> <<Title.Replace:; a ,; A >> <<Title.Replace:. a ,. A >> <<Title.Replace: upon ,: Upon >> <<Title.Replace:- upon ,- Upon >> <<Title.Replace:; upon ,; Upon >> <<Title.Replace:. upon ,. Upon >> <<Title.Replace: across ,: Across >> <<Title.Replace:- across ,- Across >> <<Title.Replace:; across ,; Across >> <<Title.Replace:. across ,. Across >> <<Title.Replace: up ,: Up >> <<Title.Replace:- up ,- Up >> <<Title.Replace:; up ,; Up >> <<Title.Replace:. up ,. Up >> <<Title.Replace: through ,: Through >> <<Title.Replace:- through ,- Through >> <<Title.Replace:; through ,; Through >> <<Title.Replace:. through ,. Through >> <<Title.Replace: with ,: With >> <<Title.Replace:- with ,- With >> <<Title.Replace:; with ,; With >> <<Title.Replace:. with ,. With >> <<Title.Replace: the ,: The >> <<Title.Replace:- the ,- The >> <<Title.Replace:; the ,; The >> <<Title.Replace:. the ,. The >> <<Title.Replace: an ,: An >> <<Title.Replace:- an ,- An >> <<Title.Replace:; an ,; An >> <<Title.Replace:. an ,. An >> <<Title.Replace: but ,: But >> <<Title.Replace:- but ,- But >> <<Title.Replace:; but ,; But >> <<Title.Replace:. but ,. But >> <<Title.Replace: under ,: Under >> <<Title.Replace:- under ,- Under >> <<Title.Replace:; under ,; Under >> <<Title.Replace:. under ,. Under >> <<Title.Replace: or ,: Or >> <<Title.Replace:- or ,- Or >> <<Title.Replace:; or ,; Or >> <<Title.Replace:. or ,. Or >> <<Title.Replace: and ,: And >> <<Title.Replace:- and ,- And >> <<Title.Replace:; and ,; And >> <<Title.Replace:. and ,. And >> <<Title.Replace: until ,: Until >> <<Title.Replace:- until ,- Until >> <<Title.Replace:; until ,; Until >> <<Title.Replace:. until ,. Until >> <<Title.Replace: within ,: Within >> <<Title.Replace:- within ,- Within >> <<Title.Replace:; within ,; Within >> <<Title.Replace:. within ,. Within >> <<Title.Replace: beneath ,: Beneath >> <<Title.Replace:- beneath ,- Beneath >> <<Title.Replace:; beneath ,; Beneath >> <<Title.Replace:. beneath ,. Beneath >> <<Title.Replace: from ,: From >> <<Title.Replace:- from ,- From >> <<Title.Replace:; from ,; From >> <<Title.Replace:. from ,. From >> <<Title.Replace: beside ,: Beside >> <<Title.Replace:- beside ,- Beside >> <<Title.Replace:; beside ,; Beside >> <<Title.Replace:. beside ,. Beside >> <<Title.Replace: inside ,: Inside >> <<Title.Replace:- inside ,- Inside >> <<Title.Replace:; inside ,; Inside >> <<Title.Replace:. inside ,. Inside >> <<Title.Replace: below ,: Below >> <<Title.Replace:- below ,- Below >> <<Title.Replace:; below ,; Below >> <<Title.Replace:. below ,. Below >> <<Title.Replace: in ,: In >> <<Title.Replace:- in ,- In >> <<Title.Replace:; in ,; In >> <<Title.Replace:. in ,. In >> <<Title.Replace: for ,: For >> <<Title.Replace:- for ,- For >> <<Title.Replace:; for ,; For >> <<Title.Replace:. for ,. For >> <<Title.Replace: during ,: During >> <<Title.Replace:- during ,- During >> <<Title.Replace:; during ,; During >> <<Title.Replace:. during ,. During >> <<Title.Replace: by ,: By >> <<Title.Replace:- by ,- By >> <<Title.Replace:; by ,; By >> <<Title.Replace:. by ,. By >> <<Title.Replace: down ,: Down >> <<Title.Replace:- down ,- Down >> <<Title.Replace:; down ,; Down >> <<Title.Replace:. down ,. Down >> <<Title.Replace: between ,: Between >> <<Title.Replace:- between ,- Between >> <<Title.Replace:; between ,; Between >> <<Title.Replace:. between ,. Between >> <<Title.Replace: except ,: Except >> <<Title.Replace:- except ,- Except >> <<Title.Replace:; except ,; Except >> <<Title.Replace:. except ,. Except >> <<Title.Replace: beyond ,: Beyond >> <<Title.Replace:- beyond ,- Beyond >> <<Title.Replace:; beyond ,; Beyond >> <<Title.Replace:. beyond ,. Beyond >> <<Title.Replace: behind ,: Behind >> <<Title.Replace:- behind ,- Behind >> <<Title.Replace:; behind ,; Behind >> <<Title.Replace:. behind ,. Behind >> <<Title.Replace: along ,: Along >> <<Title.Replace:- along ,- Along >> <<Title.Replace:; along ,; Along >> <<Title.Replace:. along ,. Along >> <<Title.Replace: off ,: Off >> <<Title.Replace:- off ,- Off >> <<Title.Replace:; off ,; Off >> <<Title.Replace:. off ,. Off >> <<Title.Replace: among ,: Among >> <<Title.Replace:- among ,- Among >> <<Title.Replace:; among ,; Among >> <<Title.Replace:. among ,. Among >> <<Title.Replace: since ,: Since >> <<Title.Replace:- since ,- Since >> <<Title.Replace:; since ,; Since >> <<Title.Replace:. since ,. Since >> <<Title.Replace: against ,: Against >> <<Title.Replace:- against ,- Against >> <<Title.Replace:; against ,; Against >> <<Title.Replace:. against ,. Against >> <<Title.Replace: on ,: On >> <<Title.Replace:- on ,- On >> <<Title.Replace:; on ,; On >> <<Title.Replace:. on ,. On >> <<Title.Replace: of ,: Of >> <<Title.Replace:- of ,- Of >> <<Title.Replace:; of ,; Of >> <<Title.Replace:. of ,. Of >> <<Title.Replace: like ,: Like >> <<Title.Replace:- like ,- Like >> <<Title.Replace:; like ,; Like >> <<Title.Replace:. like ,. Like >> <<Title.Replace: before ,: Before >> <<Title.Replace:- before ,- Before >> <<Title.Replace:; before ,; Before >> <<Title.Replace:. before ,. Before >> <<Title.Replace: into ,: Into >> <<Title.Replace:- into ,- Into >> <<Title.Replace:; into ,; Into >> <<Title.Replace:. into ,. Into >> <<Title.Replace: around ,: Around >> <<Title.Replace:- around ,- Around >> <<Title.Replace:; around ,; Around >> <<Title.Replace:. around ,. Around >> <<Title.Replace: near ,: Near >> <<Title.Replace:- near ,- Near >> <<Title.Replace:; near ,; Near >> <<Title.Replace:. near ,. Near >> <<Title.Replace: at ,: At >> <<Title.Replace:- at ,- At >> <<Title.Replace:; at ,; At >> <<Title.Replace:. at ,. At >>
+#@ END_GROUP Perfect Title Casing
+# -------------------------------
+#@ NAME add newline to Notes
+<<Series.Not:>> => <<Notes.Add:\n\nAnother Line>>
+#@ NAME remove scan info from Tags
+<<Series.Not:>> => <<Notes.Add:'\n' + {Series}>> <<Tags.Remove:no scan info>>
+#@ NAME this raises an error
+<<PageCount.IsAnyOf:1,24,33>> => <<Notes.Add:xxx>> <<Notes.Add:'\n'+{Series}+ ' '+{Publisher}+' '+{Volume}>>
+#@ NAME SG: Gotham
+<<Series.ContainsNot:Superman>> => <<SeriesGroup.SetValue:Gotham>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME SG: Gotham
+<<Series.ContainsAnyOf:Batman,Gotham,Nightwing,Catwoman,Batwing,Birds of Prey,Detective Comics,Dark Knight,Red Hood,Robin,Talon,Arkham,Azrael,Bruce Wayne,Batgirl,Batwoman,Penguin,Joker,Ra's Al Ghul,Harley Quinn>> <<Series.ContainsNot:Superman>> <<Publisher.Is:DC Comics>> => <<SeriesGroup.SetValue:Gotham>> <<MainCharacterOrTeam.SetValue:>>
+#@ NAME unicode testing
+<<Writer.Is:Stjepan Šejić>> => <<Inker.SetValue:Stjepan Šejić>>
+
