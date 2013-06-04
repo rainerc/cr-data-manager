@@ -39,6 +39,7 @@ class customFields:
 			theRule = theRule.replace('>>','')
 			tmp = theRule.split(')',1)			# this will return 'Custom(MyHero','.Is:Batman'
 			self.theKey = tmp[0] + ')'				# this is 'Custom(Hero'
+			self.theKey = self.theKey.strip().replace('(','("').replace(')','")')
 			tmp2 = tmp[1].split(':')			# this is '.Is','Batman'
 			self.theModifier = tmp2[0][1:]		# this is 'Is'
 			if self.theModifier == '': self.theModifier = 'SetValue'			
@@ -455,7 +456,7 @@ class dmString():
 		if myVal == 'yes': return MangaYesNo.Yes
 		elif myVal == 'no': return MangaYesNo.No
 		elif myVal == 'unknown': return MangaYesNo.Unknown
-		elif myVal == 'yesandlefttoright' : return MangaYesNo.YesAndLeftToRight
+		elif myVal == 'yesandrighttoleft' : return MangaYesNo.YesAndRightToLeft
 		elif myVal == '': return myMangaYesNo.Unknown
 		pass
 	

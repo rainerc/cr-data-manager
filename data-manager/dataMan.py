@@ -144,6 +144,9 @@ change - re-writing of parser started
 change - new modifier NotContainsAllOf
 change - basic re-writing of parser finished, tests still pending
 
+r1.. (1.2.0)
+change - new modifier NotRange
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
