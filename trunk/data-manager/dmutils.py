@@ -39,7 +39,7 @@ class customFields:
 			theRule = theRule.replace('>>','')
 			tmp = theRule.split(')',1)			# this will return 'Custom(MyHero','.Is:Batman'
 			self.theKey = tmp[0] + ')'				# this is 'Custom(Hero'
-			self.theKey = self.theKey.strip().replace('(','("').replace(')','")')
+			#self.theKey = self.theKey.strip().replace('(','(').replace(')',')')
 			tmp2 = tmp[1].split(':')			# this is '.Is','Batman'
 			self.theModifier = tmp2[0][1:]		# this is 'Is'
 			if self.theModifier == '': self.theModifier = 'SetValue'			
@@ -350,16 +350,28 @@ class multiValue(object):
 		myField = myField.strip(',')
 		return myField
 
+	def setMulti(self, myField, myVals):
+		return ','.join(myVals)
+
+	#def addMulti(self,myField,myVals):
+	#	theList = myField.lower()				# create temp string from myField with all lower chars
+	#	theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
+	#	theList = theList.replace(', ',',')
+	#	myList = theList.split(',')				# create list from temp string
+	#	for v in myVals:						# run through every value in theVals
+	#		if v.lower().strip() not in myList and v <> '':		# if value not in temp list
+	#			myField += ',%s' % v			# ... then add value to myField
+	#	myField = myField.strip(',')
+	#	return myField
+
 	def addMulti(self,myField,myVals):
-		theList = myField.lower()				# create temp string from myField with all lower chars
-		theList = theList.replace(' ,',',')		# eliminate blanks before and after comma in temp string
-		theList = theList.replace(', ',',')
-		myList = theList.split(',')				# create list from temp string
-		for v in myVals:						# run through every value in theVals
-			if v.lower().strip() not in myList and v <> '':		# if value not in temp list
-				myField += ',%s' % v			# ... then add value to myField
-		myField = myField.strip(',')
+		tmpList = myField.lower().replace(' ,',',').replace(', ',',').split(',')
+		#tmpList = ','.join(tmpString)
+		for v in myVals:
+			if v.lower().strip() not in tmpList:
+				myField += ', %s' % v
 		return myField
+
 
 
 	def replace(self, myList, oldVal, newVal, book):	# , caseinsensitive = True):
@@ -423,13 +435,13 @@ class multiValue(object):
 		for l in myList:
 			for v in theVals:
 				if v.lower().strip() == l.lower().strip():
-					l = ''
-					break
-			tmpField.Add(l)
+					pass
+				else:
+					tmpField.append(l)
 		cleanedList = ','.join(tmpField)
-		while ',,' in cleanedList:
-			cleanedList = cleanedList.replace(',,',',')
-		cleanedList = cleanedList.strip(',').strip()
+		#while ',,' in cleanedList:
+		#	cleanedList = cleanedList.replace(',,',',')
+		#cleanedList = cleanedList.strip(',').strip()
 		return cleanedList
 	
 class dmString():
@@ -526,7 +538,7 @@ class dmString():
 			return myKey
 		
 	def removeLeadingString(self, myKey,myVal):
-		if myKey.lower().startswith(toRemove.lower()):
+		if myKey.lower().startswith(myVal.lower()):
 			return myKey[len(myVal):].lstrip()
 		else:
 			return myKey
