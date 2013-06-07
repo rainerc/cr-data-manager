@@ -144,8 +144,12 @@ change - re-writing of parser started
 change - new modifier NotContainsAllOf
 change - basic re-writing of parser finished, tests still pending
 
-r1.. (1.2.0)
+r202 (1.2.0)
 change - new modifier NotRange
+change - tests of re-written parser finished
+change - if a field is changed by one ruleset but multiple actions only the last value is written to the logfile
+change - delimiter for multiple list items is changed from comma to '||'
+change - includes GUI r53
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
@@ -182,7 +186,7 @@ from dmutils import iniFile, parser, dmString
 import globalvars
 from displayResultsForm import displayResultsForm
 from aboutForm import aboutForm
-from progressForm import progressForm
+#from progressForm import progressForm
 from dmProgressForm import dmProgressForm
 from startupForm import startupForm
 from configuratorForm import configuratorForm
@@ -196,7 +200,6 @@ sys.setdefaultencoding(bodyname)
 
 DEBUG__ = False
 
-OLD_VERSION = False
 
 #sys.path.append(globalvars.FOLDER)
 
@@ -281,14 +284,15 @@ def dataManagerConfig():
 
 def replaceData(books):
 
-	#for book in books:
-	#	print 'custom: %s ' % book.GetCustomValue('orig filename')
-	#	return
-
 	ERROR_LEVEL = 0
 
 	if not crVersion():	return		# ComicRack version ok?
-	
+
+	s = File.ReadAllLines(globalvars.DATFILE)
+	if not s[0].startswith('#@ VERSION'):
+		MessageBox.Show('Your configuration needs conversion.\nPlease use the configurator first.','Data Manager %s' % globalvars.VERSION)
+		return
+
 	ini = dmutils.iniFile(globalvars.USERINI)
 	if ini.read('ShowStartupDialog') == 'False':
 		pass
@@ -312,35 +316,17 @@ def replaceData(books):
 		File.Delete(globalvars.ERRFILE)
 		File.Delete(globalvars.LOGFILE)
 	except Exception, err:
-		if OLD_VERSION:
-			MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nPlease restart ComicRack.')
-			return
-		else:
-			#MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nYou should consider restarting ComicRack.')
-			pass
+		MessageBox.Show('One of the temporary files of the Data Manager could not be deleted.\nPlease restart ComicRack.')
+		return
+		
 
 	# check if the default ruleset collection exists
 	if not File.Exists(globalvars.DATFILE):
 		MessageBox.Show('Please use the Data Manager Configurator first!','Data Manager %s' % globalvars.VERSION)
 		return
 
-	if OLD_VERSION:
-		try:
-			progBar = progressForm(globalvars.PROCESS_CODE)
-			progBar.ShowDialog()
-						
-		except Exception, err:
-			MessageBox.Show('Something bad happened during code generation:\n%s' % str(err),'Data Manager for ComicRack %s' % globalvars.VERSION)
-			progBar.Dispose()
-
-	
-		if progBar.errorLevel == 0 and progBar.cancelledByUser == False:
-			progBar = progressForm(globalvars.PROCESS_BOOKS, books)
-			progBar.ShowDialog()
-
-	else:	# use new version
-		progBar = dmProgressForm(globalvars.PROCESS_BOOKS, books)		
-		progBar.ShowDialog()
+	progBar = dmProgressForm(globalvars.PROCESS_BOOKS, books)		
+	progBar.ShowDialog()
 
 	if progBar.errorLevel == 0:
 		msg = "Finished. I've inspected %d books.\nDo you want to take look at the log file?" % (progBar.stepsPerformed)
