@@ -173,18 +173,25 @@ class dmProgressForm(Form):
 								theLog += dmParser.theLog
 								parserErrors += dmParser.errCount
 								for fieldTouched in dmParser.fieldsTouched:
-									beforeTouch = getattr(theOriginalBook,fieldTouched)
-									afterTouch = getattr(book,fieldTouched)
+									# is: Custom(orig filename)
+									if fieldTouched.startswith('Custom'):
+										cField = fieldTouched.replace('Custom(','').strip(')')
+										beforeTouch = theOriginalBook.GetCustomValue(cField)
+										afterTouch = book.GetCustomValue(cField)
+									else:
+										beforeTouch = getattr(theOriginalBook,fieldTouched)
+										afterTouch = getattr(book,fieldTouched)
 									if afterTouch <> beforeTouch:
-										theLog += '\t%s old: %s\n' % (fieldTouched, getattr(theOriginalBook,fieldTouched))
-										theLog += '\t%s new: %s\n' % (fieldTouched, getattr(book,fieldTouched))
+										theLog += '\t%s old: %s\n' % (fieldTouched, beforeTouch)
+										theLog += '\t%s new: %s\n' % (fieldTouched, afterTouch)
 								if parserErrors > 0 and userIni.read("BreakAfterFirstError") == 'True':
 									self.stop_the_Worker = True
 									break
 						except Exception, err:
 							print str(Exception.args)
-							MessageBox.Show('An unhandled error occurred while executing the rules. \n%s\nPlease check your rules.' % str(err), 'Data Manager - Version %s' % globalvars.VERSION)
+							MessageBox.Show('An unhandled error occurred while executing the rules. \n%s\nPlease check your rule: %s' % (str(err),line), 'Data Manager - Version %s' % globalvars.VERSION)
 							self.errorLevel = 1
+							self.stop_the_Worker = True
 							break
 
 				else:
