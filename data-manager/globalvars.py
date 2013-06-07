@@ -36,7 +36,7 @@ MANUAL = 'http://code.google.com/p/cr-data-manager/downloads/list'
 PROCESS_CODE = 1
 PROCESS_BOOKS = 2
 
-THECODE = []	# this will later on contain the parsed code
+#THECODE = []	# this will later on contain the parsed code
 
 
 COMPARE_CASE_INSENSITIVE = True
@@ -47,4 +47,4 @@ COMPARE_CASE_INSENSITIVE = True
 
 
 #VERSION = ini.read('Version')
-VERSION = '1.1.0 r190'
+VERSION = '1.2.0 r202'

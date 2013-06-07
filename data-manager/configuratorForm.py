@@ -923,9 +923,9 @@ to visual editor""")
 
 	def setComboModifiers(self):
 		myKey = self._comboCriteriaFields.SelectedValue
-		self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))	
+		#self._comboKeyModifiers.DataSource = sorted(rulefile.getAllowedKeyModifiers(myKey))	
 		myKey = self._comboValueFields.SelectedValue
-		self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)		
+		#self._comboValueModifiers.DataSource = rulefile.getAllowedValModifiers(myKey)		
 		
 	def ButtonAddCriteriaClick(self, sender, e):
 		theText = '<<%s.%s:%s>> ' % (

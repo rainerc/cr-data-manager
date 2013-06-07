@@ -5,7 +5,8 @@ copy dmutils.py build
 copy globalvars.py build
 copy displayResultsForm.py build
 copy configuratorForm.py build
-copy progressForm.py build
+copy dmProgressForm.py build
+copy dmParser.py build
 copy datamanSample.dat build
 copy *.ico build
 copy *.png build

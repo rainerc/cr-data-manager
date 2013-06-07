@@ -365,12 +365,15 @@ class multiValue(object):
 	#	return myField
 
 	def addMulti(self,myField,myVals):
-		tmpList = myField.lower().replace(' ,',',').replace(', ',',').split(',')
-		#tmpList = ','.join(tmpString)
+		tmpList = myField.lower().strip(',').replace(' ,',',').replace(', ',',').split(',')
+		listToReturn = []
+		for f in myField.split(','):
+			if f.strip() <> '': listToReturn.append(f)
 		for v in myVals:
 			if v.lower().strip() not in tmpList:
-				myField += ', %s' % v
-		return myField
+				listToReturn.append(v)
+				# myField += ', %s' % v
+		return ','.join(listToReturn)
 
 
 
@@ -866,31 +869,31 @@ class ruleFile(object):
 			
 		return self.NOERROR
 	
-	def getAllowedKeyModifiers(self,myKey):
-		myKey = str.lower(myKey)
-		try:
-			myModifierList = ['']
-			if myKey == 'number' or myKey == 'alternatenumber' or myKey in [str.lower(x) for x in self.numericalKeys]:
-				return self.allowedKeyModifiersNumeric
-			if myKey in [str.lower(x) for x in self.multiValueKeys]:
-				return self.allowedKeyModifiersMulti
-			if myKey not in [str.lower(x) for x in self.numericalKeys]:
-				return self.allowedKeyModifiers
-			return myModifierList
-		except Exception, err:
-			print str(err)	
+	#def getAllowedKeyModifiers(self,myKey):
+	#	myKey = str.lower(myKey)
+	#	try:
+	#		myModifierList = ['']
+	#		if myKey == 'number' or myKey == 'alternatenumber' or myKey in [str.lower(x) for x in self.numericalKeys]:
+	#			return self.allowedKeyModifiersNumeric
+	#		if myKey in [str.lower(x) for x in self.multiValueKeys]:
+	#			return self.allowedKeyModifiersMulti
+	#		if myKey not in [str.lower(x) for x in self.numericalKeys]:
+	#			return self.allowedKeyModifiers
+	#		return myModifierList
+	#	except Exception, err:
+	#		print str(err)	
 
-	def getAllowedValModifiers(self,myKey):
-		myKey = str.lower(myKey)
-		try:
-			myModifierList = ['']
-			if myKey in [str.lower(x) for x in self.multiValueKeys]:
-				return self.allowedValModifiersMulti
-			else:
-				return self.allowedValModifiers
-		except Exception, err:
-			print str(err)
-		return ''
+	#def getAllowedValModifiers(self,myKey):
+	#	myKey = str.lower(myKey)
+	#	try:
+	#		myModifierList = ['']
+	#		if myKey in [str.lower(x) for x in self.multiValueKeys]:
+	#			return self.allowedValModifiersMulti
+	#		else:
+	#			return self.allowedValModifiers
+	#	except Exception, err:
+	#		print str(err)
+	#	return ''
 	
 def readFile(theFile):
 	if File.Exists(theFile):
