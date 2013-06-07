@@ -151,6 +151,10 @@ change - if a field is changed by one ruleset but multiple actions only the last
 change - delimiter for multiple list items is changed from comma to '||'
 change - includes GUI r53
 
+r203 (1.2.0)
+fixed - writing custom field value to log file throws exception (issue 93)
+
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
