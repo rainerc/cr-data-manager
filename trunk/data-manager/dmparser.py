@@ -63,6 +63,7 @@ class dmParser(object):
 		self.fieldsTouched = []
 		self.listDelimiter = dataManIni.read("ListDelimiter")
 		self.theLog = ''
+		self.ruleMode = 'AND'
 
 			
 		
@@ -119,6 +120,9 @@ class dmParser(object):
 		sets the values of dmParser.actions and dmParser.rules
 		example: <<Series:Batman>><<Volume:2011>>
 		'''
+		if ruleLine.startswith('|'):
+			self.ruleMode = 'OR'
+			ruleLine = ruleLine.lstrip('|')
 		ruleLine = ruleLine.replace('<<','')
 		theParts = ruleLine.split('=>')
 		theRules = theParts[0].split('>>')
@@ -276,7 +280,9 @@ class dmParser(object):
 		for rule in self.rules:
 			self.theRuleValues = []
 			matched = self.matchRule(rule,book)
-			if not matched: return False
+			if self.ruleMode == 'OR' and matched == True:
+				return True
+			if self.ruleMode == 'AND' and not matched: return False
 		return True
 
 	def castTypeSingleValue(self, theField, theValue=''):

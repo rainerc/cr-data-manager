@@ -154,6 +154,10 @@ change - includes GUI r53
 r203 (1.2.0)
 fixed - writing custom field value to log file throws exception (issue 93)
 
+r204 (1.2.0)
+change - basic OR rule mode implemented
+change - rule mode is reflected in log file output
+
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 

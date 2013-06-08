@@ -168,7 +168,8 @@ class dmProgressForm(Form):
 						try:
 
 							if dmParser.matchAllRules(line,book):
-								theLog += '%s (%s) #%s was touched\t%s%s\n' % (unicode(book.Series),book.Volume,unicode(book.Number),','.join(dmParser.rules),System.Environment.NewLine)
+								joinChar = ' ' + dmParser.ruleMode + ' '
+								theLog += '%s (%s) #%s was touched\t[%s]\n' % (unicode(book.Series),book.Volume,unicode(book.Number),joinChar.join(dmParser.rules))
 								dmParser.executeAllActions(book)
 								theLog += dmParser.theLog
 								parserErrors += dmParser.errCount
