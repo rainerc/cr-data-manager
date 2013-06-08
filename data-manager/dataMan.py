@@ -144,20 +144,24 @@ change - re-writing of parser started
 change - new modifier NotContainsAllOf
 change - basic re-writing of parser finished, tests still pending
 
-r202 (1.2.0)
+r202 (1.2.0) - beta release
 change - new modifier NotRange
 change - tests of re-written parser finished
 change - if a field is changed by one ruleset but multiple actions only the last value is written to the logfile
 change - delimiter for multiple list items is changed from comma to '||'
 change - includes GUI r53
 
-r203 (1.2.0)
+r203 (1.2.0) - beta release
 fixed - writing custom field value to log file throws exception (issue 93)
 
-r204 (1.2.0)
+r204 (1.2.0) - non-release
 change - basic OR rule mode implemented
 change - rule mode is reflected in log file output
 
+r205 (1.2.0) - beta release
+fixed - DateTime not written in user defined format (issue 94)
+fixed - error when a field containing a NewLine is touched by Calc (issue 95)
+change - includes GUI r54
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
