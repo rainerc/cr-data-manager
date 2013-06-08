@@ -64,6 +64,7 @@ class dmParser(object):
 		self.listDelimiter = dataManIni.read("ListDelimiter")
 		self.theLog = ''
 		self.ruleMode = 'AND'
+		self.dateTimeFormat = userIni.read('DateTimeFormat')
 
 			
 		
@@ -101,13 +102,20 @@ class dmParser(object):
 			# we cannot use castType() here because it expects a list as parameter
 			# so we use castTypeSingleValue()
 			fieldContent = self.castTypeSingleValue(theField, unicode(fieldContent))
+			if fieldName in self.ruleFile.dateTimeKeys:
+				fieldContentToDateTime = System.DateTime.Parse(fieldContent)
+				fieldContent = System.DateTime.ToString(fieldContentToDateTime,self.dateTimeFormat)
 			if type(fieldContent) == str and theField not in ['Number','AlternateNumber']:
-				fieldContent = '\"%s\"' % fieldContent
+				fieldContent = fieldContent.replace('\n','\\n')
+				fieldContent = '\'%s\'' % fieldContent
+				pass
 			newValue = theValue.replace('{' + fieldName + '}', unicode(fieldContent))
 			theValue = newValue
 		try:
+			print theValue
 			return eval(theValue)
 		except Exception,err:
+			#return theValue
 			print 'Exception: %s' % Exception.ToString
 			self.error = True
 			self.errCount += 1
