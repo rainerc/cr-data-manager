@@ -163,6 +163,9 @@ fixed - DateTime not written in user defined format (issue 94)
 fixed - error when a field containing a NewLine is touched by Calc (issue 95)
 change - includes GUI r54
 
+r206 (1.2.0 RC1)
+change - includes GUI r55
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
