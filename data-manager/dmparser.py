@@ -247,10 +247,11 @@ class dmParser(object):
 				myCustomFieldName = customField.customFieldName(theKey)
 				if theValue[0] == '': theValue[0] = None
 				xxx = book.GetCustomValue(myCustomFieldName)
+				matched = book.GetCustomValue(myCustomFieldName).lower().strip() == theValue[0].lower().strip()
 				if theModifier == 'Is':
-					return book.GetCustomValue(myCustomFieldName) == theValue[0]
+					return matched
 				else:
-					return book.GetCustomValue(myCustomFieldName) <> theValue[0]
+					return not matched
 
 			if theModifier == 'Is': return self.equals(theKey,theValue[0],book)	
 			elif theModifier == 'Not': return not self.equals(theKey,theValue[0],book)	
@@ -385,6 +386,8 @@ class dmParser(object):
 	def equals(self,myKey,myVal,book):
 		if type(myVal) == System.DateTime:
 			return getattr(book,myKey).Date == myVal.Date
+		if type(myVal) == str:
+			return getattr(book,myKey).lower().strip() == myVal.lower().strip()
 		else:
 			return getattr(book,myKey) == myVal
 

@@ -48,6 +48,13 @@ class dmProgressForm(Form):
 		userIni = iniFile(globalvars.USERINI)
 		self.dateTimeFormat = userIni.read('DateTimeFormat')
 		self.stop_the_Worker = False	
+		
+		# this is a workaround for the error described in issue 98:
+		# would love to use book.Clone() but here's the workaround:
+		dmIni = iniFile(globalvars.INIFILE)
+		self.allVals = dmIni.read('allowedVals').split(',')
+		for field in self.allVals:
+			setattr(self,'field_' + field, None)
 	
 	def InitializeComponent(self):
 		self._progressBar = System.Windows.Forms.ProgressBar()
@@ -134,6 +141,9 @@ class dmProgressForm(Form):
 		# ------------------------------------------------------
 		# run the parsed code over the books:
 		# ------------------------------------------------------
+		
+
+
 		userIni = iniFile(globalvars.USERINI)
 		dtStarted = System.DateTime.Now
 
@@ -161,7 +171,12 @@ class dmProgressForm(Form):
 					self.stepsPerformed += 1
 					self._backgroundWorker1.ReportProgress(self.stepsPerformed / self.maxVal * 100)
 					
+					# we use this for custom fields only because some other fields
+					# might not be stored by book.Clone():
 					theOriginalBook = book.Clone()	# to retrieve the original values later
+					# for the remaining we use:
+					for field in self.allVals:
+						if field <> 'Custom': setattr(self,'field_' + field, getattr(book,field))
 						
 					for line in lines:
 						if self.stop_the_Worker == True: break
@@ -180,11 +195,12 @@ class dmProgressForm(Form):
 										beforeTouch = theOriginalBook.GetCustomValue(cField)
 										afterTouch = book.GetCustomValue(cField)
 									else:
-										beforeTouch = getattr(theOriginalBook,fieldTouched)
+										#beforeTouch = getattr(theOriginalBook,fieldTouched)
+										beforeTouch = getattr(self,'field_' + fieldTouched)
 										afterTouch = getattr(book,fieldTouched)
 									if afterTouch <> beforeTouch:
-										theLog += '\t%s old: %s\n' % (fieldTouched, beforeTouch)
-										theLog += '\t%s new: %s\n' % (fieldTouched, afterTouch)
+										theLog += '\t%s old: %s\n' % (fieldTouched, unicode(beforeTouch))
+										theLog += '\t%s new: %s\n' % (fieldTouched, unicode(afterTouch))
 								if parserErrors > 0 and userIni.read("BreakAfterFirstError") == 'True':
 									self.stop_the_Worker = True
 									break

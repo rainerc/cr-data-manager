@@ -166,6 +166,11 @@ change - includes GUI r54
 r206 (1.2.0 RC1)
 change - includes GUI r55
 
+r207 (1.2.0 RC2)
+fixed - dmparser.equals returns case-sensitive comparison (not compatible to older DM versions) (issue 97)
+fixed - old value of book.Tags is empty when written to the log (issue 98)
+change - includes GUI r56
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
