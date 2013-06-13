@@ -171,6 +171,9 @@ fixed - dmparser.equals returns case-sensitive comparison (not compatible to old
 fixed - old value of book.Tags is empty when written to the log (issue 98)
 change - includes GUI r56
 
+r208 (1.2.0 RC3)
+change - includes GUI r58
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
