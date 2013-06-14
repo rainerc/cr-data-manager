@@ -174,6 +174,9 @@ change - includes GUI r56
 r208 (1.2.0 RC3)
 change - includes GUI r58
 
+r211 (1.2.0)
+change - includes GUI r60
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
