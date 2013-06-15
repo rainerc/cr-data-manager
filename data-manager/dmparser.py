@@ -245,9 +245,12 @@ class dmParser(object):
 			
 			if theKey.startswith('Custom'):
 				myCustomFieldName = customField.customFieldName(theKey)
-				if theValue[0] == '': theValue[0] = None
-				xxx = book.GetCustomValue(myCustomFieldName)
-				matched = book.GetCustomValue(myCustomFieldName).lower().strip() == theValue[0].lower().strip()
+				if theValue[0] == None: 
+					theValue[0] = ''
+				customValue = book.GetCustomValue(myCustomFieldName)
+				if customValue == None:
+					customValue = ''
+				matched = customValue.lower().strip() == theValue[0].lower().strip()
 				if theModifier == 'Is':
 					return matched
 				else:
