@@ -177,6 +177,9 @@ change - includes GUI r58
 r211 (1.2.0)
 change - includes GUI r60
 
+r212 (1.2.1)
+fix - compare of Null value custom field does not work
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
