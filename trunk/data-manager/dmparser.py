@@ -236,6 +236,9 @@ class dmParser(object):
 			self.theActionValue = self.castType(self.theActionKey,actionValues)
 
 	def matchRule(self, theRule, book):
+		'''
+		calls analyzeRule and then checks if the books matches to the rule
+		'''
 		self.analyzeRule(theRule)
 		theKey = self.theRuleKey
 		theModifier = self.theRuleModifier
@@ -367,6 +370,12 @@ class dmParser(object):
 					newVal = multiValue.removeMulti(getattr(book,theKey), theValue)
 				else:
 					newVal = dmString.removeString(getattr(book,theKey), theValue[0])
+				setattr(book,theKey,newVal)
+			elif theModifier == 'RegexReplace':
+				if theKey in self.ruleFile.multiValueKeys:
+					pass		# has to be implemented yet
+				else:
+					newVal = dmString.regexReplace(getattr(book,theKey), theValue)
 				setattr(book,theKey,newVal)
 			elif theModifier == 'RemoveLeading':
 				newVal = dmString.removeLeadingString(getattr(book,theKey), theValue[0])
