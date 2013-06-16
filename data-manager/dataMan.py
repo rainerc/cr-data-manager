@@ -178,7 +178,7 @@ r211 (1.2.0)
 change - includes GUI r60
 
 r212 (1.2.1)
-fix - compare of Null value custom field does not work
+fix - compare of Null value custom field does not work (issue 105)
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 

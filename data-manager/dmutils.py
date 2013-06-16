@@ -12,6 +12,11 @@ clr.AddReference("ComicRack.Engine")
 from cYo.Projects.ComicRack.Engine import MangaYesNo, YesNo
 
 
+import System.Text.RegularExpressions
+from System.Text.RegularExpressions import RegexOptions
+from System.Text.RegularExpressions import Regex
+
+
 class customFields:
 	
 	def __init__(self):
@@ -549,6 +554,18 @@ class dmString():
 	def setValue(self,myVal,book):
 		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
 		return myVal
+
+	def regexReplace(self,myString,myVals,book):
+		'''
+		todo: this *might* work!
+		'''
+		#myString = 'der Hugo'
+		#oldVal = r'\w*'
+		#newVal = r'$&$&'
+
+		regexp = Regex(myVals[0])
+		return regexp.Replace(myString,myVals[1])
+
 
 class dmDateTime(object):
 
