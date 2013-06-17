@@ -180,6 +180,9 @@ change - includes GUI r60
 r212 (1.2.1)
 fix - compare of Null value custom field does not work (issue 105)
 
+r214 (1.2.2 beta)
+change - new modifiers RegEx, NotRegEx, RegExReplace
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()

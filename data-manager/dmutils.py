@@ -299,6 +299,10 @@ class comparer(object):
 		maxVal = System.DateTime.Parse(maxVal + ' 23:59:59')
 		return myString >= minVal and myString <= maxVal
 
+	def regex(self, myString,myVal):
+		regExp = Regex(myVal, RegexOptions.Singleline | RegexOptions.IgnoreCase)
+		return regExp.Match(myString).Success
+
 def nullToZero(s):
 #	if String.Trim(str(s)) == '': return 0
 	try:
@@ -555,7 +559,7 @@ class dmString():
 		if myVal.startswith('{'): myVal = eval(self.myParser.parseCalc(myVal,str))
 		return myVal
 
-	def regexReplace(self,myString,myVals,book):
+	def regexReplace(self,myString,myVals):
 		'''
 		todo: this *might* work!
 		'''
@@ -563,7 +567,7 @@ class dmString():
 		#oldVal = r'\w*'
 		#newVal = r'$&$&'
 
-		regexp = Regex(myVals[0])
+		regexp = Regex(myVals[0],RegexOptions.IgnoreCase | RegexOptions.Singleline)
 		return regexp.Replace(myString,myVals[1])
 
 
