@@ -923,7 +923,7 @@ def readFile(theFile):
 		return str('')
 
 	tmp = str('')
-	s = [line for line in s if str.Trim(line) <> '']
+	# s = [line for line in s if str.Trim(line) <> '']
 	for line in s:
 		tmp += '%s%s' % (line, System.Environment.NewLine)
 	if len(s) == 0 and theFile == globalvars.LOGFILE:

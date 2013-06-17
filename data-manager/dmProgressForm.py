@@ -166,6 +166,9 @@ class dmProgressForm(Form):
 				if line == '#@ END_RULES': break
 				if (not line.startswith('#')) and line.strip() <> '': lines.append(line)
 
+			# no books or values were touched until now:
+			allBooksTouched = 0
+			allValuesChanged = 0
 			for book in self.theBooks:
 				if not self._backgroundWorker1.CancellationPending: 
 					self.stepsPerformed += 1
@@ -179,28 +182,38 @@ class dmProgressForm(Form):
 						if field <> 'Custom': setattr(self,'field_' + field, getattr(book,field))
 						
 					for line in lines:
+						thisBookTouched = 0		# for this book no value have changed yet
 						if self.stop_the_Worker == True: break
 						try:
 
 							if dmParser.matchAllRules(line,book):
+								if thisBookTouched == 0: 
+									allBooksTouched += 1	# increment counter for books that have been touched
+								thisBookTouched += 1		# mark that this book has been touched
 								joinChar = ' ' + dmParser.ruleMode + ' '
-								theLog += '%s (%s) #%s was touched\t[%s]\n' % (unicode(book.Series),book.Volume,unicode(book.Number),joinChar.join(dmParser.rules))
+
+								# if LogBookOnlyWhenValuesChanged <> True write touched book 
+								# to log even when no value have changed:
+								if userIni.read('LogBookOnlyWhenValuesChanged') <> 'True':
+									theLog += '%s (%s) #%s was touched\t[%s]\n' % (unicode(book.Series),book.Volume,unicode(book.Number),joinChar.join(dmParser.rules))
 								dmParser.executeAllActions(book)
 								theLog += dmParser.theLog
 								parserErrors += dmParser.errCount
 								for fieldTouched in dmParser.fieldsTouched:
-									# is: Custom(orig filename)
 									if fieldTouched.startswith('Custom'):
 										cField = fieldTouched.replace('Custom(','').strip(')')
 										beforeTouch = theOriginalBook.GetCustomValue(cField)
 										afterTouch = book.GetCustomValue(cField)
 									else:
-										#beforeTouch = getattr(theOriginalBook,fieldTouched)
 										beforeTouch = getattr(self,'field_' + fieldTouched)
 										afterTouch = getattr(book,fieldTouched)
 									if afterTouch <> beforeTouch:
+										# if LogBookOnlyWhenValuesChanged is True and this book was touched for the first time:
+										if userIni.read('LogBookOnlyWhenValuesChanged') == 'True' and thisBookTouched == 1:
+											theLog += '%s (%s) #%s was touched\t[%s]\n' % (unicode(book.Series),book.Volume,unicode(book.Number),joinChar.join(dmParser.rules))
 										theLog += '\t%s old: %s\n' % (fieldTouched, unicode(beforeTouch))
 										theLog += '\t%s new: %s\n' % (fieldTouched, unicode(afterTouch))
+										allValuesChanged += 1
 								if parserErrors > 0 and userIni.read("BreakAfterFirstError") == 'True':
 									self.stop_the_Worker = True
 									break
@@ -216,7 +229,12 @@ class dmProgressForm(Form):
 					self.cancelledByUser = True
 					break
 				if self.stop_the_Worker == True: break
-				
+			
+			if allBooksTouched > 0:
+				theLog += '\n\n' + '*' * 60 + '\n'
+				theLog += '%d books were touched, %d values were changed\n' % (allBooksTouched, allValuesChanged)
+				theLog += '*' * 60 + '\n'
+					
 			dtEnded = System.DateTime.Now
 			dtDuration = dtEnded - dtStarted
 			userIni.write('ParserStarted',str(dtStarted))

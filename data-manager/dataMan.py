@@ -183,6 +183,9 @@ fix - compare of Null value custom field does not work (issue 105)
 r214 (1.2.2 beta)
 change - new modifiers RegEx, NotRegEx, RegExReplace
 
+r215 (1.2.2 beta) 
+change - LogBookOnlyWhenValuesChanged key implemented (issue 100)
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
