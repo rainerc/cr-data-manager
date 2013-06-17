@@ -113,7 +113,10 @@ class dmParser(object):
 			theValue = newValue
 		try:
 			print theValue
+			# this throws an exception when used with regexReplace:
 			return eval(theValue)
+			# so we try this:
+			#return eval('' + theValue)
 		except Exception,err:
 			#return theValue
 			print 'Exception: %s' % Exception.ToString
@@ -211,7 +214,7 @@ class dmParser(object):
 			else:
 				self.theActionModifier = 'SetValue'
 			
-		if self.theActionKey in self.ruleFile.multiValueKeys or self.theActionModifier == 'Replace':
+		if self.theActionKey in self.ruleFile.multiValueKeys or self.theActionModifier in ['RegexReplace','Replace']:
 			tmpList = theActionValue.split(self.listDelimiter)
 			# tmpList = theActionValue.split(',')
 			for v in tmpList:
@@ -271,6 +274,8 @@ class dmParser(object):
 			elif theModifier == 'NotStartsWith': return not getattr(book, theKey).startswith(theValue[0])
 			elif theModifier == 'StartsWithAnyOf': return self.startsWithAnyOf(getattr(book,theKey),theValue)
 			elif theModifier == 'NotStartsWithAnyOf': return not self.startsWithAnyOf(getattr(book,theKey),theValue)
+			elif theModifier == 'RegEx': return comparer.regex(getattr(book,theKey),theValue[0])
+			elif theModifier == 'NotRegEx': return not comparer.regex(getattr(book,theKey),theValue[0])
 			elif theModifier == 'Contains': return comparer.contains(getattr(book,theKey),theValue[0])
 			elif theModifier in ['NotContains','ContainsNot']: return not comparer.contains(getattr(book,theKey),theValue[0])
 			elif theModifier == 'ContainsAnyOf': return self.containsAnyOf(getattr(book,theKey),theValue)
