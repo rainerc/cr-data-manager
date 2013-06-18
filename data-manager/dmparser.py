@@ -93,24 +93,32 @@ class dmParser(object):
 
 
 	def parseCalc(self,theField = '',theValue = '',book = object):
+		allowedKeys = dataManIni.read('allowedKeys').split(',')
 		while '{' in theValue:
 			# retrieve each {field} in theField
 			m = re.search('{.*?}',theValue)
 			fieldName = m.group(0).lstrip('{').rstrip('}')
-			# get the value of {field} with getattr(book)
-			fieldContent = getattr(book,fieldName)
-			# we cannot use castType() here because it expects a list as parameter
-			# so we use castTypeSingleValue()
-			fieldContent = self.castTypeSingleValue(theField, unicode(fieldContent))
-			if fieldName in self.ruleFile.dateTimeKeys:
-				fieldContentToDateTime = System.DateTime.Parse(fieldContent)
-				fieldContent = System.DateTime.ToString(fieldContentToDateTime,self.dateTimeFormat)
-			if type(fieldContent) == str and theField not in ['Number','AlternateNumber']:
-				fieldContent = fieldContent.replace('\n','\\n')
-				fieldContent = '\'%s\'' % fieldContent
+			if fieldName in allowedKeys:
 				pass
-			newValue = theValue.replace('{' + fieldName + '}', unicode(fieldContent))
+				# get the value of {field} with getattr(book)
+				fieldContent = getattr(book,fieldName)
+				# we cannot use castType() here because it expects a list as parameter
+				# so we use castTypeSingleValue()
+				fieldContent = self.castTypeSingleValue(theField, unicode(fieldContent))
+				if fieldName in self.ruleFile.dateTimeKeys:
+					fieldContentToDateTime = System.DateTime.Parse(fieldContent)
+					fieldContent = System.DateTime.ToString(fieldContentToDateTime,self.dateTimeFormat)
+				if type(fieldContent) == str and theField not in ['Number','AlternateNumber']:
+					fieldContent = fieldContent.replace('\n','\\n')
+					fieldContent = '\'%s\'' % fieldContent
+					pass
+				newValue = theValue.replace('{' + fieldName + '}', unicode(fieldContent))
+			else:
+				newValue = theValue.replace('{' + fieldName + '}','<<<<' + fieldName + '>>>>')
+
+			
 			theValue = newValue
+		theValue = theValue.replace('<<<<','{').replace('>>>>','}')
 		try:
 			print theValue
 			# this throws an exception when used with regexReplace:
@@ -119,6 +127,9 @@ class dmParser(object):
 			#return eval('' + theValue)
 		except Exception,err:
 			#return theValue
+			if self.theActionModifier.startswith('Reg'):
+				return theValue
+		except:
 			print 'Exception: %s' % Exception.ToString
 			self.error = True
 			self.errCount += 1
@@ -194,6 +205,7 @@ class dmParser(object):
 		Key:Series	Modifier:SetValue	Value:Batman
 		Key:Custom(myField)	Modifier:SetValue	Value:myVal
 		'''
+		allowedKeys = dataManIni.read('allowedKeys').split(',')
 		actionValues = []
 		theActionValue = ''
 		if theAction.strip().startswith('Custom'):
@@ -219,15 +231,17 @@ class dmParser(object):
 			# tmpList = theActionValue.split(',')
 			for v in tmpList:
 				if v.startswith('{') and v.endswith('}') and v.count('{') == 1:
-					v = v.replace('{','').replace('}','')
-					v = getattr(book,v)
+					tmpVal = v.replace('{','').replace('}','')
+					if tmpVal in allowedKeys:
+						v = getattr(book,tmpVal)
 				if '{' in v:
 					v = self.parseCalc(self.theActionKey,v,book)
 				actionValues.append(v)
 		elif '{' in theActionValue:
 			if theActionValue.startswith('{') and theActionValue.endswith('}') and theActionValue.count('{') == 1:
-					theActionValue = theActionValue.strip('{').strip('}')
-					theActionValue = str(getattr(book,theActionValue))
+					tmpVal = theActionValue.strip('{').strip('}')
+					if tmpVal in allowedKeys:
+						theActionValue = str(getattr(book,tmpVal))
 			if '{' in theActionValue:
 				theActionValue = self.parseCalc(self.theActionKey,theActionValue,book)
 			actionValues.append(unicode(theActionValue))
