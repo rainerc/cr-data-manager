@@ -182,9 +182,13 @@ fix - compare of Null value custom field does not work (issue 105)
 
 r214 (1.2.2 beta)
 change - new modifiers RegEx, NotRegEx, RegExReplace
+change - includes GUI r62
 
 r215 (1.2.2 beta) 
 change - LogBookOnlyWhenValuesChanged key implemented (issue 100)
+
+r216 (1.2.2 beta) 
+fixed - quantifier expression between { and } in regex is mistaken for {field} reference (issue 108)
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 

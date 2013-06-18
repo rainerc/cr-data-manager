@@ -47,4 +47,4 @@ COMPARE_CASE_INSENSITIVE = True
 
 
 #VERSION = ini.read('Version')
-VERSION = '1.2.1 r215 beta'
+VERSION = '1.2.1 r216 beta'
