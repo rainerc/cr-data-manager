@@ -1,6 +1,8 @@
 ﻿'''
 new version of progressForm.py
 '''
+import clr
+from System import DateTime
 
 import System.Drawing
 import System.Windows.Forms
@@ -190,6 +192,7 @@ class dmProgressForm(Form):
 								if thisBookTouched == 0: 
 									allBooksTouched += 1	# increment counter for books that have been touched
 								thisBookTouched += 1		# mark that this book has been touched
+								book.SetCustomValue('DataManager.processed',System.DateTime.ToString(System.DateTime.Now,'yyyy-MM-dd HH:mm:ss'))
 								joinChar = ' ' + dmParser.ruleMode + ' '
 
 								# if LogBookOnlyWhenValuesChanged <> True write touched book 
