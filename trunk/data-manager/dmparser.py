@@ -317,7 +317,10 @@ class dmParser(object):
 			if self.ruleMode == 'OR' and matched == True:
 				return True
 			if self.ruleMode == 'AND' and not matched: return False
-		return True
+		if self.ruleMode == 'AND ' :
+			return True
+		else :
+			return False
 
 	def castTypeSingleValue(self, theField, theValue=''):
 		tmpList = []

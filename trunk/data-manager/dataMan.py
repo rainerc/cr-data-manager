@@ -181,7 +181,7 @@ r212 (1.2.1)
 fix - compare of Null value custom field does not work (issue 105)
 
 r214 (1.2.2 beta)
-change - new modifiers RegEx, NotRegEx, RegExReplace
+change - new modifiers RegEx, NotRegEx, RegExReplace (issue 8)
 change - includes GUI r62
 
 r215 (1.2.2 beta) 
@@ -192,7 +192,10 @@ fixed - quantifier expression between { and } in regex is mistaken for {field} r
 
 r 217 (1.2.2)
 change includes GUI 1.3.0.r70
-fix - Processing date is not written to custom field DataManager.processed
+fixed - Processing date is not written to custom field DataManager.processed
+
+r 218 (1.2.3)
+fixed - issue #110 (OR-mode always returns True)
 
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
