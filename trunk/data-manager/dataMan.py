@@ -197,6 +197,9 @@ fixed - Processing date is not written to custom field DataManager.processed
 r 218 (1.2.3)
 fixed - issue #110 (OR-mode always returns True)
 
+r 219 (1.2.4)
+fixed - error when AND-mode was active
+
 << half-way through with replacing globalvars.VERSION with iniFile.read('Version') >>
 
 todo - check valid modifiers in validate()
